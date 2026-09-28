@@ -48,6 +48,11 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
 - `github.com/larsartmann/go-flightrecorder` — execution-trace buffering
 - `github.com/coreos/go-systemd/v22` — sd_notify + watchdog
 - `github.com/prometheus/client_golang` — flight-recorder metrics
+- `github.com/larsartmann/go-sse/sseparse` — PENDING (not yet adopted):
+  zero-dep SSE parser + spec corpus. Blocked on its v0.1.0 tag (split from
+  ssetest 2026-09-29, release tracked in go-sse TODO_LIST). Once tagged,
+  migrate sse_test.go's framing tests to `sseparse.MustCorpus` vectors;
+  keep the maxEventBytes/large-event tests (go-daemon-specific surface).
 
 ## Gotchas
 
@@ -59,3 +64,15 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
   decoding lives with consumers.
 - Version bumps should follow the primary consumer's needs — its nix build
   pins this repo by rev and re-derives vendorHash on every bump.
+- **Go's runtime/trace allows only ONE active flight recorder per process.**
+  Tests that start a recorder are serialized behind `flightRecorderMu`
+  (flightrecorder_test.go): parallel recorder tests otherwise fail with
+  "another flight recorder is already active in this process" under load.
+  Keep new recorder tests inside that mutex (via `newTestFlightRecorder`
+  or inline lock/unlock when a custom registry is needed).
+- `MaybeCaptureOnSlowRequest` detaches the caller's context
+  (`context.WithoutCancel`) before spawning the capture goroutine — that is
+  the contract (v0.1.1): a request context cancelled at handler return must
+  NOT drop the in-flight capture. The regression test
+  (`TestFlightRecorder_SlowRequestTrigger_CancelledContext`) fails
+  deterministically if someone removes the detachment; do not weaken it.
