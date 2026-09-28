@@ -18,10 +18,22 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// flightRecorderMu serializes tests that hold an active flight recorder: Go's
+// runtime/trace allows only ONE active recorder per process, so concurrent
+// newTestFlightRecorder calls fail with "another flight recorder is already
+// active". Held from creation until the test's cleanup (after Stop).
+var flightRecorderMu sync.Mutex
+
 // newTestFlightRecorder creates a started flight recorder for testing.
 // The caller is responsible for calling Stop (t.Cleanup is recommended).
 func newTestFlightRecorder(t *testing.T, opts FlightRecorderOptions) *FlightRecorder {
 	t.Helper()
+
+	flightRecorderMu.Lock()
+
+	// Registered before the Stop cleanup so LIFO runs it after Stop releases
+	// the process-global recorder slot.
+	t.Cleanup(flightRecorderMu.Unlock)
 
 	if err := opts.Validate(); err != nil {
 		t.Fatalf("validate options: %v", err)
@@ -188,6 +200,54 @@ func TestFlightRecorder_SlowRequestTrigger(t *testing.T) {
 	if !found {
 		t.Fatal("no snapshot file appeared within timeout")
 	}
+}
+
+// TestFlightRecorder_SlowRequestTrigger_CancelledContext is a regression test
+// for the production bug where the capture goroutine inherited the caller's
+// request context: net/http cancels that context the moment the handler
+// returns, so the async capture raced handler teardown and was silently
+// dropped whenever the goroutine lost (observed as load-dependent flakiness in
+// project-discovery-daemon). MaybeCaptureOnSlowRequest must detach the context
+// from cancellation so the capture survives the caller returning.
+func TestFlightRecorder_SlowRequestTrigger_CancelledContext(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	fr := newTestFlightRecorder(t, FlightRecorderOptions{
+		SlowRequestThreshold: 1 * time.Nanosecond,
+		SnapshotDir:          dir,
+	})
+
+	generateTraceEvents()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	fr.MaybeCaptureOnSlowRequest(ctx, 100*time.Millisecond)
+
+	deadline := time.Now().Add(2 * time.Second)
+
+	for time.Now().Before(deadline) {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			t.Fatalf("ReadDir: %v", err)
+		}
+
+		for _, entry := range entries {
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+
+			if info.Size() > 0 {
+				return
+			}
+		}
+
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	t.Fatal("capture was dropped: no snapshot file appeared despite cancelled caller context")
 }
 
 func TestFlightRecorder_SlowRequestTrigger_OneShot(t *testing.T) {
@@ -386,6 +446,12 @@ func TestFlightRecorder_SnapshotFailingWriter(t *testing.T) {
 
 func TestFlightRecorder_MetricPrefix(t *testing.T) {
 	t.Parallel()
+
+	flightRecorderMu.Lock()
+
+	// Runs after fr.Stop (LIFO) so the process-global recorder slot is free
+	// before the next recorder test starts.
+	t.Cleanup(flightRecorderMu.Unlock)
 
 	reg := prometheus.NewRegistry()
 

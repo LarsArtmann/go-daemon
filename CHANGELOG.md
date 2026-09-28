@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-29
+
+### Fixed
+
+- `FlightRecorder.MaybeCaptureOnSlowRequest` no longer silently drops the
+  async capture when the caller's context is cancelled: the capture goroutine
+  races the caller returning (net/http cancels the request context at exactly
+  that moment), and the underlying library's pre-write context check discarded
+  the snapshot whenever the goroutine lost that race — precisely on loaded
+  daemons where slow requests occur. The context is now detached from
+  cancellation via `context.WithoutCancel` (values preserved), so the capture
+  survives the caller. Regression-tested with a pre-cancelled context.
+- Tests that hold an active flight recorder are serialized behind a mutex:
+  Go's runtime/trace allows only one active recorder per process, so parallel
+  recorder tests could fail with "another flight recorder is already active
+  in this process" under load.
+
 ## [0.1.0] - 2026-09-29
 
 ### Added
@@ -31,5 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configurable `MetricPrefix`, and a rate-limited `TraceHandler` streaming
   `go tool trace` files.
 
-[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/LarsArtmann/go-daemon/releases/tag/v0.1.0

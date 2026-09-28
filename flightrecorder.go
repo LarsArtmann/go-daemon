@@ -321,6 +321,11 @@ func (fr *FlightRecorder) SnapshotToFile(ctx context.Context) (string, error) {
 // exceeds the threshold triggers a capture; subsequent calls are suppressed
 // via an atomic flag. The file write happens in a goroutine so the request
 // handler is never blocked by I/O.
+//
+// The capture goroutine outlives its caller, so ctx is detached from
+// cancellation via context.WithoutCancel before it is captured: a request
+// context cancelled at handler return must not silently drop the in-flight
+// capture. Context values are preserved.
 func (fr *FlightRecorder) MaybeCaptureOnSlowRequest(ctx context.Context, duration time.Duration) {
 	if fr.slowThreshold == 0 || duration <= fr.slowThreshold {
 		return
@@ -329,6 +334,12 @@ func (fr *FlightRecorder) MaybeCaptureOnSlowRequest(ctx context.Context, duratio
 	if !fr.autoTriggered.CompareAndSwap(false, true) {
 		return
 	}
+
+	// Detach from the caller's cancellation: the goroutine below races the
+	// handler returning (net/http cancels the request context at that exact
+	// moment), and the library's pre-write context check would drop the
+	// capture whenever the goroutine loses that race.
+	ctx = context.WithoutCancel(ctx)
 
 	// OnAlways because we validated the threshold above. SnapshotIfAsync
 	// handles goroutine spawning, WaitGroup tracking, and shutdown safety.

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -430,5 +432,71 @@ func TestTransportOverSocket(t *testing.T) {
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status: %d", resp.StatusCode)
+	}
+}
+
+func TestSocketServer_watchdog_ExitsOnContextCancel(t *testing.T) {
+	t.Parallel()
+
+	srv := NewSocketServer(filepath.Join(t.TempDir(), "watchdog.sock"))
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	done := make(chan struct{})
+
+	go func() {
+		srv.watchdog(ctx, 10*time.Millisecond)
+		close(done)
+	}()
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("watchdog did not exit after context cancellation")
+	}
+}
+
+func TestSocketServer_watchdog_SendsWatchdogNotifications(t *testing.T) {
+	// Cannot run in parallel with other tests because t.Setenv is not allowed
+	// under t.Parallel in Go 1.26.
+
+	// Create a temporary unixgram socket to stand in for systemd's NOTIFY_SOCKET.
+	tmpDir := t.TempDir()
+
+	socketPath := filepath.Join(tmpDir, "notify.sock")
+
+	pc, err := (&net.ListenConfig{}).ListenPacket(t.Context(), "unixgram", socketPath)
+	if err != nil {
+		t.Fatalf("create unixgram listener: %v", err)
+	}
+
+	defer func() { _ = pc.Close() }()
+
+	t.Setenv("NOTIFY_SOCKET", socketPath)
+
+	srv := NewSocketServer(socketPath)
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	defer cancel()
+
+	go srv.watchdog(ctx, 20*time.Millisecond)
+
+	buf := make([]byte, 1024)
+
+	if err := pc.SetReadDeadline(time.Now().Add(500 * time.Millisecond)); err != nil {
+		t.Fatalf("set read deadline: %v", err)
+	}
+
+	n, _, err := pc.ReadFrom(buf)
+	if err != nil {
+		t.Fatalf("did not receive watchdog notification: %v", err)
+	}
+
+	msg := string(buf[:n])
+	if !strings.Contains(msg, "WATCHDOG=1") {
+		t.Errorf("expected WATCHDOG=1 notification, got %q", msg)
 	}
 }
