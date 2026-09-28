@@ -1,0 +1,263 @@
+version: "2"
+run:
+  timeout: 5m
+  go: 1.27.1
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  issues-exit-code: 1
+output:
+  formats: {}
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - cyclop
+    - decorder
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - embeddedstructfieldcheck
+    - err113
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godoclint
+    - godot
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard_v2
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - interfacebloat
+    - intrange
+    - iotamixing
+    - ireturn
+    - loggercheck
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - mnd
+    - modernize
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - testpackage
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unqueryvet
+    - usestdlibvars
+    - usetesting
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl_v5
+    - zerologlint
+  settings:
+    cyclop:
+      max-complexity: 12
+    errcheck:
+      exclude-functions:
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (*sql.DB).Close
+        - (*sql.Rows).Close
+        - (*sql.Stmt).Close
+        - (net.Conn).Close
+        - (*net.TCPConn).Close
+        - (*net.UDPConn).Close
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Print
+        - fmt.Printf
+        - fmt.Println
+        - (*strings.Builder).WriteString
+        - (*bytes.Buffer).WriteString
+    funlen:
+      lines: 200
+      statements: 100
+    ginkgolinter:
+      forbid-focus-container: true
+      forbid-spec-pollution: true
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+    gomoddirectives:
+      replace-local: true
+    gosec:
+      excludes:
+        - G304
+        - G115
+    ireturn:
+      allow:
+        - error
+        - empty
+        - anon
+        - stdlib
+        - generic
+        - github.com/larsartmann/go-codec.Codec$
+        - github.com/LarsArtmann/project-discovery-sdk/domain.Enricher$
+        - github.com/LarsArtmann/project-discovery-sdk.DiscoveryClient$
+        - github.com/samber/ro.Subscription$
+    makezero:
+      always: false
+    mnd:
+      ignored-numbers:
+        - "0"
+        - "1"
+        - "2"
+        - "100"
+    revive:
+      rules:
+        - disabled: true
+          name: exported
+        - disabled: true
+          name: package-comments
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+    testifylint:
+      disable:
+        - go-require
+      enable-all: true
+    varnamelen:
+      ignore-map-index-ok: true
+      ignore-names:
+        - err
+        - ok
+        - tt
+        - fn
+        - t
+        - i
+        - m
+        - g
+        - a
+        - b
+        - v
+        - w
+        - r
+        - s
+        - ln
+        - wg
+      ignore-type-assert-ok: true
+    wrapcheck:
+      ignore-sigs:
+        - .Errorf(
+        - errors.New(
+        - errors.Unwrap(
+        - errors.Join(
+        - .Wrap(
+        - .Wrapf(
+        - .WithMessage(
+        - .WithMessagef(
+        - .WithStack(
+  exclusions:
+    generated: lax
+    rules:
+      # flightrecorder_test.go: runtime/trace permits exactly one active
+      # recorder per process — these tests cannot run in parallel with each
+      # other, so paralleltest findings there are deliberate serial tests.
+      - path: flightrecorder_test\.go
+        linters:
+          - paralleltest
+      - path: _test\.go
+        linters:
+          - exhaustruct
+          - testpackage
+          - gochecknoglobals
+          - funlen
+          - cyclop
+          - goconst
+          - forcetypeassert
+          - gosec
+          - errcheck
+          - wrapcheck
+          - ireturn
+          - recvcheck
+          - contextcheck
+          - containedctx
+          - exhaustive
+          - varnamelen
+      - path: _test\.go
+        text: unused
+        linters:
+          - unused
+    paths:
+      - \.gen\.go$
+      - _templ\.go$
+      - vendor/
+formatters:
+  enable:
+    - gci
+    - goimports
+    - gofumpt
+    - golines
+  settings:
+    golines:
+      max-len: 120
+  exclusions:
+    generated: lax
+    paths:
+      - _templ\.go$
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 10
