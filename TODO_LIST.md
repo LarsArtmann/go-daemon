@@ -23,19 +23,19 @@
 | Bump `go-codec` v0.2.0 → v0.3.0 to restore pin parity with the primary consumer (AGENTS.md   | 🔴 `TODO`    | High   | 30min  | `go.mod:7` pins v0.2.0; pdd `go.mod:19` uses v0.3.0. Dependency change → repair vendorHash with                      |
 | pins this dep "to versions the primary consumer uses")                                       |              |        |        | `buildflow -s nix-hash-fix --fix`; never hand-paste                                                                  |
 | Emit `Vary: Accept` from `WriteEncoded` when the response encoding depends on `Accept`       | 🔴 `TODO`    | High   | 1h     | `write.go:47` sets Content-Type but nothing sets Vary; HTTP-caching correctness gap for dual-encoding consumers      |
-| Commit the negotiation-overhaul closeout with a descriptive message before any shared-branch | 🔴 `TODO`    | High   | 5min   | The overhaul itself landed only as heuristic auto-commits (`f1d1fe8`, `694b7ba`); the closeout (compile fix, lint    |
-| push                                                                                         |              |        |        | fixes, docs) is uncommitted at audit time                                                                            |
+| Commit the negotiation-overhaul closeout with a descriptive message before any shared-branch | 🔴 `TODO`    | High   | 5min   | Overhaul + closeout exist only as six consecutive heuristic auto-commit messages on master;                          |
+| push                                                                                         |              |        |        | history nowhere explains WHY the negotiation contract changed                                                        |
 
 ## Medium Impact
 
 | Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                         |
 | ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| Pin negotiation policy edge cases with tests: `application/*` wildcard echo, duplicate-q    | 🔴 `TODO` | High   | 2h     | Behavior is defined in doc comments (`negotiation.go:25-33,84-102`) but untested: 18 table cases don't cover     |
+| Pin negotiation policy edge cases with tests: `application/*` wildcard echo, duplicate-q    | 🔴 `TODO` | High   | 2h     | Behavior is defined in doc comments (`negotiation.go:25-33,84-110`) but untested: 18 table cases don't cover     |
 | precedence (`;q=0.5, ;q=0.9`), empty/`=`-less `q` params, never-serve-refused property, and |           |        |        | duplicates/empty-q/wildcard-type; a golden matrix makes regressions reviewable                                   |
 | a golden behavior-matrix table                                                              |           |        |        |                                                                                                                  |
-| Fuzz the Accept parser: `ResolveResponseCodec`/`acceptQuality`/`qualityParam` (seed browser | 🔴 `TODO` | High   | 1h     | Hand-rolled header parser `negotiation.go:89-142`; fuzz precedent exists (`FuzzParseSSEData`, `sse_test.go:231`) |
+| Fuzz the Accept parser: `ResolveResponseCodec`/`acceptQuality`/`qualityParam` (seed browser | 🔴 `TODO` | High   | 1h     | Hand-rolled header parser `negotiation.go:89-148`; fuzz precedent exists (`FuzzParseSSEData`, `sse_test.go:231`) |
 | headers, `*/*`, junk q-values, huge lists)                                                  |           |        |        |                                                                                                                  |
-| Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, | 🔴 `TODO` | Med    | 1h     | Unexported helpers `negotiation.go:104-142` are only exercised transitively via the four exported functions      |
+| Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, | 🔴 `TODO` | Med    | 1h     | Unexported helpers `negotiation.go:113-148` are only exercised transitively via the four exported functions      |
 | `Q=` case, near-miss suffixes)                                                              |           |        |        |                                                                                                                  |
 
 ## Low Impact

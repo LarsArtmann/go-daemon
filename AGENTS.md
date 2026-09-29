@@ -93,8 +93,8 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   flake's `vendorHash`, and only `nix build` catches the mismatch —
   build/test/vet/lint all stay green. Repair with
   `buildflow -s nix-hash-fix --fix` (works here despite no .buildflow.yml);
-  never hand-paste the `got:` hash. This bit the sseparse adoption:
-  `36c2ecc` shipped with a stale hash, repaired in `cbd962f`.
+  never hand-paste the `got:` hash. This bit the sseparse adoption, which
+  shipped with a stale hash and needed a follow-up repair commit.
 - **The auto-commit daemon commits regardless of compile state.** Run a
   gate (build or gopls diagnostics) SYNCHRONOUSLY immediately after writing
   code — a verification that is backgrounded, deferred to "after this
