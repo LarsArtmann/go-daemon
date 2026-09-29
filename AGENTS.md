@@ -23,8 +23,10 @@ nix fmt
 ```
 
 The toolchain is `go 1.27.1`; `encoding/json/v2` is GA there (no
-GOEXPERIMENT needed). Ambient go on this machine may be older — use
-`nix shell nixpkgs#go_1_27` or `nix develop` when bare `go` refuses.
+GOEXPERIMENT needed). Ambient go on this machine may be older — run
+`go version` (or trust the editor's gopls diagnostics) BEFORE writing code;
+bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
+`nix develop`.
 
 ## Conventions
 
@@ -40,6 +42,15 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
   names stable — do not rename the suffixes.
 - `golangci-lint fmt` auto-fixes formatting-class findings (gci/golines);
   run it before `run`.
+- Table-driven tests lead with a `name` field; positional row literals must
+  match the struct arity — mismatched rows fail the build, so gate before
+  finishing (see Gotchas: auto-commit).
+- Content-negotiation policy (exact matching, RFC 6839 suffixes, q-value
+  ranking, tie → CBOR, `q=0` refusal substitution, wildcard neutrality) is a
+  documented contract in the `negotiation.go` doc comments — change behavior,
+  doc comment, and the `TestResolveResponseCodec` table together. Both
+  resolvers are live consumer-facing API (project-discovery-daemon calls
+  them from its content_negotiation.go).
 
 ## Dependencies (all public — resolves via Go proxy)
 
@@ -84,3 +95,15 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
   `buildflow -s nix-hash-fix --fix` (works here despite no .buildflow.yml);
   never hand-paste the `got:` hash. This bit the sseparse adoption:
   `36c2ecc` shipped with a stale hash, repaired in `cbd962f`.
+- **The auto-commit daemon commits regardless of compile state.** Run a
+  gate (build or gopls diagnostics) SYNCHRONOUSLY immediately after writing
+  code — a verification that is backgrounded, deferred to "after this
+  analysis", or interrupted ships a broken commit to master (the
+  negotiation overhaul landed a test table that never compiled).
+- `nix develop` can take minutes on cold nix evaluation before the command
+  inside even starts — a slow start is not a hang; run long gates in the
+  background and keep verification in the foreground of the session.
+- Timestamped status reports land in `docs/status/` (auto-committed). They
+  are snapshots, not backlogs: the next docs pass must harvest each
+  report's section-f items into TODO_LIST/ROADMAP (verify against code
+  first — many are already done by later sessions).

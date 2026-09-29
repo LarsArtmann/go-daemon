@@ -78,7 +78,7 @@
 **Nothing destroyed; no data loss; no revert needed.** Honestly assessing the category:
 
 1. **Committed-but-unverified code is the closest thing to a fuck-up.** The auto-commit daemon captured `f1d1fe8` mid-verification-gap: if the race test fails or the linter finds real issues, the broken state is now in history on `master` and will need a fix-forward commit. Not data loss (old implementation recoverable via git), but process debt: the daemon committed what I never confirmed.
-2. **The interrupted-turn state.** The session ended its last action waiting on a background shell with the user given no status — this report is the first complete accounting. The lesson: verification must complete (or explicitly fail) *before* any turn ends, not be backgrounded across the finish line.
+2. **The interrupted-turn state.** The session ended its last action waiting on a background shell with the user given no status — this report is the first complete accounting. The lesson: verification must complete (or explicitly fail) _before_ any turn ends, not be backgrounded across the finish line.
 3. Explicitly checked and cleared: no force-push, no revert of others' work, no dependency changes (so no vendorHash risk per AGENTS.md — `nix build` unaffected by pure-Go edits), no secrets, no API breaks (all four exported functions kept signatures).
 
 ## e) WHAT WE SHOULD IMPROVE
@@ -91,9 +91,10 @@
 
 ## f) Up to 50 things we should get done next
 
-*Sorted by impact. Items 1–8 are this session's direct closeout; 9–20 are negotiation-specific; 21–40 are repo-level items surfaced by this session; 41–50 are cross-repo. Most of 21+ are ROADMAP fuel, not commitments (per status-report skill: large N is a brainstorm).*
+_Sorted by impact. Items 1–8 are this session's direct closeout; 9–20 are negotiation-specific; 21–40 are repo-level items surfaced by this session; 41–50 are cross-repo. Most of 21+ are ROADMAP fuel, not commitments (per status-report skill: large N is a brainstorm)._
 
 **Closeout of this change (blocking):**
+
 1. Read background shell 003 output → confirm `go test ./... -race -count=1` green under Go 1.27 (nix develop).
 2. If red: fix forward, re-test, then write the CHANGELOG entry with the real outcome.
 3. Run `buildflow --build-mode dev` (lint + race tests, delegated gate).
@@ -159,4 +160,4 @@
 
 ---
 
-*Verification status at write time: code committed (`f1d1fe8`), tests UNKNOWN (background nix develop run, shell 003, no output yet), lint NOT run, CHANGELOG NOT written. Do not treat this change as done until items 1–5 of section f are closed.*
+_Verification status at write time: code committed (`f1d1fe8`), tests UNKNOWN (background nix develop run, shell 003, no output yet), lint NOT run, CHANGELOG NOT written. Do not treat this change as done until items 1–5 of section f are closed._
