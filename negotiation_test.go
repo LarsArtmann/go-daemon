@@ -21,6 +21,12 @@ func TestResolveRequestCodec(t *testing.T) {
 		{"JSON with charset", "application/json; charset=utf-8", codec.EncodingJSON},
 		{"CBOR", "application/cbor", codec.EncodingCBOR},
 		{"CBOR with param", "application/cbor; foo=bar", codec.EncodingCBOR},
+		{"CBOR structured suffix", "application/vnd.acme+cbor", codec.EncodingCBOR},
+		{"uppercase CBOR", "APPLICATION/CBOR; charset=utf-8", codec.EncodingCBOR},
+		{"CBOR-seq is not plain CBOR", "application/cbor-seq", codec.EncodingJSON},
+		{"near-miss type is not CBOR", "application/cborx", codec.EncodingJSON},
+		{"JSON structured suffix", "application/vnd.acme+json", codec.EncodingJSON},
+		{"uppercase JSON", "APPLICATION/JSON", codec.EncodingJSON},
 		{"empty defaults to JSON", "", codec.EncodingJSON},
 		{"unknown defaults to JSON", "application/xml", codec.EncodingJSON},
 	}
@@ -57,6 +63,18 @@ func TestResolveResponseCodec(t *testing.T) {
 		{"no Accept, CBOR req → CBOR", "", codec.CBORCodec{}, codec.EncodingCBOR},
 		{"wildcard, CBOR req → CBOR", "*/*", codec.CBORCodec{}, codec.EncodingCBOR},
 		{"wildcard, JSON req → JSON", "*/*", codec.JSONCodec{}, codec.EncodingJSON},
+		{"q prefers CBOR", "application/json;q=0.5, application/cbor;q=0.9", codec.JSONCodec{}, codec.EncodingCBOR},
+		{"q prefers JSON", "application/cbor;q=0.1, application/json;q=0.9", codec.CBORCodec{}, codec.EncodingJSON},
+		{"tie prefers CBOR", "application/json, application/cbor", codec.JSONCodec{}, codec.EncodingCBOR},
+		{"suffix selects CBOR", "application/vnd.acme+cbor", codec.JSONCodec{}, codec.EncodingCBOR},
+		{"suffix selects JSON", "application/vnd.acme+json", codec.CBORCodec{}, codec.EncodingJSON},
+		{"JSON patch suffix selects JSON", "application/json-patch+json", codec.CBORCodec{}, codec.EncodingJSON},
+		{"q=0 refuses JSON, JSON req substituted", "application/json;q=0", codec.JSONCodec{}, codec.EncodingCBOR},
+		{"q=0 refuses JSON, CBOR req echoed", "application/json;q=0", codec.CBORCodec{}, codec.EncodingCBOR},
+		{"q=0 refuses CBOR, CBOR req substituted", "application/cbor;q=0", codec.CBORCodec{}, codec.EncodingJSON},
+		{"q=0 both refused echoes request", "application/cbor;q=0, application/json;q=0", codec.JSONCodec{}, codec.EncodingJSON},
+		{"unparseable q counts as 1", "application/cbor;q=abc", codec.JSONCodec{}, codec.EncodingCBOR},
+		{"browser-style header echoes request", "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8", codec.JSONCodec{}, codec.EncodingJSON},
 	}
 
 	for _, tt := range tests {
@@ -190,6 +208,9 @@ func TestCodecForContentType(t *testing.T) {
 		{"application/json", codec.EncodingJSON},
 		{"", codec.EncodingJSON},
 		{"application/xml", codec.EncodingJSON},
+		{"CBOR structured suffix", "application/vnd.acme+cbor", codec.EncodingCBOR},
+		{"uppercase", "Application/JSON", codec.EncodingJSON},
+		{"near-miss type falls back", "application/cborx", codec.EncodingJSON},
 	}
 
 	for _, tt := range tests {
