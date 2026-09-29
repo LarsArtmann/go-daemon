@@ -48,11 +48,13 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
 - `github.com/larsartmann/go-flightrecorder` — execution-trace buffering
 - `github.com/coreos/go-systemd/v22` — sd_notify + watchdog
 - `github.com/prometheus/client_golang` — flight-recorder metrics
-- `github.com/larsartmann/go-sse/sseparse` — PENDING (not yet adopted):
-  zero-dep SSE parser + spec corpus. Blocked on its v0.1.0 tag (split from
-  ssetest 2026-09-29, release tracked in go-sse TODO_LIST). Once tagged,
-  migrate sse_test.go's framing tests to `sseparse.MustCorpus` vectors;
-  keep the maxEventBytes/large-event tests (go-daemon-specific surface).
+- `github.com/larsartmann/go-sse/sseparse` — ADOPTED as a test-only
+  dependency (v0.1.0; public module, so no GOPRIVATE/vendor cost):
+  `sse_conformance_test.go` asserts `ParseSSEData` against
+  `sseparse.MustCorpus(t)` — the WPT/Chromium wire-format vectors, projected
+  onto the framing surface (dispatched data payloads). The corpus is the
+  oracle: a vector disagreement means the parser is wrong. The go-daemon-
+  specific maxEventBytes/large-event tests stay in `sse_test.go`.
 
 ## Gotchas
 

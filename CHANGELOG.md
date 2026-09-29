@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `TestParseSSEData_CorpusConformance` — the framing parser is now asserted
+  against the WPT/Chromium-derived conformance corpus exported by
+  `github.com/larsartmann/go-sse/sseparse` (test-only dependency, v0.1.0):
+  every vector's wire bytes run through `ParseSSEData` and the dispatched
+  data payloads must match the corpus's expected events exactly. The corpus
+  found three real spec gaps in the parser, all fixed: CR/LF/CRLF are all
+  line terminators (CRLF counts as one — `bufio.Scanner` only split on LF),
+  a bare `data` line with no colon contributes an empty payload line (it was
+  silently dropped), and exactly one leading UTF-8 BOM is stripped (it used
+  to poison the first field name). Over-cap lines now fail wrapping
+  `bufio.ErrTooLong` (`errors.Is`-matchable).
+
 ## [0.1.1] - 2026-09-29
 
 ### Fixed
