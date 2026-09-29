@@ -12,14 +12,14 @@ your daemon.
 
 ## What you get
 
-| Piece | What it does |
-|---|---|
-| `SocketServer` | Full socket lifecycle: stale-socket cleanup, directory creation, `0600` permissions, `sd_notify` READY/STOPPING/WATCHDOG, graceful drain, socket removal on every exit path — with an explicit, ordered `Lifecycle` hook contract (`Startup` → `OnListen` → `OnShutdown` → startup cleanup) |
-| `NewHTTPClient` / `NewHTTPClientNoTimeout` | Unix-socket HTTP transports for clients (pooled keep-alive connections tuned for socket traffic; no-timeout variant for SSE streams) |
-| `ResolveRequestCodec` / `ResolveResponseCodec` / `WriteEncoded` / `WriteJSON` / `WriteErrorf` | JSON/CBOR content negotiation with pooled-buffer response writes |
-| `ParseSSEData` | WHATWG-spec SSE framing (multi-line data joins, heartbeat comments, one-space stripping, size limits) — decode payloads your way |
-| `FlightRecorder` | Execution-trace flight recorder with slow-request auto-trigger, Prometheus metrics, and a rate-limited `TraceHandler` that streams `go tool trace` files |
-| `IsSocketAlive` | Liveness probe to detect whether a socket file belongs to a live daemon |
+| Piece                                                                                         | What it does                                                                                                                                                                                                                                                                                |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SocketServer`                                                                                | Full socket lifecycle: stale-socket cleanup, directory creation, `0600` permissions, `sd_notify` READY/STOPPING/WATCHDOG, graceful drain, socket removal on every exit path — with an explicit, ordered `Lifecycle` hook contract (`Startup` → `OnListen` → `OnShutdown` → startup cleanup) |
+| `NewHTTPClient` / `NewHTTPClientNoTimeout`                                                    | Unix-socket HTTP transports for clients (pooled keep-alive connections tuned for socket traffic; no-timeout variant for SSE streams)                                                                                                                                                        |
+| `ResolveRequestCodec` / `ResolveResponseCodec` / `WriteEncoded` / `WriteJSON` / `WriteErrorf` | JSON/CBOR content negotiation with pooled-buffer response writes                                                                                                                                                                                                                            |
+| `ParseSSEData`                                                                                | WHATWG-spec SSE framing (multi-line data joins, heartbeat comments, one-space stripping, size limits) — decode payloads your way                                                                                                                                                            |
+| `FlightRecorder`                                                                              | Execution-trace flight recorder with slow-request auto-trigger, Prometheus metrics, and a rate-limited `TraceHandler` that streams `go tool trace` files                                                                                                                                    |
+| `IsSocketAlive`                                                                               | Liveness probe to detect whether a socket file belongs to a live daemon                                                                                                                                                                                                                     |
 
 ## Quickstart
 
