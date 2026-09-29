@@ -78,3 +78,9 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — use
   NOT drop the in-flight capture. The regression test
   (`TestFlightRecorder_SlowRequestTrigger_CancelledContext`) fails
   deterministically if someone removes the detachment; do not weaken it.
+- Adding or bumping ANY dependency (even a test-only one) changes the
+  flake's `vendorHash`, and only `nix build` catches the mismatch —
+  build/test/vet/lint all stay green. Repair with
+  `buildflow -s nix-hash-fix --fix` (works here despite no .buildflow.yml);
+  never hand-paste the `got:` hash. This bit the sseparse adoption:
+  `36c2ecc` shipped with a stale hash, repaired in `cbd962f`.
