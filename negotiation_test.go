@@ -72,9 +72,19 @@ func TestResolveResponseCodec(t *testing.T) {
 		{"q=0 refuses JSON, JSON req substituted", "application/json;q=0", codec.JSONCodec{}, codec.EncodingCBOR},
 		{"q=0 refuses JSON, CBOR req echoed", "application/json;q=0", codec.CBORCodec{}, codec.EncodingCBOR},
 		{"q=0 refuses CBOR, CBOR req substituted", "application/cbor;q=0", codec.CBORCodec{}, codec.EncodingJSON},
-		{"q=0 both refused echoes request", "application/cbor;q=0, application/json;q=0", codec.JSONCodec{}, codec.EncodingJSON},
+		{
+			"q=0 both refused echoes request",
+			"application/cbor;q=0, application/json;q=0",
+			codec.JSONCodec{},
+			codec.EncodingJSON,
+		},
 		{"unparseable q counts as 1", "application/cbor;q=abc", codec.JSONCodec{}, codec.EncodingCBOR},
-		{"browser-style header echoes request", "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8", codec.JSONCodec{}, codec.EncodingJSON},
+		{
+			"browser-style header echoes request",
+			"text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8",
+			codec.JSONCodec{},
+			codec.EncodingJSON,
+		},
 	}
 
 	for _, tt := range tests {

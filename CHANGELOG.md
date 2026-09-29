@@ -21,6 +21,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to poison the first field name). Over-cap lines now fail wrapping
   `bufio.ErrTooLong` (`errors.Is`-matchable).
 
+### Changed
+
+- JSON/CBOR content negotiation now negotiates exactly. Media-type matching
+  is exact after parameter stripping and lowercasing (`application/cbor-seq`
+  and `application/cborx` no longer decode as CBOR), RFC 6839 structured
+  suffixes resolve to their base encoding (`application/vnd.acme+cbor` is
+  CBOR, `application/json-patch+json` is JSON), the `Accept` header's
+  q-values rank JSON vs CBOR with a tie preferring CBOR, and a `q=0`
+  refusal is never served: when the request codec is the refused encoding,
+  the other supported encoding is served instead. Wildcards (`*/*`) still
+  express no preference and echo the request codec. All exported signatures
+  are unchanged, and both `ResolveRequestCodec` and `ResolveResponseCodec`
+  remain live consumer-facing API (project-discovery-daemon calls both).
+
+### Fixed
+
+- The content-negotiation test table from the q-value overhaul shipped with
+  rows that did not compile (missing table field); fixed forward, and the
+  full race suite is verified green.
+
 ## [0.1.1] - 2026-09-29
 
 ### Fixed
