@@ -59,7 +59,7 @@
               pname = "go-daemon";
               version = self.shortRev or self.dirtyShortRev or "dev";
               inherit src;
-              vendorHash = "sha256-suJrj7qlxK5Dzr7w+GrX6m3eHKVY7QnUh0gww/f4Y/M=";
+              vendorHash = "sha256-Y2lZeBxujG/tvcT8XntqRr1VhZRevY1bLYtHt4ekenw=";
               proxyVendor = false;
               env = {
                 inherit
