@@ -86,8 +86,13 @@ func substituteForRefused(refused, reqCodec codec.Codec) codec.Codec {
 // whether the header mentions the encoding at all. Wildcards are ignored:
 // they express no preference between JSON and CBOR, so callers fall back to
 // the request codec when only wildcards match.
-func acceptQuality(accept string, enc codec.Encoding) (quality float64, mentioned bool) {
-	for _, entry := range strings.Split(accept, ",") {
+func acceptQuality(accept string, enc codec.Encoding) (float64, bool) {
+	var (
+		quality   float64
+		mentioned bool
+	)
+
+	for entry := range strings.SplitSeq(accept, ",") {
 		mediaType, params, _ := strings.Cut(entry, ";")
 		if !matchesEncoding(bareMediaType(mediaType), enc) {
 			continue
@@ -127,7 +132,7 @@ func bareMediaType(headerVal string) string {
 // list, defaulting to 1 (RFC 9110 §12.5.1) and clamping to [0, 1];
 // unparseable values count as 1.
 func qualityParam(params string) float64 {
-	for _, param := range strings.Split(params, ";") {
+	for param := range strings.SplitSeq(params, ";") {
 		name, value, ok := strings.Cut(strings.TrimSpace(param), "=")
 		if !ok || strings.TrimSpace(name) != "q" {
 			continue

@@ -16,8 +16,8 @@ your daemon.
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SocketServer`                                                                                | Full socket lifecycle: stale-socket cleanup, directory creation, `0600` permissions, `sd_notify` READY/STOPPING/WATCHDOG, graceful drain, socket removal on every exit path — with an explicit, ordered `Lifecycle` hook contract (`Startup` → `OnListen` → `OnShutdown` → startup cleanup) |
 | `NewHTTPClient` / `NewHTTPClientNoTimeout`                                                    | Unix-socket HTTP transports for clients (pooled keep-alive connections tuned for socket traffic; no-timeout variant for SSE streams)                                                                                                                                                        |
-| `ResolveRequestCodec` / `ResolveResponseCodec` / `WriteEncoded` / `WriteJSON` / `WriteErrorf` | JSON/CBOR content negotiation with pooled-buffer response writes                                                                                                                                                                                                                            |
-| `ParseSSEData`                                                                                | WHATWG-spec SSE framing (multi-line data joins, heartbeat comments, one-space stripping, size limits) — decode payloads your way                                                                                                                                                            |
+| `ResolveRequestCodec` / `ResolveResponseCodec` / `WriteEncoded` / `WriteJSON` / `WriteErrorf` | JSON/CBOR content negotiation — exact media-type matching with RFC 6839 structured suffixes, Accept q-value ranking, `q=0` refusals never served — with pooled-buffer response writes                                           |
+| `ParseSSEData`                                                                                | WHATWG-spec SSE framing (multi-line data joins, heartbeat comments, one-space stripping, size limits) — pinned to the WPT/Chromium conformance corpus, so every dispatch decision is checked against the same vectors that test the reference parser — decode payloads your way               |
 | `FlightRecorder`                                                                              | Execution-trace flight recorder with slow-request auto-trigger, Prometheus metrics, and a rate-limited `TraceHandler` that streams `go tool trace` files                                                                                                                                    |
 | `IsSocketAlive`                                                                               | Liveness probe to detect whether a socket file belongs to a live daemon                                                                                                                                                                                                                     |
 
@@ -42,9 +42,19 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
-		godmn.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-	})
+		mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
+			godmn.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		})
+		mux.HandleFunc("POST /items", func(w http.ResponseWriter, r *http.Request) {
+			var item Item
+			if err := godmn.ResolveRequestCodec(r).Decode(body(r), &item); err != nil {
+				godmn.WriteErrorf(w, http.StatusBadRequest, "decode request: %v", err)
+				return
+			}
+			// Respond in whatever encoding the client asked for (Accept),
+			// falling back to the request's encoding.
+			godmn.WriteEncoded(w, http.StatusCreated, godmn.ResolveResponseCodec(r, godmn.ResolveRequestCodec(r)), item)
+		})
 
 	if err := srv.Start(context.Background(), godmn.Lifecycle{Handler: mux}); err != nil {
 		slog.Error("daemon exited", "error", err)
