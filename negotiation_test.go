@@ -200,14 +200,15 @@ func TestCodecForContentType(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
+		name   string
 		header string
 		want   codec.Encoding
 	}{
-		{"application/cbor", codec.EncodingCBOR},
-		{"application/cbor; charset=utf-8", codec.EncodingCBOR},
-		{"application/json", codec.EncodingJSON},
-		{"", codec.EncodingJSON},
-		{"application/xml", codec.EncodingJSON},
+		{"plain CBOR", "application/cbor", codec.EncodingCBOR},
+		{"CBOR with param", "application/cbor; charset=utf-8", codec.EncodingCBOR},
+		{"plain JSON", "application/json", codec.EncodingJSON},
+		{"empty defaults to JSON", "", codec.EncodingJSON},
+		{"unknown defaults to JSON", "application/xml", codec.EncodingJSON},
 		{"CBOR structured suffix", "application/vnd.acme+cbor", codec.EncodingCBOR},
 		{"uppercase", "Application/JSON", codec.EncodingJSON},
 		{"near-miss type falls back", "application/cborx", codec.EncodingJSON},
