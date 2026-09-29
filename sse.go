@@ -44,23 +44,25 @@ func ParseSSEData(r io.Reader, maxEventBytes int, emit func(data string)) error 
 		maxEventBytes = DefaultMaxSSEBytes
 	}
 
-	lr := newSSELineReader(r, maxEventBytes)
+	reader := newSSELineReader(r, maxEventBytes)
 
 	var dataLines []string
 
 	for {
-		raw, err := lr.next()
+		raw, err := reader.next()
 		if err != nil {
 			return fmt.Errorf("parse sse stream: %w", err)
 		}
+
 		if raw == nil {
 			break
 		}
 
 		line := string(raw)
-		if lr.isFirstLine {
+
+		if reader.isFirstLine {
 			line = strings.TrimPrefix(line, "\ufeff")
-			lr.isFirstLine = false
+			reader.isFirstLine = false
 		}
 
 		if line == "" { // Event boundary.
@@ -73,6 +75,7 @@ func ParseSSEData(r io.Reader, maxEventBytes int, emit func(data string)) error 
 		}
 
 		name, value, hasColon := strings.Cut(line, ":")
+
 		if !hasColon {
 			// A line with no colon is a field whose value is empty.
 			value = ""
@@ -95,8 +98,8 @@ func ParseSSEData(r io.Reader, maxEventBytes int, emit func(data string)) error 
 // CR, LF, and CRLF terminate a line, and CRLF counts as one terminator
 // (a lone CR must not be glued to the following line's first byte).
 type sseLineReader struct {
-	r           io.Reader
-	max         int    // maximum line length in bytes
+	reader      io.Reader
+	limit       int    // maximum line length in bytes
 	chunk       []byte // read buffer
 	pending     []byte // bytes read but not yet consumed
 	line        []byte // the line being assembled (without terminator)
@@ -104,12 +107,12 @@ type sseLineReader struct {
 	eof         bool // the underlying reader has returned io.EOF
 }
 
-func newSSELineReader(r io.Reader, max int) *sseLineReader {
-	hint := min(sseReadChunk, max)
+func newSSELineReader(r io.Reader, limit int) *sseLineReader {
+	hint := min(sseReadChunk, limit)
 
 	return &sseLineReader{
-		r:           r,
-		max:         max,
+		reader:      r,
+		limit:       limit,
 		chunk:       make([]byte, sseReadChunk),
 		pending:     make([]byte, 0, hint),
 		line:        make([]byte, 0, hint),
@@ -120,62 +123,97 @@ func newSSELineReader(r io.Reader, max int) *sseLineReader {
 // next returns the next line without its terminator, or nil at clean EOF.
 // A final line with no terminator before EOF is still returned (EOF ends a
 // line). Read errors and over-cap lines are returned as errors.
-func (lr *sseLineReader) next() ([]byte, error) {
-	lr.line = lr.line[:0]
+func (s *sseLineReader) next() ([]byte, error) {
+	s.line = s.line[:0]
 
 	for {
-		for len(lr.pending) > 0 {
-			b := lr.pending[0]
-			lr.pending = lr.pending[1:]
-
-			switch b {
-			case '\n':
-				return lr.line, nil
-			case '\r':
-				if len(lr.pending) == 0 && !lr.eof {
-					if err := lr.fill(); err != nil {
-						return nil, err
-					}
-				}
-				if len(lr.pending) > 0 && lr.pending[0] == '\n' {
-					lr.pending = lr.pending[1:] // CRLF is one terminator.
-				}
-
-				return lr.line, nil
-			default:
-				lr.line = append(lr.line, b)
-				if len(lr.line) > lr.max {
-					return nil, fmt.Errorf("line exceeds %d bytes: %w", lr.max, bufio.ErrTooLong)
-				}
-			}
+		done, err := s.consumePending()
+		if err != nil {
+			return nil, err
 		}
 
-		if lr.eof {
-			if len(lr.line) > 0 {
-				return lr.line, nil
-			}
-
-			return nil, nil
+		if done {
+			return s.line, nil
 		}
 
-		if err := lr.fill(); err != nil {
+		if s.eof {
+			return s.lineAtEOF(), nil
+		}
+
+		if err := s.fill(); err != nil {
 			return nil, err
 		}
 	}
 }
 
-// fill reads one chunk into pending; io.EOF just marks the end, hard errors
-// are returned.
-func (lr *sseLineReader) fill() error {
-	n, err := lr.r.Read(lr.chunk)
+// consumePending drains pending bytes into line until a terminator ends the
+// line. done reports whether a full line was produced.
+func (s *sseLineReader) consumePending() (bool, error) {
+	for len(s.pending) > 0 {
+		b := s.pending[0]
+		s.pending = s.pending[1:]
+
+		if b == '\n' {
+			return true, nil
+		}
+
+		if b == '\r' {
+			if err := s.consumeCR(); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+
+		s.line = append(s.line, b)
+
+		if len(s.line) > s.limit {
+			return false, fmt.Errorf("line exceeds %d bytes: %w", s.limit, bufio.ErrTooLong)
+		}
+	}
+
+	return false, nil
+}
+
+// consumeCR finishes a CR-terminated line, swallowing a following LF so
+// CRLF counts as one terminator.
+func (s *sseLineReader) consumeCR() error {
+	if len(s.pending) == 0 && !s.eof {
+		if err := s.fill(); err != nil {
+			return err
+		}
+	}
+
+	if len(s.pending) > 0 && s.pending[0] == '\n' {
+		s.pending = s.pending[1:] // CRLF is one terminator.
+	}
+
+	return nil
+}
+
+// lineAtEOF closes out a final line that has no terminator: a non-empty
+// remainder is the last line, an empty one means clean EOF (nil).
+func (s *sseLineReader) lineAtEOF() []byte {
+	if len(s.line) > 0 {
+		return s.line
+	}
+
+	return nil
+}
+
+// fill reads one chunk into pending; io.EOF just marks the end, hard read
+// errors are wrapped and returned.
+func (s *sseLineReader) fill() error {
+	n, err := s.reader.Read(s.chunk)
+
 	if n > 0 {
-		lr.pending = append(lr.pending, lr.chunk[:n]...)
+		s.pending = append(s.pending, s.chunk[:n]...)
 	}
 
 	if err == io.EOF {
-		lr.eof = true
+		s.eof = true
 	} else if err != nil {
-		return err
+		return fmt.Errorf("read: %w", err)
 	}
 
 	return nil

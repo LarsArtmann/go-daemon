@@ -20,12 +20,11 @@ func TestParseSSEData_CorpusConformance(t *testing.T) {
 	t.Parallel()
 
 	for _, vector := range sseparse.MustCorpus(t) {
-		vector := vector
-
 		t.Run(vector.Name, func(t *testing.T) {
 			t.Parallel()
 
 			var got []string
+
 			err := ParseSSEData(strings.NewReader(vector.Wire), 0, func(data string) {
 				got = append(got, data)
 			})
@@ -34,6 +33,7 @@ func TestParseSSEData_CorpusConformance(t *testing.T) {
 			}
 
 			want := make([]string, 0, len(vector.Events))
+
 			for _, evt := range vector.Events {
 				want = append(want, evt.Data)
 			}
@@ -41,6 +41,7 @@ func TestParseSSEData_CorpusConformance(t *testing.T) {
 			if len(got) != len(want) {
 				t.Fatalf("dispatch count: got %d (%q), want %d (%q)", len(got), got, len(want), want)
 			}
+
 			for i := range want {
 				if got[i] != want[i] {
 					t.Fatalf("payload %d: got %q, want %q (full: got %q, want %q)", i, got[i], want[i], got, want)
