@@ -155,6 +155,75 @@ func TestWriteEncoded_JSONAndCBOR(t *testing.T) {
 	}
 }
 
+func TestWriteEncoded_VaryAccept(t *testing.T) {
+	t.Parallel()
+
+	assertVary := func(t *testing.T, w *httptest.ResponseRecorder, want ...string) {
+		t.Helper()
+
+		vary := w.Header().Values("Vary")
+		if len(vary) != len(want) {
+			t.Fatalf("Vary: got %v, want %v", vary, want)
+		}
+
+		for i := range want {
+			if vary[i] != want[i] {
+				t.Fatalf("Vary: got %v, want %v", vary, want)
+			}
+		}
+	}
+
+	t.Run("unconditional even without Accept", func(t *testing.T) {
+		t.Parallel()
+
+		w := httptest.NewRecorder()
+		WriteEncoded(w, http.StatusOK, codec.JSONCodec{}, codecTestPayload{})
+
+		assertVary(t, w, "Accept")
+	})
+
+	t.Run("handler-declared variance combines", func(t *testing.T) {
+		t.Parallel()
+
+		w := httptest.NewRecorder()
+		w.Header().Add("Vary", "Authorization")
+		WriteEncoded(w, http.StatusOK, codec.CBORCodec{}, codecTestPayload{})
+
+		assertVary(t, w, "Authorization", "Accept")
+	})
+
+	t.Run("error responses carry Vary", func(t *testing.T) {
+		t.Parallel()
+
+		w := httptest.NewRecorder()
+		WriteErrorf(w, http.StatusBadRequest, "boom")
+
+		assertVary(t, w, "Accept")
+	})
+
+	t.Run("negotiated round trip", func(t *testing.T) {
+		t.Parallel()
+
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/discover", nil)
+		req.Header.Set("Accept", "application/cbor")
+
+		w := httptest.NewRecorder()
+		respCodec := ResolveResponseCodec(req, ResolveRequestCodec(req))
+		WriteEncoded(
+			w,
+			http.StatusOK,
+			respCodec,
+			codecTestPayload{Projects: []codecTestProject{{Path: "/x", DirName: "x"}}},
+		)
+
+		if ct := w.Header().Get("Content-Type"); ct != "application/cbor" {
+			t.Fatalf("content-type: got %q, want application/cbor", ct)
+		}
+
+		assertVary(t, w, "Accept")
+	})
+}
+
 func TestCBOR_RoundTrip(t *testing.T) {
 	t.Parallel()
 

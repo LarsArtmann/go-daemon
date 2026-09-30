@@ -19,11 +19,7 @@
 
 | Task                                                                                         | Status       | Impact | Effort | Evidence                                                                                                             |
 | -------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------- |
-| Cut the next release tag (v0.1.2 vs v0.2.0 — negotiation is a behavior change, SSE were bug  | 🔵 `BLOCKED` | High   | 30min  | 3 spec fixes + q-value overhaul sit untagged on master (`36c2ecc`, `f1d1fe8`); plain `go get` still resolves v0.1.1. |
-| fixes): tag, then floor-bump pdd's go.mod and coordinate its nix rev-pin                     |              |        |        | Needs user decision; pdd uses a rev pin so nothing is broken meanwhile                                               |
 | Emit `Vary: Accept` from `WriteEncoded` when the response encoding depends on `Accept`       | 🔴 `TODO`    | High   | 1h     | `write.go:47` sets Content-Type but nothing sets Vary; HTTP-caching correctness gap for dual-encoding consumers      |
-| Commit the negotiation-overhaul closeout with a descriptive message before any shared-branch | 🔴 `TODO`    | High   | 5min   | Overhaul + closeout exist only as six consecutive heuristic auto-commit messages on master;                          |
-| push                                                                                         |              |        |        | history nowhere explains WHY the negotiation contract changed                                                        |
 
 ## Medium Impact
 
