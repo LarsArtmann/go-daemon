@@ -1,5 +1,9 @@
 # Status Report — 2026-09-29 11:35 — go-daemon Content-Negotiation Correctness Overhaul (q-values, exact media-type matching, refusal honoring) — Code Done, Verification UNVERIFIED
 
+> **Annotated 2026-09-30:** struck items below are resolved (verdict inline, with evidence);
+unstruck items remain open — most live in other repos' queues (go-sse, go-datastar,
+buildflow, crush-config), a few are standing event rows in this repo's TODO_LIST.
+
 **Session scope:** Q&A on go-codec negotiation design → cross-repo comparison (go-daemon) → judgment call ("worth extracting to go-codec?") → user-directed improvement of `go-daemon/negotiation.go` → implementation + test extension → **verification interrupted before completing**.
 
 **Repos touched this session:** `go-daemon` (2 files changed), `go-codec` (read-only analysis), `go-cqrs-lite` (read-only duplication check).
@@ -95,62 +99,62 @@ _Sorted by impact. Items 1–8 are this session's direct closeout; 9–20 are ne
 
 **Closeout of this change (blocking):**
 
-1. Read background shell 003 output → confirm `go test ./... -race -count=1` green under Go 1.27 (nix develop).
-2. If red: fix forward, re-test, then write the CHANGELOG entry with the real outcome.
-3. Run `buildflow --build-mode dev` (lint + race tests, delegated gate).
-4. `golangci-lint fmt` then `golangci-lint run ./...` per repo AGENTS.md if running tools directly instead.
-5. Write `CHANGELOG.md` Unreleased → `Changed` entry (q-aware ranking; tie prefers CBOR; q=0 never returned; RFC 6839 suffixes; exact matching — `application/cbor-seq` now JSON-fallback, `application/json-patch+json` now matched as JSON by suffix; wildcards still echo; JSON remains the universal fallback).
-6. Hand-make one descriptive commit covering the negotiation overhaul (supersede the heuristic auto-commit narrative) before any shared-branch push.
-7. Audit README negotiation row + doc.go line 5 against new semantics; update if they overpromise/understate.
-8. Harvest this section into `TODO_LIST.md` (items 9–50 route to TODO vs ROADMAP).
+~~1. Read background shell 003 output → confirm `go test ./... -race -count=1` green under Go 1.27 (nix develop).~~ done — race suite green that session; re-verified at every gate since (e0ee7b0)
+~~2. If red: fix forward, re-test, then write the CHANGELOG entry with the real outcome.~~ done — it WAS red (test-table compile break); fixed forward and the CHANGELOG records the real outcome (e0ee7b0)
+~~3. Run `buildflow --build-mode dev` (lint + race tests, delegated gate).~~ NOT-DO — gates run directly per repo AGENTS.md; buildflow owns nix-hash-fix here
+~~4. `golangci-lint fmt` then `golangci-lint run ./...` per repo AGENTS.md if running tools directly instead.~~ done — fmt+run at 0 issues in every gate since the overhaul
+~~5. Write `CHANGELOG.md` Unreleased → `Changed` entry (q-aware ranking; tie prefers CBOR; q=0 never returned; RFC 6839 suffixes; exact matching — `application/cbor-seq` now JSON-fallback, `application/json-patch+json` now matched as JSON by suffix; wildcards still echo; JSON remains the universal fallback).~~ done — CHANGELOG Changed entry (14dd7bf), shipped in v0.2.0
+~~6. Hand-make one descriptive commit covering the negotiation overhaul (supersede the heuristic auto-commit narrative) before any shared-branch push.~~ done — superseded by the annotated v0.2.0 tag (narrative explains WHY) plus descriptive per-task commits
+~~7. Audit README negotiation row + doc.go line 5 against new semantics; update if they overpromise/understate.~~ done — README/doc.go audited and rewritten (378607f); Accept* boundary note added (8b62fe3)
+~~8. Harvest this section into `TODO_LIST.md` (items 9–50 route to TODO vs ROADMAP).~~ done — 2026-09-30 docs-health audit harvested this section
 
 **Negotiation-specific:**
-9. Add `application/*` wildcard test (pin no-preference echo behavior).
-10. Add `Vary: Accept` emission (probably in `WriteEncoded`/write.go, not negotiation.go) when response encoding depends on Accept.
-11. Decide + document both-refused semantics: echo (today) vs 406-capable API variant (`ResolveResponseCodecErr` or similar).
-12. Fuzz `ResolveResponseCodec`/`acceptQuality` (seed with browser headers, curl `*/*`, junk q-values, huge lists).
-13. Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, `q` with spaces, `Q=` uppercase param name — RFC says q is case-insensitive? verify and pin).
-14. Pin first-q-wins vs last-q-wins for duplicate entries (`application/json;q=0.5, application/json;q=0.9`).
-15. Decide whether `text/*`, `application/*` should ever count as JSON-adjacent (today: never; document).
-16. Property test: response encoding is always one of {JSON, CBOR, reqCodec.Encoding} and never a q=0-refused one.
-17. Confirm `qualityParam` on `;q=` (empty value) and `;q` (no `=`) behaves as documented (falls to 1).
-18. Consider Accept-Charset / Accept-Encoding pass-through policy (out of scope today — document the boundary).
-19. Snapshot the full behavior matrix as a golden test table (tiny, but makes policy regressions reviewable in PRs).
-20. If project-discovery-daemon needs strict RFC behavior later: add q-precedence (specific > `application/*` > `*/*`) behind an option, not by default.
+~~9. Add `application/*` wildcard test (pin no-preference echo behavior).~~ done — application/* rows in the golden matrix (e0ee7b0)
+~~10. Add `Vary: Accept` emission (probably in `WriteEncoded`/write.go, not negotiation.go) when response encoding depends on Accept.~~ done — WriteEncoded emits Vary: Accept (93f839c)
+~~11. Decide + document both-refused semantics: echo (today) vs 406-capable API variant (`ResolveResponseCodecErr` or similar).~~ done — echo documented and pinned; 406-variant stays ON_HOLD in FEATURES.md / ROADMAP open question 1
+~~12. Fuzz `ResolveResponseCodec`/`acceptQuality` (seed with browser headers, curl `*/*`, junk q-values, huge lists).~~ done — FuzzResolveResponseCodec, 5m / 22M execs, zero failures (fc818e5)
+~~13. Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, `q` with spaces, `Q=` uppercase param name — RFC says q is case-insensitive? verify and pin).~~ done — helper unit tests (b9c98eb); q verified case-insensitive per RFC 9110 §5.6.2.1 and fixed (e0ee7b0)
+~~14. Pin first-q-wins vs last-q-wins for duplicate entries (`application/json;q=0.5, application/json;q=0.9`).~~ done — decided: max-wins across duplicate entries, first-valid-q within one entry (e0ee7b0, b9c98eb)
+~~15. Decide whether `text/*`, `application/*` should ever count as JSON-adjacent (today: never; document).~~ done — decided: wildcards are never JSON-adjacent; documented in acceptQuality's doc comment and pinned by wildcard rows
+~~16. Property test: response encoding is always one of {JSON, CBOR, reqCodec.Encoding} and never a q=0-refused one.~~ done — property matrix plus fuzz invariants (e0ee7b0, fc818e5)
+~~17. Confirm `qualityParam` on `;q=` (empty value) and `;q` (no `=`) behaves as documented (falls to 1).~~ done — empty q= and bare ;q pinned in the helper table (b9c98eb)
+~~18. Consider Accept-Charset / Accept-Encoding pass-through policy (out of scope today — document the boundary).~~ done — Accept-Charset/Accept-Encoding boundary documented in ResolveResponseCodec's doc comment (8b62fe3)
+~~19. Snapshot the full behavior matrix as a golden test table (tiny, but makes policy regressions reviewable in PRs).~~ done — TestResolveResponseCodec_GoldenMatrix (e0ee7b0)
+~~20. If project-discovery-daemon needs strict RFC behavior later: add q-precedence (specific > `application/*` > `*/*`) behind an option, not by default.~~ routed — ROADMAP theme 1 (option-gated precedence for strict-RFC consumers)
 
 **Repo-level (surfaced this session):**
-21. Resolve ghost-API status of `ResolveResponseCodec` (see question 1) — wire it into `WriteEncoded`'s optional path, keep as consumer API with proof, or shrink.
-22. Verify sseparse corpus conformance re-run tracking (commit `eb52a75` mentioned tracking; confirm the TODO items exist and are current).
-23. Confirm `docs/status/` reports are harvested into TODO_LIST (prior report 09-01 + this one).
-24. Add "run toolchain check (`go version` vs go.mod) before writing code" to AGENTS.md Essential Commands preamble (bit this session).
-25. Document in AGENTS.md that `nix develop` test runs can take minutes on cold evaluation (background-job expectations).
-26. Consider committing status reports promptly (auto-commit daemon handles it, but the meaningful-message gap applies to reports too).
-27. Review `write.go` for the same exactness class of bugs (it writes Content-Type — does anything parse it back with loose matching? `CodecForContentType` is the only reader — already fixed).
-28. Audit `transport.go`/`sse.go` for other `strings.Contains`-style header matching (same bug class as the old negotiation code).
-29. Check whether `socket.go` or lifecycle code assumes a single codec/encoding anywhere (mechanism/policy boundary review).
-30. Add a negotiation example to doc.go or README (ResolveRequestCodec → handler → WriteEncoded round-trip).
-31. Consider a `negotiation_example_test.go` (godoc examples run as tests — go-codec convention; go-daemon could adopt for this API).
-32. Review test naming convention (arrows in names are established style — keep consistent for new cases; done this session).
-33. Evaluate golangci-lint's `wsl`/vertical-spacing findings on the new switch style; conform or suppress deliberately.
-34. Ensure `min`/`max` builtins don't trip the mirrored lint config (Go 1.21+ builtins; config predating them may complain — verify).
-35. Check `.golangci.yml` for a `gorm`/`nilnil`-style linter that might object to returning concrete codecs (unlikely; verify once).
-36. Add negotiation policy to a short ADR or doc comment block if the team treats doc comments as insufficient contract.
-37. Track go-codec dependency pin policy: negotiation now leans harder on `Encoding` string tags — confirm the pin (AGENTS.md: "pinned to versions the primary consumer uses").
-38. Version the behavior change: decide whether this lands in 0.1.2 or 0.2.0 (behavior change vs additive — SemVer call, see question 3).
-39. After any future dependency bump: `buildflow -s nix-hash-fix --fix` (AGENTS.md gotcha — not needed this session, zero dep changes).
-40. Re-run the flight-recorder mutex discipline check if any new tests touch recorders (none do this session — noted for future negotiation-over-SSE tests).
+~~21. Resolve ghost-API status of `ResolveResponseCodec` (see question 1) — wire it into `WriteEncoded`'s optional path, keep as consumer API with proof, or shrink.~~ done — verified live consumer API: pdd content_negotiation.go:15-19 calls both resolvers; CHANGELOG states it
+~~22. Verify sseparse corpus conformance re-run tracking (commit `eb52a75` mentioned tracking; confirm the TODO items exist and are current).~~ done — standing event-driven TODO_LIST row (re-run on next sseparse tag)
+~~23. Confirm `docs/status/` reports are harvested into TODO_LIST (prior report 09-01 + this one).~~ done — 2026-09-30 harvest
+~~24. Add "run toolchain check (`go version` vs go.mod) before writing code" to AGENTS.md Essential Commands preamble (bit this session).~~ done — AGENTS.md toolchain pre-check note (14dd7bf)
+~~25. Document in AGENTS.md that `nix develop` test runs can take minutes on cold evaluation (background-job expectations).~~ done — AGENTS.md nix-develop cold-eval gotcha (14dd7bf)
+~~26. Consider committing status reports promptly (auto-commit daemon handles it, but the meaningful-message gap applies to reports too).~~ done — auto-daemon commits reports promptly; docs/status convention noted in AGENTS.md
+~~27. Review `write.go` for the same exactness class of bugs (it writes Content-Type — does anything parse it back with loose matching? `CodecForContentType` is the only reader — already fixed).~~ done — reviewed: CodecForContentType is the only Content-Type reader and now matches exactly
+~~28. Audit `transport.go`/`sse.go` for other `strings.Contains`-style header matching (same bug class as the old negotiation code).~~ done — transport.go/sse.go audited in the 2026-09-30 full-file pass; no loose matching; SSE parser is corpus-pinned
+~~29. Check whether `socket.go` or lifecycle code assumes a single codec/encoding anywhere (mechanism/policy boundary review).~~ done — socket/lifecycle reviewed: codec-agnostic, mechanism only
+~~30. Add a negotiation example to doc.go or README (ResolveRequestCodec → handler → WriteEncoded round-trip).~~ done — README quickstart carries the round trip, compile-checked by nix run .#check-readme (9975100)
+~~31. Consider a `negotiation_example_test.go` (godoc examples run as tests — go-codec convention; go-daemon could adopt for this API).~~ done — negotiation_example_test.go runnable godoc example (8b62fe3)
+~~32. Review test naming convention (arrows in names are established style — keep consistent for new cases; done this session).~~ done — arrow-named rows kept consistent
+~~33. Evaluate golangci-lint's `wsl`/vertical-spacing findings on the new switch style; conform or suppress deliberately.~~ done — conformed; wsl findings fixed, 0 issues
+~~34. Ensure `min`/`max` builtins don't trip the mirrored lint config (Go 1.21+ builtins; config predating them may complain — verify).~~ done — min/max builtins verified against the config; 0 issues
+~~35. Check `.golangci.yml` for a `gorm`/`nilnil`-style linter that might object to returning concrete codecs (unlikely; verify once).~~ done — verified; 0 issues
+~~36. Add negotiation policy to a short ADR or doc comment block if the team treats doc comments as insufficient contract.~~ NOT-DO — doc comments plus the golden matrix are the agreed contract form here (AGENTS.md convention bullet)
+~~37. Track go-codec dependency pin policy: negotiation now leans harder on `Encoding` string tags — confirm the pin (AGENTS.md: "pinned to versions the primary consumer uses").~~ done — pin parity restored: v0.3.0 on both sides (dependabot 370426e + 90f86db)
+~~38. Version the behavior change: decide whether this lands in 0.1.2 or 0.2.0 (behavior change vs additive — SemVer call, see question 3).~~ done — v0.2.0 (tag 3c66d39)
+~~39. After any future dependency bump: `buildflow -s nix-hash-fix --fix` (AGENTS.md gotcha — not needed this session, zero dep changes).~~ done — applied in pdd on 2026-09-30 (buildflow nix-hash-fix); standing AGENTS.md rule
+~~40. Re-run the flight-recorder mutex discipline check if any new tests touch recorders (none do this session — noted for future negotiation-over-SSE tests).~~ done — flightRecorderMu discipline documented in AGENTS.md; no recorder test bypassed it since
 
 **Cross-repo:**
-41. Verify project-discovery-daemon compiles against the new negotiation.go (exported signatures unchanged, so expected green — verify anyway; it pins go-daemon by rev per AGENTS.md).
-42. Confirm project-discovery-daemon's actual call sites for the ghost-API question (feeds item 21).
-43. go-cqrs-lite: decide if `transport/http` should adopt Accept-based negotiation or stay transform-only (drives the go-codec extraction trigger).
-44. go-codec: record the extraction trigger (second consumer) in its TODO_LIST/ROADMAP when it fires — not before.
+~~41. Verify project-discovery-daemon compiles against the new negotiation.go (exported signatures unchanged, so expected green — verify anyway; it pins go-daemon by rev per AGENTS.md).~~ done — pdd race suite and nix test green against v0.2.0 (a92d625)
+~~42. Confirm project-discovery-daemon's actual call sites for the ghost-API question (feeds item 21).~~ done — call sites confirmed: content_negotiation.go:15-19
+~~43. go-cqrs-lite: decide if `transport/http` should adopt Accept-based negotiation or stay transform-only (drives the go-codec extraction trigger).~~ routed — ROADMAP theme 3 (go-cqrs-lite transport decision)
+~~44. go-codec: record the extraction trigger (second consumer) in its TODO_LIST/ROADMAP when it fires — not before.~~ routed — ROADMAP theme 3 + explicit non-goal (extraction trigger)
 45. go-codec: the dangling `testdata_test.go` gopls `unusedfunc` diagnostic observed this session — route to that repo's queue (not this repo's job).
-46. Coordinate go-daemon version bump with the primary consumer's nix rev pin (AGENTS.md: every bump re-derives vendorHash there).
+~~46. Coordinate go-daemon version bump with the primary consumer's nix rev pin (AGENTS.md: every bump re-derives vendorHash there).~~ done — coordinated on 2026-09-30: floor v0.2.0 + rev-pin at the tag commit (a92d625 in pdd)
 47. Share the "auto-commit flattens meaningful history" mitigation: descriptive commit habit (item 6) is a fleet-wide lesson from go-codec AGENTS.md.
-48. If a second transport (e.g. WebSocket in go-cqrs-lite) needs codec resolution, extract media-type mapping to go-codec — the pre-agreed trigger.
-49. Consider publishing go-daemon negotiation patterns back into project-discovery-daemon docs (it's the extracted origin).
-50. Post-closeout: re-run this session's cross-repo grep (`negotiat` across the fleet) to confirm no third implementation appears.
+~~48. If a second transport (e.g. WebSocket in go-cqrs-lite) needs codec resolution, extract media-type mapping to go-codec — the pre-agreed trigger.~~ routed — ROADMAP theme 3 and explicit non-goal (before a second consumer exists)
+~~49. Consider publishing go-daemon negotiation patterns back into project-discovery-daemon docs (it's the extracted origin).~~ routed — ROADMAP theme 3 (feed patterns back into pdd docs)
+~~50. Post-closeout: re-run this session's cross-repo grep (`negotiat` across the fleet) to confirm no third implementation appears.~~ done — cross-repo grep re-run 2026-09-30: only go-daemon plus pdd call sites; no third implementation
 
 ## g) Questions I CANNOT figure out myself
 

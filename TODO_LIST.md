@@ -5,7 +5,9 @@
 > [ROADMAP.md](ROADMAP.md). Items are ranked by impact; status is verified, not assumed.
 > Last harvested 2026-09-30 from `docs/status/2026-09-29_09-01_*`,
 > `docs/status/2026-09-29_11-35_*`, and `docs/status/2026-09-30_00-43_*`
-> (sections f), each item re-verified against code.
+> (sections f), each item re-verified against code. All bounded items closed
+> 2026-09-30 by the release-hardening pass (see CHANGELOG [Unreleased] and
+> the v0.2.0 tag); both 09-29 reports are now annotated inline.
 
 ## Status legend
 
@@ -15,21 +17,9 @@
 | 🟡 `IN_PROGRESS` | Actively being worked on.                               |
 | 🔵 `BLOCKED`     | External dependency or decision needed before it moves. |
 
-## High Impact
-
-| Task                                                                                         | Status       | Impact | Effort | Evidence                                                                                                             |
-| -------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------- |
-
-## Medium Impact
+## Standing (event-driven)
 
 | Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                         |
-| ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| ANNOTATE both 2026-09-29 status reports inline (strike each now-resolved §f item with its   | 🔴 `TODO` | Med    | 45min  | Their §f items are partially resolved by the 09-30 audit but carry no `done at` markers; docs-health ANNOTATE    |
-| evidence), then decide ARCHIVE per docs-health classification                               |           |        |        | resolves inline, never rewrites; completeness gate: every archived file carries strikethroughs                   |
-
-## Low Impact
-
-| Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                             |
-| ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | -------------------------------------------------------------------------------------------------------------------- |
+| -------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------- |
 | Re-run `TestParseSSEData_CorpusConformance` after the next sseparse tag: bump the test-only | 🔴 `TODO` | Med    | 15min  | Oracle at `sse_conformance_test.go:19` vs `sseparse.MustCorpus`; keeps the framing parser pinned to the WPT/Chromium |
-| dependency and re-run conformance                                                           |           |        |        | corpus (source: go-sse 07:03 report §f24)                                                                            |
+| dependency and re-run conformance                                                           |           |        |        | corpus (source: go-sse 07:03 report §f24). sseparse is still at v0.1.0 as of 2026-09-30 — verified via the module proxy. |
