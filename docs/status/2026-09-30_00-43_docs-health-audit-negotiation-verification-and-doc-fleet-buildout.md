@@ -65,10 +65,10 @@ gap stands, tracked in TODO_LIST.
    `negotiation_test.go:211-213` all session; CLI gates (compiler + golangci-lint
    CLI) are authoritative and green, but I never restarted the LSP server to
    clear the noise — a future session could misread it as a real failure.
-~~3. **The "descriptive commit" TODO row needed three rewordings** as the daemon~~ superseded — the annotated v0.2.0 tag narrative plus descriptive per-task commits (85c82ef, 9975100, …) replaced the heuristic-message gap
+   ~~3. **The "descriptive commit" TODO row needed three rewordings** as the daemon~~ superseded — the annotated v0.2.0 tag narrative plus descriptive per-task commits (85c82ef, 9975100, …) replaced the heuristic-message gap
    kept committing underneath it (its final wording is daemon-proof, but the
    underlying gap — six consecutive heuristic messages with no WHY — is open).
-~~4. **ANNOTATE of the two prior status reports is not done**: their §f items are~~ done — 85c82ef (both 2026-09-29 reports annotated inline, 72 resolutions)
+   ~~4. **ANNOTATE of the two prior status reports is not done**: their §f items are~~ done — 85c82ef (both 2026-09-29 reports annotated inline, 72 resolutions)
    now partially resolved by this session (compile fix, lint, CHANGELOG, README,
    harvest), but no inline `done at` markers exist in either report. A future
    docs-health ANNOTATE pass should strike each resolved item inline (HARVEST

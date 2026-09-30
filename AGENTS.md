@@ -146,3 +146,14 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   rewrites the URL scheme to `npm:` — restore the `plugins.dprint.dev`
   URL scheme when using it, and confirm zero churn with `nix fmt` after
   any pin bump.
+- **Never strike a whole markdown table row with surrounding tildes**
+  (`~~| a | b |~~`): dprint's markdown plugin reparses the row and
+  mangles it into a stray `~~` cell, dropping the closing marker (this
+  destroyed the 09-01 report's annotations once and again during the
+  2026-09-30 docs-health pass). Strike each cell's content individually
+  (`| ~~a~~ verdict | ~~b~~ |`) — the `annotate-rows.py` format — which
+  survives dprint realignment. Always re-run `check-rows.py` after any
+  dprint pass over annotated reports.
+- **`nix fmt` only formats nix files** (it is `nixfmt-tree`). Markdown,
+  json, and yaml formatting is dprint: `nix develop -c dprint fmt`
+  (bare `dprint` outside the devShell cannot resolve the plugin URLs).
