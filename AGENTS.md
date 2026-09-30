@@ -19,6 +19,7 @@ go vet ./...
 golangci-lint run ./...     # strict config mirrored from project-discovery-daemon
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
+nix flake check
 nix fmt
 ```
 
@@ -107,3 +108,32 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   are snapshots, not backlogs: the next docs pass must harvest each
   report's section-f items into TODO_LIST/ROADMAP (verify against code
   first — many are already done by later sessions).
+- **Atomic edits under the auto-commit daemon.** The daemon snapshots the
+  tree roughly every minute, so a multi-step edit sequence (write, then
+  fix, then gate) can ship a broken intermediate to master — it did once
+  with a non-compiling README example (`caf1f0c`, fixed `378607f`). Make
+  each edit self-consistent and compile-clean on its own, gate
+  synchronously between steps, and commit descriptively yourself when the
+  change matters (heuristic `chore: auto-commit` messages flatten history).
+- **Re-read files after any formatter run.** `nix fmt` / dprint /
+  `golangci-lint fmt` rewrite files in place, and edit-tool stale-read
+  checks will bounce the next edit until the file is re-read. Budget a
+  re-view after every formatting pass.
+- **Stale LSP diagnostics: trust the CLI gates.** `golangci_lint_ls` can
+  keep showing phantom errors for lines that were already fixed (it did
+  for a whole session after the negotiation test fix). When LSP output
+  contradicts a green CLI gate, `lsp_restart` clears the cache; the CLI
+  (`golangci-lint run`, `go build`) is authoritative.
+- **Dependabot + vendorHash policy: close-and-adopt.** Dependabot's
+  dependency PRs update go.mod/go.sum but never the flake's `vendorHash`,
+  so their CI nix jobs fail by design. The agreed handling: merge the
+  bump, then immediately repair with `buildflow -s nix-hash-fix --fix`
+  (here or in the consuming repo) and commit the hash — do not wait for
+  or ask the bot to fix nix. (2026-09-30: the go-codec v0.3.0 bump landed
+  this way and the hash repaired cleanly.)
+- dprint plugin pins are versioned URLs in `dprint.json` (checked
+  2026-09-30: json 0.25.0, pretty_yaml 0.6.0, markdown 0.24.0,
+  dockerfile 0.6.0). `dprint config update` refreshes versions but also
+  rewrites the URL scheme to `npm:` — restore the `plugins.dprint.dev`
+  URL scheme when using it, and confirm zero churn with `nix fmt` after
+  any pin bump.
