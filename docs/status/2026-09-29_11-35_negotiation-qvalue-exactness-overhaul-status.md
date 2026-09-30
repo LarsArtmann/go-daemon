@@ -1,8 +1,8 @@
 # Status Report — 2026-09-29 11:35 — go-daemon Content-Negotiation Correctness Overhaul (q-values, exact media-type matching, refusal honoring) — Code Done, Verification UNVERIFIED
 
 > **Annotated 2026-09-30:** struck items below are resolved (verdict inline, with evidence);
-unstruck items remain open — most live in other repos' queues (go-sse, go-datastar,
-buildflow, crush-config), a few are standing event rows in this repo's TODO_LIST.
+> unstruck items remain open — most live in other repos' queues (go-sse, go-datastar,
+> buildflow, crush-config), a few are standing event rows in this repo's TODO_LIST.
 
 **Session scope:** Q&A on go-codec negotiation design → cross-repo comparison (go-daemon) → judgment call ("worth extracting to go-codec?") → user-directed improvement of `go-daemon/negotiation.go` → implementation + test extension → **verification interrupted before completing**.
 

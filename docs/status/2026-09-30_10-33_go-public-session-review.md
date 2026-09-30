@@ -19,7 +19,7 @@
 
 ### What did I forget?
 
-1. **I wrote an external claim from memory in the first answer — and it was wrong.** I cited "takama/go-daemon" as a naming collision. The real repo is `takama/daemon`. I loaded `verify-external-claims` only in the *next* turn, when the claim became the subject. The skill's chat-time gate says: verify or hedge at the moment of writing. I violated it, then executed the correction. This is the skill's documented failure mode, performed while the skill sat available.
+1. **I wrote an external claim from memory in the first answer — and it was wrong.** I cited "takama/go-daemon" as a naming collision. The real repo is `takama/daemon`. I loaded `verify-external-claims` only in the _next_ turn, when the claim became the subject. The skill's chat-time gate says: verify or hedge at the moment of writing. I violated it, then executed the correction. This is the skill's documented failure mode, performed while the skill sat available.
 2. **The secret scan covered the working tree only.** For a go-public decision the relevant surface is the full git history — every auto-committed state, deleted files, `result/`/`coverage/` artifacts. I flagged the history audit as "required before flipping" (correct) but did not run even the cheap version (`git log --all --diff-filter=D --name-only`, blob grep over `rev-list --all`) when I had the tool budget for it.
 3. **The `.git` exclusion in my working-tree grep was broken** — `grep -v '^\.git/'` never matched because paths were absolute. Harmless (no false conclusion drawn), but sloppy command construction.
 4. **"dependabot group bumps already running" was inferred** from one commit message ("bump the actions group"), never checked against `.github/dependabot.yml`.
@@ -83,30 +83,30 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 
 ### f) Things to get done next (impact-ordered; grounded in this session)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | Full git-history secret scan (all blobs, deleted files, artifacts) | blocking for flip | S |
-| 2 | Decide API stability policy: v0.x no-promises vs v1 freeze | blocking contract decision | owner |
-| 3 | Name decision: keep `go-daemon` vs rename pre-flip | hard to reverse post-flip | owner |
-| 4 | Decide visibility of `docs/status/`, `docs/planning/`, `reports/` in a public repo (scrub history vs keep) | privacy | owner |
-| 5 | Verify sevlyar/go-daemon + search pkg.go.dev for `go-daemon` module collisions | naming input | XS |
-| 6 | Check `.github/dependabot.yml` exists and works post-flip | maintenance | XS |
-| 7 | Dependency license inventory from go.sum (Apache-2.0 notices etc.) | legal hygiene | S |
-| 8 | Read README end-to-end; polish for external audience | first impression | S |
-| 9 | Run full gate (build/test/vet/lint/`nix build`) so the flip happens on green master | safety | S |
-| 10 | After flip: update AGENTS.md Gotchas (GOPRIVATE/mkPreparedSource notes become obsolete) | doc truth | XS |
-| 11 | After flip: primary consumer drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash (go-ecosystem-upgrade skill) | the actual payoff | M |
-| 12 | Tag a release via go-release flow so the module proxy indexes cleanly | publishing | S |
-| 13 | Verify pkg.go.dev rendering after proxy pickup | publishing | XS |
-| 14 | Confirm `ci.yml` has no private-runner or secret assumptions | safety | XS |
-| 15 | Set GitHub repo description + topics for discoverability | marketing | XS |
-| 16 | SECURITY.md + issue templates | polish | S |
-| 17 | Consider website-launch docs site (established pattern) | marketing | M |
-| 18 | Write the reusable pre-publish audit script (task 1 generalized) | leverage | M |
-| 19 | Harvest this report's section f into TODO_LIST.md (docs-health, next session) | doc loop | S |
-| 20 | Re-verify go-codec/go-sse/go-flightrecorder pins are current before public exposure | hygiene | XS |
-| 21 | Confirm auto-commit daemon state at flip time (it commits regardless of compile state — flip only when green) | safety | XS |
-| 22 | Optional: launch announcement draft (only if wanted) | marketing | S |
+| #  | Task                                                                                                                                      | Impact                     | Effort |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------ |
+| 1  | Full git-history secret scan (all blobs, deleted files, artifacts)                                                                        | blocking for flip          | S      |
+| 2  | Decide API stability policy: v0.x no-promises vs v1 freeze                                                                                | blocking contract decision | owner  |
+| 3  | Name decision: keep `go-daemon` vs rename pre-flip                                                                                        | hard to reverse post-flip  | owner  |
+| 4  | Decide visibility of `docs/status/`, `docs/planning/`, `reports/` in a public repo (scrub history vs keep)                                | privacy                    | owner  |
+| 5  | Verify sevlyar/go-daemon + search pkg.go.dev for `go-daemon` module collisions                                                            | naming input               | XS     |
+| 6  | Check `.github/dependabot.yml` exists and works post-flip                                                                                 | maintenance                | XS     |
+| 7  | Dependency license inventory from go.sum (Apache-2.0 notices etc.)                                                                        | legal hygiene              | S      |
+| 8  | Read README end-to-end; polish for external audience                                                                                      | first impression           | S      |
+| 9  | Run full gate (build/test/vet/lint/`nix build`) so the flip happens on green master                                                       | safety                     | S      |
+| 10 | After flip: update AGENTS.md Gotchas (GOPRIVATE/mkPreparedSource notes become obsolete)                                                   | doc truth                  | XS     |
+| 11 | After flip: primary consumer drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash (go-ecosystem-upgrade skill) | the actual payoff          | M      |
+| 12 | Tag a release via go-release flow so the module proxy indexes cleanly                                                                     | publishing                 | S      |
+| 13 | Verify pkg.go.dev rendering after proxy pickup                                                                                            | publishing                 | XS     |
+| 14 | Confirm `ci.yml` has no private-runner or secret assumptions                                                                              | safety                     | XS     |
+| 15 | Set GitHub repo description + topics for discoverability                                                                                  | marketing                  | XS     |
+| 16 | SECURITY.md + issue templates                                                                                                             | polish                     | S      |
+| 17 | Consider website-launch docs site (established pattern)                                                                                   | marketing                  | M      |
+| 18 | Write the reusable pre-publish audit script (task 1 generalized)                                                                          | leverage                   | M      |
+| 19 | Harvest this report's section f into TODO_LIST.md (docs-health, next session)                                                             | doc loop                   | S      |
+| 20 | Re-verify go-codec/go-sse/go-flightrecorder pins are current before public exposure                                                       | hygiene                    | XS     |
+| 21 | Confirm auto-commit daemon state at flip time (it commits regardless of compile state — flip only when green)                             | safety                     | XS     |
+| 22 | Optional: launch announcement draft (only if wanted)                                                                                      | marketing                  | S      |
 
 ### g) Questions I can NOT figure out myself
 
@@ -118,12 +118,12 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 
 ## Verification status (external claims this session)
 
-| Claim | Status | Source |
-|---|---|---|
-| `takama/daemon` exists; "A daemon package for use with Go (golang) services" | verified | `gh repo view takama/daemon`, 2026-09-30 |
-| MIT, 1,978 stars, not archived, last push 2023-12-01 | verified | `gh api repos/takama/daemon`, 2026-09-30 |
-| `Kind` = UserAgent/GlobalAgent/GlobalDaemon/SystemDaemon; `New(name, desc, kind, deps...)` | verified | `daemon.go` via GitHub contents API, 2026-09-30 |
-| takama shells out to systemctl / generates unit files | **inference** — README example + Kind docs only; source of exec paths not read | — |
-| sevlyar/go-daemon is the double-fork lib actually named "go-daemon" | unverified (hedged, not load-bearing) | — |
-| dependabot runs on this repo | inferred from one commit message; config file not checked | — |
-| No secrets in working tree | verified for tree, **not** for history | local grep, 2026-09-30 |
+| Claim                                                                                      | Status                                                                         | Source                                          |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `takama/daemon` exists; "A daemon package for use with Go (golang) services"               | verified                                                                       | `gh repo view takama/daemon`, 2026-09-30        |
+| MIT, 1,978 stars, not archived, last push 2023-12-01                                       | verified                                                                       | `gh api repos/takama/daemon`, 2026-09-30        |
+| `Kind` = UserAgent/GlobalAgent/GlobalDaemon/SystemDaemon; `New(name, desc, kind, deps...)` | verified                                                                       | `daemon.go` via GitHub contents API, 2026-09-30 |
+| takama shells out to systemctl / generates unit files                                      | **inference** — README example + Kind docs only; source of exec paths not read | —                                               |
+| sevlyar/go-daemon is the double-fork lib actually named "go-daemon"                        | unverified (hedged, not load-bearing)                                          | —                                               |
+| dependabot runs on this repo                                                               | inferred from one commit message; config file not checked                      | —                                               |
+| No secrets in working tree                                                                 | verified for tree, **not** for history                                         | local grep, 2026-09-30                          |

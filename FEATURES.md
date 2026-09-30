@@ -33,14 +33,14 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Content negotiation
 
-| Feature                                                                                            | Status           | Evidence                                                                                             |
-| -------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| Request codec from `Content-Type`: JSON default, CBOR via exact or RFC 6839 structured-suffix type | FULLY_FUNCTIONAL | `negotiation.go` (`ResolveRequestCodec`, `matchesEncoding`, `CodecForContentType`); tests `TestResolveRequestCodec`, `TestCodecForContentType`, `TestMatchesEncoding` |
-| Response codec from `Accept`: q-value ranking, tie prefers CBOR, `q=0` refusals never served,      | FULLY_FUNCTIONAL | `negotiation.go` (`ResolveResponseCodec`, `acceptQuality`, `qualityParam`); golden matrix + refusal property + fuzz; live |
-| wildcards echo the request codec                                                                   |                  | consumer API — project-discovery-daemon `content_negotiation.go:15-19` calls both resolvers                   |
-| Pooled-buffer response writers: `WriteEncoded`/`WriteJSON`/`WriteErrorf`                           | FULLY_FUNCTIONAL | `write.go` (`bufPool`, `WriteEncoded`, `WriteJSON`, `WriteErrorf`); tests `TestWriteEncoded_JSONAndCBOR`, `TestWriteErrorf` |
+| Feature                                                                                                        | Status           | Evidence                                                                                                                                                                      |
+| -------------------------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Request codec from `Content-Type`: JSON default, CBOR via exact or RFC 6839 structured-suffix type             | FULLY_FUNCTIONAL | `negotiation.go` (`ResolveRequestCodec`, `matchesEncoding`, `CodecForContentType`); tests `TestResolveRequestCodec`, `TestCodecForContentType`, `TestMatchesEncoding`         |
+| Response codec from `Accept`: q-value ranking, tie prefers CBOR, `q=0` refusals never served,                  | FULLY_FUNCTIONAL | `negotiation.go` (`ResolveResponseCodec`, `acceptQuality`, `qualityParam`); golden matrix + refusal property + fuzz; live                                                     |
+| wildcards echo the request codec                                                                               |                  | consumer API — project-discovery-daemon `content_negotiation.go:15-19` calls both resolvers                                                                                   |
+| Pooled-buffer response writers: `WriteEncoded`/`WriteJSON`/`WriteErrorf`                                       | FULLY_FUNCTIONAL | `write.go` (`bufPool`, `WriteEncoded`, `WriteJSON`, `WriteErrorf`); tests `TestWriteEncoded_JSONAndCBOR`, `TestWriteErrorf`                                                   |
 | `Vary: Accept` emission from every `WriteEncoded` response (cache correctness for Accept-negotiated encodings) | FULLY_FUNCTIONAL | `write.go` (`WriteEncoded` doc contract + `Header().Add`); tests `TestWriteEncoded_VaryAccept` (unconditional, combines with handler Vary, error path, negotiated round trip) |
-| 406-capable response-negotiation variant (current signature cannot express "nothing acceptable")   | ON_HOLD          | API-shape decision pending (both-refused currently echoes the request codec — `substituteForRefused` + golden matrix rows) |
+| 406-capable response-negotiation variant (current signature cannot express "nothing acceptable")               | ON_HOLD          | API-shape decision pending (both-refused currently echoes the request codec — `substituteForRefused` + golden matrix rows)                                                    |
 
 ## SSE framing
 
