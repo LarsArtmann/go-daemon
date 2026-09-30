@@ -19,6 +19,7 @@ go vet ./...
 golangci-lint run ./...     # strict config mirrored from project-discovery-daemon (locally pruned: no pdd-only types here)
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
+ix run .#check-readme       # compiles the README quickstart snippet (run from repo root)
 nix flake check
 nix fmt
 ```

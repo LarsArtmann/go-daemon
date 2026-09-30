@@ -24,12 +24,8 @@
 
 | Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                         |
 | ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, | 🔴 `TODO` | Med    | 1h     | Unexported helpers `negotiation.go:113-148` are only exercised transitively via the four exported functions      |
-| `Q=` case, near-miss suffixes)                                                              |           |        |        |                                                                                                                  |
 | ANNOTATE both 2026-09-29 status reports inline (strike each now-resolved §f item with its   | 🔴 `TODO` | Med    | 45min  | Their §f items are partially resolved by the 09-30 audit but carry no `done at` markers; docs-health ANNOTATE    |
 | evidence), then decide ARCHIVE per docs-health classification                               |           |        |        | resolves inline, never rewrites; completeness gate: every archived file carries strikethroughs                   |
-| Add a `nix run .#check-readme` flake app that compiles the README quickstart snippet        | 🔴 `TODO` | Med    | 1h     | The daemon committed a non-compiling README example (`caf1f0c`, fixed in `378607f`); a standing gate turns       |
-|                                                                                             |           |        |        | that incident class into a build failure instead of a history blemish                                            |
 
 ## Low Impact
 
