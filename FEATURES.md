@@ -3,10 +3,12 @@
 Honest inventory of what this library provides. Statuses answer one question:
 does working code exist, and if not, why not?
 
-**Verification basis:** audited 2026-09-29 against Go 1.27.1 with the full
+**Verification basis:** audited 2026-09-30 against Go 1.27 with the full
 gate green — `go build`, `go vet`, `go test ./... -race -count=1`,
 `golangci-lint run` (strict config), `nix build .#default`. Every
-FULLY_FUNCTIONAL row below is backed by tests in that suite.
+FULLY_FUNCTIONAL row below is backed by tests in that suite; the coverage
+numbers below were reproduced with CI's exact flags
+(`-covermode=atomic -coverprofile`).
 
 **Coverage (measured 2026-09-30, `go test -covermode=atomic`):** 86.1% of
 statements total, 30 functions at 100%. The CI floor (80%, `ci.yml`) is real
@@ -62,5 +64,5 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Counts
 
-Computed from this file: 14 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
-BROKEN, 0 DISABLED, 1 PLANNED, 1 ON_HOLD (16 rows total).
+Computed from this file: 15 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
+BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (16 rows total).

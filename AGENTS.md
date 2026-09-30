@@ -19,7 +19,7 @@ go vet ./...
 golangci-lint run ./...     # strict config mirrored from project-discovery-daemon (locally pruned: no pdd-only types here)
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
-ix run .#check-readme       # compiles the README quickstart snippet (run from repo root)
+nix run .#check-readme      # compiles the README quickstart snippet (run from repo root)
 nix flake check
 nix fmt
 ```
@@ -129,6 +129,10 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   for a whole session after the negotiation test fix). When LSP output
   contradicts a green CLI gate, `lsp_restart` clears the cache; the CLI
   (`golangci-lint run`, `go build`) is authoritative.
+- **Fuzz corpora are seed-only by policy** (`FuzzResolveResponseCodec`,
+  `FuzzParseSSEData`): the `f.Add` seeds are committed, crash corpora are
+  not. If a fuzz run ever finds a crash, commit the crashing input to the
+  target's corpus so the fix stays regression-pinned.
 - **Dependabot + vendorHash policy: close-and-adopt.** Dependabot's
   dependency PRs update go.mod/go.sum but never the flake's `vendorHash`,
   so their CI nix jobs fail by design. The agreed handling: merge the
