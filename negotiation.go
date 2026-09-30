@@ -31,7 +31,15 @@ func ResolveRequestCodec(r *http.Request) codec.Codec {
 // With both encodings mentioned, the higher quality value wins and a tie
 // prefers CBOR. Quality 0 is an explicit refusal: the refused encoding is
 // never returned — when the request codec is the refused one, the other
-// supported encoding is served instead.
+// supported encoding is served instead. An Accept header that refuses both
+// encodings is unsatisfiable; this mechanism cannot answer 406, so the
+// request codec stands.
+//
+// Only the media type is negotiated. Accept-Charset and Accept-Encoding
+// are deliberately out of scope: JSON is UTF-8 and CBOR is a binary
+// format, so charset parameters carry no additional meaning here, and
+// content codings (gzip, zstd) belong to the HTTP transport layer, not
+// this package. Responses written via WriteEncoded carry "Vary: Accept".
 func ResolveResponseCodec(r *http.Request, reqCodec codec.Codec) codec.Codec {
 	accept := r.Header.Get("Accept")
 	cborQ, cborWanted := acceptQuality(accept, codec.EncodingCBOR)
