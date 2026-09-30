@@ -29,8 +29,6 @@
 
 | Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                         |
 | ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| Fuzz the Accept parser: `ResolveResponseCodec`/`acceptQuality`/`qualityParam` (seed browser | 🔴 `TODO` | High   | 1h     | Hand-rolled header parser `negotiation.go:89-148`; fuzz precedent exists (`FuzzParseSSEData`, `sse_test.go:231`) |
-| headers, `*/*`, junk q-values, huge lists)                                                  |           |        |        |                                                                                                                  |
 | Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, | 🔴 `TODO` | Med    | 1h     | Unexported helpers `negotiation.go:113-148` are only exercised transitively via the four exported functions      |
 | `Q=` case, near-miss suffixes)                                                              |           |        |        |                                                                                                                  |
 | ANNOTATE both 2026-09-29 status reports inline (strike each now-resolved §f item with its   | 🔴 `TODO` | Med    | 45min  | Their §f items are partially resolved by the 09-30 audit but carry no `done at` markers; docs-health ANNOTATE    |

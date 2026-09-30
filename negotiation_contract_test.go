@@ -327,7 +327,7 @@ func FuzzResolveResponseCodec(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, accept string) {
 		for _, reqCodec := range []codec.Codec{codec.JSONCodec{}, codec.CBORCodec{}} {
-			req := httptest.NewRequest(http.MethodGet, "/discover", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/discover", nil)
 			req.Header.Set("Accept", accept)
 
 			got := ResolveResponseCodec(req, reqCodec)

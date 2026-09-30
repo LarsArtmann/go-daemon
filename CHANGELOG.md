@@ -20,6 +20,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   silently dropped), and exactly one leading UTF-8 BOM is stripped (it used
   to poison the first field name). Over-cap lines now fail wrapping
   `bufio.ErrTooLong` (`errors.Is`-matchable).
+- `TestResolveResponseCodec_GoldenMatrix` and
+  `TestResolveResponseCodec_NeverServesRefusedEncoding`: the full
+  negotiation contract (wildcards including `application/*`, duplicate-q
+  max-wins, malformed `q` params, `Q=` case, refusal substitution, the
+  unsatisfiable both-refused echo, browser headers) is now pinned in one
+  reviewable table plus a refusal-property matrix, so contract drift fails
+  tests instead of doc comments.
+- `FuzzResolveResponseCodec`: a fuzz target for the hand-rolled `Accept`
+  parser asserting, over both request codecs, that any input resolves to a
+  supported encoding and never serves an explicitly refused one (except the
+  pinned unsatisfiable both-refused case). Soaked for 5 minutes / 22M
+  executions locally; seed corpus is the in-test `f.Add` set (browser
+  headers, wildcards, malformed and NaN q-values, 100-entry lists), no
+  crash corpus to commit.
+- Direct unit tests for the negotiation helpers (`bareMediaType`,
+  `qualityParam`, `matchesEncoding`, `acceptQuality`), previously exercised
+  only transitively through the exported functions.
 
 ### Changed
 
@@ -50,16 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   case-insensitively (RFC 9110 §5.6.2.1): `application/cbor;Q=0` previously
   counted as a parameter-less mention with quality 1, so an uppercase `Q=`
   could not express a refusal or a lowered preference.
-
-### Added
-
-- `TestResolveResponseCodec_GoldenMatrix` and
-  `TestResolveResponseCodec_NeverServesRefusedEncoding`: the full
-  negotiation contract (wildcards including `application/*`, duplicate-q
-  max-wins, malformed `q` params, `Q=` case, refusal substitution, the
-  unsatisfiable both-refused echo, browser headers) is now pinned in one
-  reviewable table plus a refusal-property matrix, so contract drift fails
-  tests instead of doc comments.
+- `q=NaN` values are now skipped instead of parsed: Go's `ParseFloat`
+  accepts `NaN`, which then propagated through quality clamping and made the
+  poisoned mention behave as a silent refusal (all quality comparisons
+  against NaN are false). NaN entries now fall back to the documented
+  unparseable-q default (a valid q elsewhere in the entry still applies,
+  otherwise 1).
 
 ## [0.1.1] - 2026-09-29
 
