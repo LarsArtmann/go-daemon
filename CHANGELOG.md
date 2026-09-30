@@ -30,16 +30,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CBOR, `application/json-patch+json` is JSON), the `Accept` header's
   q-values rank JSON vs CBOR with a tie preferring CBOR, and a `q=0`
   refusal is never served: when the request codec is the refused encoding,
-  the other supported encoding is served instead. Wildcards (`*/*`) still
-  express no preference and echo the request codec. All exported signatures
-  are unchanged, and both `ResolveRequestCodec` and `ResolveResponseCodec`
-  remain live consumer-facing API (project-discovery-daemon calls both).
+  the other supported encoding is served instead. Wildcards (`*/*` and
+  `application/*`) still express no preference and echo the request codec.
+  All exported signatures are unchanged, and both `ResolveRequestCodec` and
+  `ResolveResponseCodec` remain live consumer-facing API
+  (project-discovery-daemon calls both).
+- Bumped `github.com/larsartmann/go-codec` v0.2.0 → v0.3.0, restoring pin
+  parity with project-discovery-daemon. v0.3.0 is an error-contract release
+  (stable machine-readable codes, behavioral families) with unchanged
+  `Codec`/`BufferEncoder` signatures; go-daemon never matched codec error
+  strings, so no source changes were needed.
 
 ### Fixed
 
 - The content-negotiation test table from the q-value overhaul shipped with
   rows that did not compile (missing table field); fixed forward, and the
   full race suite is verified green.
+- Quality parameter names in `Accept` headers are now matched
+  case-insensitively (RFC 9110 §5.6.2.1): `application/cbor;Q=0` previously
+  counted as a parameter-less mention with quality 1, so an uppercase `Q=`
+  could not express a refusal or a lowered preference.
+
+### Added
+
+- `TestResolveResponseCodec_GoldenMatrix` and
+  `TestResolveResponseCodec_NeverServesRefusedEncoding`: the full
+  negotiation contract (wildcards including `application/*`, duplicate-q
+  max-wins, malformed `q` params, `Q=` case, refusal substitution, the
+  unsatisfiable both-refused echo, browser headers) is now pinned in one
+  reviewable table plus a refusal-property matrix, so contract drift fails
+  tests instead of doc comments.
 
 ## [0.1.1] - 2026-09-29
 

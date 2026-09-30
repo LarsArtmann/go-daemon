@@ -172,27 +172,81 @@ func TestResolveResponseCodec_GoldenMatrix(t *testing.T) {
 // codec is never that encoding. When the client refuses every supported
 // encoding the Accept is unsatisfiable; this mechanism cannot answer 406, so
 // the request codec stands (also pinned in the golden matrix above).
+// acceptRefusalCase describes one Accept header in the refusal matrix.
+type acceptRefusalCase struct {
+	name        string
+	accept      string
+	refusesCBOR bool
+	refusesJSON bool
+}
+
+// requestCodecCase pairs a request codec with a label for the matrix.
+type requestCodecCase struct {
+	name  string
+	codec codec.Codec
+}
+
+func requestWithAccept(accept string) *http.Request {
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/discover", nil)
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+	}
+
+	return req
+}
+
+// assertNeverRefused checks the refusal property for one matrix cell: when
+// exactly one supported encoding is refused it must not be served; when both
+// are refused the Accept is unsatisfiable and the request codec stands.
+func assertNeverRefused(t *testing.T, refusal acceptRefusalCase, rc requestCodecCase) {
+	t.Helper()
+
+	got := ResolveResponseCodec(requestWithAccept(refusal.accept), rc.codec)
+
+	switch enc := got.Encoding(); enc {
+	case codec.EncodingJSON, codec.EncodingCBOR:
+	default:
+		t.Fatalf("unsupported encoding %q returned", enc)
+	}
+
+	if refusal.refusesJSON && refusal.refusesCBOR {
+		if got.Encoding() != rc.codec.Encoding() {
+			t.Fatalf("unsatisfiable Accept must echo the request codec: got %q, want %q",
+				got.Encoding(), rc.codec.Encoding())
+		}
+
+		return
+	}
+
+	if refusal.refusesJSON && got.Encoding() == codec.EncodingJSON {
+		t.Fatalf("served refused encoding JSON (Accept %q, request %s)",
+			refusal.accept, rc.codec.Encoding())
+	}
+
+	if refusal.refusesCBOR && got.Encoding() == codec.EncodingCBOR {
+		t.Fatalf("served refused encoding CBOR (Accept %q, request %s)",
+			refusal.accept, rc.codec.Encoding())
+	}
+}
+
 func TestResolveResponseCodec_NeverServesRefusedEncoding(t *testing.T) {
 	t.Parallel()
 
-	refusals := []struct {
-		name        string
-		accept      string
-		refusesCBOR bool
-		refusesJSON bool
-	}{
-		{"no refusals", "", false, false},
-		{"refuses JSON", "application/json;q=0", false, true},
-		{"refuses CBOR", "application/cbor;q=0", true, false},
-		{"refuses both", "application/cbor;q=0, application/json;q=0", true, true},
+	refusals := []acceptRefusalCase{
+		{name: "no refusals", accept: ""},
+		{name: "refuses JSON", accept: "application/json;q=0", refusesJSON: true},
+		{name: "refuses CBOR", accept: "application/cbor;q=0", refusesCBOR: true},
+		{
+			name:        "refuses both",
+			accept:      "application/cbor;q=0, application/json;q=0",
+			refusesCBOR: true,
+			refusesJSON: true,
+		},
 	}
 
-	reqCodecs := []struct {
-		name  string
-		codec codec.Codec
-	}{
-		{"JSON request", codec.JSONCodec{}},
-		{"CBOR request", codec.CBORCodec{}},
+	reqCodecs := []requestCodecCase{
+		{name: "JSON request", codec: codec.JSONCodec{}},
+		{name: "CBOR request", codec: codec.CBORCodec{}},
 	}
 
 	for _, refusal := range refusals {
@@ -200,37 +254,7 @@ func TestResolveResponseCodec_NeverServesRefusedEncoding(t *testing.T) {
 			t.Run(fmt.Sprintf("%s / %s", refusal.name, rc.name), func(t *testing.T) {
 				t.Parallel()
 
-				req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/discover", nil)
-				if refusal.accept != "" {
-					req.Header.Set("Accept", refusal.accept)
-				}
-
-				got := ResolveResponseCodec(req, rc.codec)
-
-				switch enc := got.Encoding(); enc {
-				case codec.EncodingJSON, codec.EncodingCBOR:
-				default:
-					t.Fatalf("unsupported encoding %q returned", enc)
-				}
-
-				if refusal.refusesJSON && refusal.refusesCBOR {
-					if got.Encoding() != rc.codec.Encoding() {
-						t.Fatalf("unsatisfiable Accept must echo the request codec: got %q, want %q",
-							got.Encoding(), rc.codec.Encoding())
-					}
-
-					return
-				}
-
-				if refusal.refusesJSON && got.Encoding() == codec.EncodingJSON {
-					t.Fatalf("served refused encoding JSON (Accept %q, request %s)",
-						refusal.accept, rc.codec.Encoding())
-				}
-
-				if refusal.refusesCBOR && got.Encoding() == codec.EncodingCBOR {
-					t.Fatalf("served refused encoding CBOR (Accept %q, request %s)",
-						refusal.accept, rc.codec.Encoding())
-				}
+				assertNeverRefused(t, refusal, rc)
 			})
 		}
 	}
@@ -264,6 +288,7 @@ func TestAcceptQualityDuplicateMax(t *testing.T) {
 			if !mentioned {
 				t.Fatalf("acceptQuality(%q, %s): not mentioned", tt.accept, tt.enc)
 			}
+
 			if q != tt.want {
 				t.Fatalf("acceptQuality(%q, %s): got %v, want %v", tt.accept, tt.enc, q, tt.want)
 			}
