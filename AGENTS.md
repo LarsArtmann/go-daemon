@@ -16,7 +16,7 @@ domain logic.
 go build ./...
 go test ./... -race -count=1
 go vet ./...
-golangci-lint run ./...     # strict config mirrored from project-discovery-daemon
+golangci-lint run ./...     # strict config mirrored from project-discovery-daemon (locally pruned: no pdd-only types here)
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
 nix flake check
@@ -52,6 +52,10 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   doc comment, and the `TestResolveResponseCodec` table together. Both
   resolvers are live consumer-facing API (project-discovery-daemon calls
   them from its content_negotiation.go).
+- The `.golangci.yml` mirrors project-discovery-daemon's but is locally
+  pruned: entries for types that only exist in the consumer
+  (project-discovery-sdk, samber/ro) were removed — re-check the diff
+  before syncing from pdd again.
 
 ## Dependencies (all public — resolves via Go proxy)
 

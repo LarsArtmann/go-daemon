@@ -154,9 +154,6 @@ linters:
         - stdlib
         - generic
         - github.com/larsartmann/go-codec.Codec$
-        - github.com/LarsArtmann/project-discovery-sdk/domain.Enricher$
-        - github.com/LarsArtmann/project-discovery-sdk.DiscoveryClient$
-        - github.com/samber/ro.Subscription$
     makezero:
       always: false
     mnd:
