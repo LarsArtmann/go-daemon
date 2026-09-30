@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Changed
+
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [0.2.0] - 2026-09-30
+
+### Added
+
 - `TestParseSSEData_CorpusConformance` — the framing parser is now asserted
   against the WPT/Chromium-derived conformance corpus exported by
   `github.com/larsartmann/go-sse/sseparse` (test-only dependency, v0.1.0):
@@ -115,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configurable `MetricPrefix`, and a rate-limited `TraceHandler` streaming
   `go tool trace` files.
 
-[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/LarsArtmann/go-daemon/releases/tag/v0.1.0
