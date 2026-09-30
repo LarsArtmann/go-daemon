@@ -33,7 +33,7 @@ FULLY_FUNCTIONAL row below is backed by tests in that suite.
 | Response codec from `Accept`: q-value ranking, tie prefers CBOR, `q=0` refusals never served,      | FULLY_FUNCTIONAL | `negotiation.go:34-82,84-148`; tests `negotiation_test.go:51` (18 cases); live consumer-facing       |
 | wildcards echo the request codec                                                                   |                  | API — project-discovery-daemon `content_negotiation.go:15-19` calls both resolvers                   |
 | Pooled-buffer response writers: `WriteEncoded`/`WriteJSON`/`WriteErrorf`                           | FULLY_FUNCTIONAL | `write.go:16-63`; tests `negotiation_test.go:106,171`                                                |
-| `Vary: Accept` emission when response encoding depends on `Accept`                                 | PLANNED          | No code; top item in [TODO_LIST.md](TODO_LIST.md) (HTTP-caching correctness gap)                     |
+| `Vary: Accept` emission from every `WriteEncoded` response (cache correctness for Accept-negotiated encodings) | FULLY_FUNCTIONAL | `write.go:20-55` (doc contract + `Header().Add`); tests `negotiation_test.go` `TestWriteEncoded_VaryAccept` (unconditional, combines with handler Vary, error path, negotiated round trip) |
 | 406-capable response-negotiation variant (current signature cannot express "nothing acceptable")   | ON_HOLD          | API-shape decision pending (both-refused currently echoes the request codec, `negotiation.go:72-82`) |
 
 ## SSE framing

@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet.
+- `WriteEncoded` (and through it `WriteJSON`/`WriteErrorf`) now emits
+  `Vary: Accept` on every response: response encodings are commonly chosen
+  from the request's Accept header, so caches must not reuse a stored
+  response across different Accept preferences. The header is added rather
+  than set, preserving handler-declared variance such as
+  `Vary: Authorization`.
 
 ### Changed
 

@@ -19,7 +19,6 @@
 
 | Task                                                                                         | Status       | Impact | Effort | Evidence                                                                                                             |
 | -------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------- |
-| Emit `Vary: Accept` from `WriteEncoded` when the response encoding depends on `Accept`       | 🔴 `TODO`    | High   | 1h     | `write.go:47` sets Content-Type but nothing sets Vary; HTTP-caching correctness gap for dual-encoding consumers      |
 
 ## Medium Impact
 
