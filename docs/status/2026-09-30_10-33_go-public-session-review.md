@@ -1,5 +1,7 @@
 # Session Review — go-public PRO/CONTRA + takama/daemon comparison
 
+> **Annotated 2026-09-30 (docs-health):** struck items are resolved (verdict inline, with evidence); unstruck items remain open — the go-public pre-flip cluster and owner decisions now live in TODO_LIST.md, and this report's §f was harvested into TODO_LIST.md + ROADMAP.md the same day.
+
 **Date:** 2026-09-30 10:33 CEST
 **Scope:** This session only (read-only analysis; no code was changed, no commits made by the agent).
 **Format note:** Markdown per explicit user request (status-report skill default is HTML; override honored).
@@ -69,7 +71,7 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 - API-freeze / semver policy decision.
 - Rename decision (with concrete candidates).
 - The visibility flip itself.
-- TODO_LIST/ROADMAP harvest of this report's section f (docs-health HARVEST — intentionally deferred; user said wait).
+~~- TODO_LIST/ROADMAP harvest of this report's section f (docs-health HARVEST — intentionally deferred; user said wait).~~ done 2026-09-30 — docs-health pass routed this §f into TODO_LIST/ROADMAP
 
 ### d) TOTALLY FUCKED UP
 
@@ -90,21 +92,21 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 | 3  | Name decision: keep `go-daemon` vs rename pre-flip                                                                                        | hard to reverse post-flip  | owner  |
 | 4  | Decide visibility of `docs/status/`, `docs/planning/`, `reports/` in a public repo (scrub history vs keep)                                | privacy                    | owner  |
 | 5  | Verify sevlyar/go-daemon + search pkg.go.dev for `go-daemon` module collisions                                                            | naming input               | XS     |
-| 6  | Check `.github/dependabot.yml` exists and works post-flip                                                                                 | maintenance                | XS     |
+~~| 6  | Check `.github/dependabot.yml` exists and works post-flip                                                                                 | maintenance                | XS     |~~ verified 2026-09-30 — `.github/dependabot.yml` exists (gomod weekly + grouped actions); "works post-flip" still unverified (CI billing)
 | 7  | Dependency license inventory from go.sum (Apache-2.0 notices etc.)                                                                        | legal hygiene              | S      |
 | 8  | Read README end-to-end; polish for external audience                                                                                      | first impression           | S      |
 | 9  | Run full gate (build/test/vet/lint/`nix build`) so the flip happens on green master                                                       | safety                     | S      |
 | 10 | After flip: update AGENTS.md Gotchas (GOPRIVATE/mkPreparedSource notes become obsolete)                                                   | doc truth                  | XS     |
 | 11 | After flip: primary consumer drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash (go-ecosystem-upgrade skill) | the actual payoff          | M      |
-| 12 | Tag a release via go-release flow so the module proxy indexes cleanly                                                                     | publishing                 | S      |
+~~| 12 | Tag a release via go-release flow so the module proxy indexes cleanly                                                                     | publishing                 | S      |~~ done — v0.2.0 tagged 2026-09-30 with a full WHY-narrative annotation (tag `3c66d39`)
 | 13 | Verify pkg.go.dev rendering after proxy pickup                                                                                            | publishing                 | XS     |
 | 14 | Confirm `ci.yml` has no private-runner or secret assumptions                                                                              | safety                     | XS     |
 | 15 | Set GitHub repo description + topics for discoverability                                                                                  | marketing                  | XS     |
 | 16 | SECURITY.md + issue templates                                                                                                             | polish                     | S      |
 | 17 | Consider website-launch docs site (established pattern)                                                                                   | marketing                  | M      |
 | 18 | Write the reusable pre-publish audit script (task 1 generalized)                                                                          | leverage                   | M      |
-| 19 | Harvest this report's section f into TODO_LIST.md (docs-health, next session)                                                             | doc loop                   | S      |
-| 20 | Re-verify go-codec/go-sse/go-flightrecorder pins are current before public exposure                                                       | hygiene                    | XS     |
+~~| 19 | Harvest this report's section f into TODO_LIST.md (docs-health, next session)                                                             | doc loop                   | S      |~~ done 2026-09-30 — docs-health pass: §f routed into TODO_LIST/ROADMAP
+~~| 20 | Re-verify go-codec/go-sse/go-flightrecorder pins are current before public exposure                                                       | hygiene                    | XS     |~~ verified 2026-09-30 — go-codec v0.3.0, go-flightrecorder v0.2.0, sseparse v0.1.0 (go.mod) all match pdd's go.mod
 | 21 | Confirm auto-commit daemon state at flip time (it commits regardless of compile state — flip only when green)                             | safety                     | XS     |
 | 22 | Optional: launch announcement draft (only if wanted)                                                                                      | marketing                  | S      |
 

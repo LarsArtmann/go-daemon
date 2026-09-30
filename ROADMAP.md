@@ -16,6 +16,9 @@ between specific types and wildcards for strict-RFC consumers (behind an
 option, never by default), and a stated policy for the other `Accept*`
 headers. A golden corpus of wire headers — the same philosophy as the SSE
 conformance corpus — would make the whole behavior matrix reviewable.
+Refinement candidate: emit `Vary: Accept` only when the Accept header
+actually influenced the encoding, instead of unconditionally (the current
+blanket emission is conservative but over-broad for fixed-JSON endpoints).
 
 ### 2. More daemon building blocks, same discipline
 
@@ -24,7 +27,10 @@ project-discovery-daemon once they prove themselves in production. Future
 candidates follow the same mechanism-not-policy line — lifecycle plumbing,
 socket concerns, observability hooks — each arriving with its regression
 tests and its ordering/behavior contracts already test-enforced. Runnable
-godoc examples as a normal part of every exported surface.
+godoc examples as a normal part of every exported surface. Smaller raw
+ideas: a golden test for the `sd_notify` message sequence (the lifecycle
+ordering already has one), and a one-shot benchmark of the SSE line reader
+(it allocates a 32 KiB chunk per parser instance; a number beats a hunch).
 
 ### 3. Fleet coherence
 
@@ -35,7 +41,13 @@ repos; extracting the pure media-type ↔ codec mapping into go-codec when a
 second transport consumer appears (the pre-agreed trigger); go-cqrs-lite's
 transport deciding whether it wants Accept-based negotiation; feeding the
 negotiation patterns documented here back into project-discovery-daemon's
-docs, where the code originated.
+docs, where the code originated. Cross-repo pointers parked here rather
+than in TODO_LIST: pdd adopting `Vary: Accept` for its dual-encoding
+responses (cache-unsafe without it); landing the own+consumer vendorHash
+lesson in crush-config's `references/lessons.md`; reporting buildflow's
+nix-hash-fix findings-gate false-alarm (intermediate builds shown as
+"failed"); a docs website via the website-launch pattern and a post-flip
+announcement draft, both only if the go-public flip happens.
 
 ## Open questions
 

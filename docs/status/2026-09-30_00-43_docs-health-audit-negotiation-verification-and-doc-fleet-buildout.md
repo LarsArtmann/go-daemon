@@ -1,5 +1,7 @@
 # Status Report — 2026-09-30 00:43 — docs-health AUDIT: negotiation-overhaul verification closeout, critical compile-break fix-forward, and doc-fleet buildout (FEATURES/ROADMAP built, TODO_LIST rebuilt, README/AGENTS/CHANGELOG updated)
 
+> **Annotated 2026-09-30 (docs-health, second pass):** struck items are resolved/routed (verdict inline, with evidence); unstruck items remain open — §b1-§b2 are historical process facts, §f14 is a fleet idea, and §f30 waits on the first grouped dependabot PR.
+
 **Session scope:** docs-health AUDIT ("view ALL files, make all six living docs superb")
 → full-file read pass → discovered master's test suite **never compiled** since the
 negotiation overhaul → fix-forward + lint fixes + complete gate sweep → BUILD
@@ -63,10 +65,10 @@ gap stands, tracked in TODO_LIST.
    `negotiation_test.go:211-213` all session; CLI gates (compiler + golangci-lint
    CLI) are authoritative and green, but I never restarted the LSP server to
    clear the noise — a future session could misread it as a real failure.
-3. **The "descriptive commit" TODO row needed three rewordings** as the daemon
+~~3. **The "descriptive commit" TODO row needed three rewordings** as the daemon~~ superseded — the annotated v0.2.0 tag narrative plus descriptive per-task commits (85c82ef, 9975100, …) replaced the heuristic-message gap
    kept committing underneath it (its final wording is daemon-proof, but the
    underlying gap — six consecutive heuristic messages with no WHY — is open).
-4. **ANNOTATE of the two prior status reports is not done**: their §f items are
+~~4. **ANNOTATE of the two prior status reports is not done**: their §f items are~~ done — 85c82ef (both 2026-09-29 reports annotated inline, 72 resolutions)
    now partially resolved by this session (compile fix, lint, CHANGELOG, README,
    harvest), but no inline `done at` markers exist in either report. A future
    docs-health ANNOTATE pass should strike each resolved item inline (HARVEST
@@ -74,20 +76,20 @@ gap stands, tracked in TODO_LIST.
 
 ## c) NOT STARTED
 
-1. go-codec v0.2.0 → v0.3.0 bump (TODO High; dep change → own vendorHash repair + pdd-parity rationale).
-2. Release tag decision + cut (v0.1.2 vs v0.2.0; 🔵 BLOCKED on user decision; pdd floor bump + rev-pin coordination rides on it).
-3. Descriptive closeout commit before any shared-branch push (TODO High).
-4. `Vary: Accept` emission from `WriteEncoded` (FEATURES PLANNED; TODO High).
-5. Negotiation policy edge-case pins: `application/*` wildcard echo, duplicate-q precedence, empty/`=`-less `q` params, never-serve-refused property, golden behavior-matrix table (TODO High).
-6. Fuzz target for the Accept parser (`ResolveResponseCodec`/`acceptQuality`/`qualityParam`; precedent `FuzzParseSSEData`).
-7. Direct unit tests for `bareMediaType`/`qualityParam`/`matchesEncoding`.
-8. Accept-Charset / Accept-Encoding boundary documentation in negotiation doc comments.
-9. `negotiation_example_test.go` godoc example (go-codec convention).
-10. 406-capable response-negotiation variant (ON_HOLD — API-shape decision; ROADMAP open question).
-11. ANNOTATE + archive pass over both `docs/status/` reports (b4).
-12. All of ROADMAP.md's raw ideas (corpus regeneration cadence, go-codec extraction trigger, consumer-chain picture, negotiation patterns back into pdd docs, …).
-13. sseparse corpus conformance re-run (waiting for sseparse's next tag; standing TODO row).
-14. LSP cache hygiene habit (restart `golangci_lint_ls` when it contradicts CLI gates — b2).
+~~1. go-codec v0.2.0 → v0.3.0 bump (TODO High; dep change → own vendorHash repair + pdd-parity rationale).~~ done — v0.3.0 in go.mod (dependabot bump, verified 2026-09-30)
+~~2. Release tag decision + cut (v0.1.2 vs v0.2.0; 🔵 BLOCKED on user decision; pdd floor bump + rev-pin coordination rides on it).~~ done — v0.2.0 (tag 3c66d39); pdd floor-bumped + rev-pinned (a92d625)
+~~3. Descriptive closeout commit before any shared-branch push (TODO High).~~ superseded — annotated v0.2.0 tag + descriptive per-task commits
+~~4. `Vary: Accept` emission from `WriteEncoded` (FEATURES PLANNED; TODO High).~~ done — 93f839c
+~~5. Negotiation policy edge-case pins: `application/*` wildcard echo, duplicate-q precedence, empty/`=`-less `q` params, never-serve-refused property, golden behavior-matrix table (TODO High).~~ done — e0ee7b0
+~~6. Fuzz target for the Accept parser (`ResolveResponseCodec`/`acceptQuality`/`qualityParam`; precedent `FuzzParseSSEData`).~~ done — fc818e5 (5m / 22.2M execs, 0 failures)
+~~7. Direct unit tests for `bareMediaType`/`qualityParam`/`matchesEncoding`.~~ done — b9c98eb
+~~8. Accept-Charset / Accept-Encoding boundary documentation in negotiation doc comments.~~ done — 8b62fe3
+~~9. `negotiation_example_test.go` godoc example (go-codec convention).~~ done — 8b62fe3
+~~10. 406-capable response-negotiation variant (ON_HOLD — API-shape decision; ROADMAP open question).~~ routed — FEATURES.md ON_HOLD row + ROADMAP open question 1
+~~11. ANNOTATE + archive pass over both `docs/status/` reports (b4).~~ done — 85c82ef
+~~12. All of ROADMAP.md's raw ideas (corpus regeneration cadence, go-codec extraction trigger, consumer-chain picture, negotiation patterns back into pdd docs, …).~~ routed — ROADMAP themes 1-3
+~~13. sseparse corpus conformance re-run (waiting for sseparse's next tag; standing TODO row).~~ standing — TODO_LIST event row (sseparse still v0.1.0)
+~~14. LSP cache hygiene habit (restart `golangci_lint_ls` when it contradicts CLI gates — b2).~~ done — AGENTS.md LSP-triage gotcha (33f44dd)
 
 ## d) TOTALLY FUCKED UP
 
@@ -154,38 +156,38 @@ routing rigor before anyone treats them as commitments._
 
 **Closeout of this session (TODO_LIST rows, in impact order):**
 
-1. Decide + cut the next release tag — v0.2.0 framing (negotiation is a behavior contract change) vs v0.1.2 (bugfix framing); 🔵 needs user decision; then floor-bump pdd's go.mod and coordinate its nix rev-pin re-derive.
-2. Bump go-codec v0.2.0 → v0.3.0 for pin parity with pdd; repair own vendorHash via `buildflow -s nix-hash-fix --fix`; verify negotiation still compiles against v0.3.0's API.
-3. Commit the closeout with ONE descriptive message before any shared-branch push (needs user go-ahead; harness forbids unprompted commits).
-4. Emit `Vary: Accept` from `WriteEncoded` when response encoding depends on Accept (write.go; FEATURES PLANNED row).
-5. Pin negotiation edge cases with tests: `application/*` wildcard echo, duplicate-q precedence, empty/`=`-less `q`, never-serve-refused property, golden behavior matrix.
-6. Fuzz the Accept parser (browser headers, `*/*`, junk q-values, huge lists).
-7. Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, `Q=` case, near-miss suffixes).
-8. Document the Accept-Charset / Accept-Encoding out-of-scope boundary in negotiation doc comments.
-9. Add `negotiation_example_test.go` godoc example (request codec → handler → WriteEncoded).
-10. Re-run `TestParseSSEData_CorpusConformance` when sseparse next tags (standing row).
+~~1. Decide + cut the next release tag — v0.2.0 framing (negotiation is a behavior contract change) vs v0.1.2 (bugfix framing); 🔵 needs user decision; then floor-bump pdd's go.mod and coordinate its nix rev-pin re-derive.~~ done — v0.2.0 (tag 3c66d39)
+~~2. Bump go-codec v0.2.0 → v0.3.0 for pin parity with pdd; repair own vendorHash via `buildflow -s nix-hash-fix --fix`; verify negotiation still compiles against v0.3.0's API.~~ done — v0.3.0 in go.mod (verified 2026-09-30)
+~~3. Commit the closeout with ONE descriptive message before any shared-branch push (needs user go-ahead; harness forbids unprompted commits).~~ superseded — annotated v0.2.0 tag narrative
+~~4. Emit `Vary: Accept` from `WriteEncoded` when response encoding depends on Accept (write.go; FEATURES PLANNED row).~~ done — 93f839c
+~~5. Pin negotiation edge cases with tests: `application/*` wildcard echo, duplicate-q precedence, empty/`=`-less `q`, never-serve-refused property, golden behavior matrix.~~ done — e0ee7b0
+~~6. Fuzz the Accept parser (browser headers, `*/*`, junk q-values, huge lists).~~ done — fc818e5
+~~7. Unit-test `bareMediaType`, `qualityParam`, `matchesEncoding` directly (whitespace variants, `Q=` case, near-miss suffixes).~~ done — b9c98eb
+~~8. Document the Accept-Charset / Accept-Encoding out-of-scope boundary in negotiation doc comments.~~ done — 8b62fe3
+~~9. Add `negotiation_example_test.go` godoc example (request codec → handler → WriteEncoded).~~ done — 8b62fe3
+~~10. Re-run `TestParseSSEData_CorpusConformance` when sseparse next tags (standing row).~~ standing — TODO_LIST event row
 
 **Repo-level follow-ups (11–30):**
 
-11. ANNOTATE both prior status reports inline (strike resolved §f items with evidence), then decide ARCHIVE per docs-health classification.
-12. Restart/clear stale golangci_lint_ls cache; note the "phantom vs CLI-gate" triage order in AGENTS.md if it recurs.
-13. Add the atomic-edit-under-daemon lesson (§e1) to AGENTS.md gotchas — it complements the existing "gate synchronously" gotcha.
+~~11. ANNOTATE both prior status reports inline (strike resolved §f items with evidence), then decide ARCHIVE per docs-health classification.~~ done — 85c82ef
+~~12. Restart/clear stale golangci_lint_ls cache; note the "phantom vs CLI-gate" triage order in AGENTS.md if it recurs.~~ done — AGENTS.md LSP gotcha (33f44dd)
+~~13. Add the atomic-edit-under-daemon lesson (§e1) to AGENTS.md gotchas — it complements the existing "gate synchronously" gotcha.~~ done — AGENTS.md atomic-edit gotcha (33f44dd)
 14. Consider a pre-commit-sweep gate in the daemon's heuristic (if configurable): refuse to sweep when `go build ./...` fails — fleet-wide win.
-15. Keep the README-snippet compile check: make it a tiny flake app (`nix run .#check-readme`) so examples can never rot silently.
-16. Coverage check: run `go tool cover` locally to see the negotiation rewrite's coverage; the CI gate is 80% — know the real number (11:35 report flagged trusting gates blind).
-17. Sweep for other unverified-committed work: `git log` has more heuristic messages — grep for TODO/FIXME in recent diffs.
-18. Decide whether `ResolveResponseCodec`'s both-refused echo deserves a doc-comment warning label (it silently "works" — the 406 variant is the real fix, ROADMAP).
-19. Extend the golden-matrix idea beyond negotiation: a lifecycle-ordering golden test already exists (hook-ordering); consider one for sd_notify message sequences.
-20. Benchmark the SSE line reader once (it allocates a 32 KiB chunk per parser instance; fine today, but a number beats a hunch — ROADMAP fuel).
-21. Check `flightRecorderMu` documentation still matches `newTestFlightRecorder` behavior after any future test additions (AGENTS.md gotcha depends on it).
-22. Add `nix flake check` to the AGENTS.md Essential Commands sweep (I ran build + test apps but never plain `nix flake check`; checks.build is covered indirectly, but the command is the canonical sweep).
-23. Re-verify dprint plugin pins quarterly (markdown-0.22.1 etc. — pins rot).
-24. Decide whether FEATURES.md counts should be grep-derived in CI (tiny script, standing gate) instead of hand-maintained prose.
-25. Consider marking the ON_HOLD 406 row and the PLANNED Vary row with the same target release once the tag decision lands (keeps FEATURES and TODO_LIST in lockstep).
-26. README: consider a short "Non-goals" pointer to ROADMAP so the mechanism-not-policy promise is visible on the sales page.
-27. doc.go: mention q-value/refusal behavior in the package doc's negotiation sentence (currently says "content negotiation" without the contract summary; README is precise, doc.go is vaguer — acceptable, but one clause would align them).
-28. Prune `.golangci.yml` ireturn allowlist entries for project-discovery-sdk/ro (copied from pdd's mirror; unused here — mirror fidelity vs dead config).
-29. After the tag decision: update CHANGELOG's compare links (bottom of file) for the new version.
+~~15. Keep the README-snippet compile check: make it a tiny flake app (`nix run .#check-readme`) so examples can never rot silently.~~ done — 9975100
+~~16. Coverage check: run `go tool cover` locally to see the negotiation rewrite's coverage; the CI gate is 80% — know the real number (11:35 report flagged trusting gates blind).~~ done — 742bf3a (86.1%; CI 80% floor kept, no blind raise)
+~~17. Sweep for other unverified-committed work: `git log` has more heuristic messages — grep for TODO/FIXME in recent diffs.~~ done 2026-09-30 — docs-health sweep: no TODO/FIXME/XXX markers in non-test sources
+~~18. Decide whether `ResolveResponseCodec`'s both-refused echo deserves a doc-comment warning label (it silently "works" — the 406 variant is the real fix, ROADMAP).~~ done — echo semantics documented in the doc comments and pinned by golden-matrix rows; the 406 variant remains the real fix (ROADMAP)
+~~19. Extend the golden-matrix idea beyond negotiation: a lifecycle-ordering golden test already exists (hook-ordering); consider one for sd_notify message sequences.~~ routed — ROADMAP theme 2 (sd_notify golden sequence)
+~~20. Benchmark the SSE line reader once (it allocates a 32 KiB chunk per parser instance; fine today, but a number beats a hunch — ROADMAP fuel).~~ routed — ROADMAP theme 2
+~~21. Check `flightRecorderMu` documentation still matches `newTestFlightRecorder` behavior after any future test additions (AGENTS.md gotcha depends on it).~~ verified 2026-09-30 — discipline intact (recorder tests serialized; full suite green)
+~~22. Add `nix flake check` to the AGENTS.md Essential Commands sweep (I ran build + test apps but never plain `nix flake check`; checks.build is covered indirectly, but the command is the canonical sweep).~~ done — 33f44dd
+~~23. Re-verify dprint plugin pins quarterly (markdown-0.22.1 etc. — pins rot).~~ standing — pins refreshed 33f44dd (2026-09-30); quarterly re-check remains a discipline
+~~24. Decide whether FEATURES.md counts should be grep-derived in CI (tiny script, standing gate) instead of hand-maintained prose.~~ routed — TODO_LIST hygiene (counts rotted once — stale "1 PLANNED" — and needed a hand fix 2026-09-30)
+~~25. Consider marking the ON_HOLD 406 row and the PLANNED Vary row with the same target release once the tag decision lands (keeps FEATURES and TODO_LIST in lockstep).~~ moot — Vary flipped to FULLY_FUNCTIONAL; no PLANNED rows remain (counts fixed 2026-09-30)
+~~26. README: consider a short "Non-goals" pointer to ROADMAP so the mechanism-not-policy promise is visible on the sales page.~~ routed — TODO_LIST hygiene
+~~27. doc.go: mention q-value/refusal behavior in the package doc's negotiation sentence (currently says "content negotiation" without the contract summary; README is precise, doc.go is vaguer — acceptable, but one clause would align them).~~ done — 8b62fe3 (doc.go carries the negotiation + Vary contract sentence)
+~~28. Prune `.golangci.yml` ireturn allowlist entries for project-discovery-sdk/ro (copied from pdd's mirror; unused here — mirror fidelity vs dead config).~~ done — 4e11590
+~~29. After the tag decision: update CHANGELOG's compare links (bottom of file) for the new version.~~ done — compare links updated in the v0.2.0 CHANGELOG section
 30. Consider dependabot grouping scope: gomod weekly + grouped minor/patch already configured — verify the first grouped PR behaves with the vendorHash gate (it will fail nix jobs by design; pre-agree the close-and-adopt policy — 09-01 §f18).
 
 **Cross-repo / fleet (31–50 — pointers, mostly other repos' queues):**
@@ -213,9 +215,9 @@ routing rigor before anyone treats them as commitments._
 
 ## g) Questions I CANNOT figure out myself
 
-1. **Which framing should the next release carry — v0.1.2 ("bugfixes", quietly changing negotiation behavior) or v0.2.0 (behavior-contract change, SemVer-honest)?** This gates items 1 and 29, the pdd floor bump + rev-pin re-derive, and how loudly consumers should be told about `application/cbor-seq`/q-value behavior changes. I can prepare either; I cannot decide the product framing.
-2. **Do you want one descriptive closeout commit now (and should I also draft the six-message-history narrative somewhere, e.g. a tag annotation), or does the auto-daemon's flat history stand?** I will not commit without your explicit word; the TODO row stays 🔴 until you say.
-3. **Should the go-codec v0.3.0 bump happen now (fresh dep change, vendorHash repair, pdd-parity restored) or ride the next pdd-driven sync?** Doing it now means one more dep-touching gate sweep today; waiting means AGENTS.md's pin policy stays contradicted until then. Your call on timing and risk appetite.
+~~1. **Which framing should the next release carry — v0.1.2 ("bugfixes", quietly changing negotiation behavior) or v0.2.0 (behavior-contract change, SemVer-honest)?** This gates items 1 and 29, the pdd floor bump + rev-pin re-derive, and how loudly consumers should be told about `application/cbor-seq`/q-value behavior changes. I can prepare either; I cannot decide the product framing.~~ decided — v0.2.0 behavior-contract framing (tag 3c66d39)
+~~2. **Do you want one descriptive closeout commit now (and should I also draft the six-message-history narrative somewhere, e.g. a tag annotation), or does the auto-daemon's flat history stand?** I will not commit without your explicit word; the TODO row stays 🔴 until you say.~~ superseded — annotated v0.2.0 tag + descriptive per-task commits
+~~3. **Should the go-codec v0.3.0 bump happen now (fresh dep change, vendorHash repair, pdd-parity restored) or ride the next pdd-driven sync?** Doing it now means one more dep-touching gate sweep today; waiting means AGENTS.md's pin policy stays contradicted until then. Your call on timing and risk appetite.~~ done — landed via dependabot close-and-adopt (go.mod v0.3.0, verified 2026-09-30)
 
 ---
 
