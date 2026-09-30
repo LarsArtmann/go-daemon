@@ -130,11 +130,12 @@ func bareMediaType(headerVal string) string {
 
 // qualityParam extracts the quality value from a media type's parameter
 // list, defaulting to 1 (RFC 9110 §12.5.1) and clamping to [0, 1];
-// unparseable values count as 1.
+// unparseable values count as 1. Parameter names are case-insensitive
+// (RFC 9110 §5.6.2.1), so "Q=" matches "q=".
 func qualityParam(params string) float64 {
 	for param := range strings.SplitSeq(params, ";") {
 		name, value, ok := strings.Cut(strings.TrimSpace(param), "=")
-		if !ok || strings.TrimSpace(name) != "q" {
+		if !ok || !strings.EqualFold(strings.TrimSpace(name), "q") {
 			continue
 		}
 
