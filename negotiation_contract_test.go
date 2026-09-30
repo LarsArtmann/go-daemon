@@ -302,3 +302,58 @@ func TestAcceptQualityDuplicateMax(t *testing.T) {
 		t.Fatal("CBOR must not be mentioned by an unrelated header")
 	}
 }
+
+// FuzzResolveResponseCodec guards the hand-rolled Accept parser — plain
+// SplitSeq/Cut/ParseFloat over untrusted header bytes — against panics and
+// contract violations on arbitrary input. Invariants per input, for both
+// possible request codecs: the result is always a supported encoding, and an
+// encoding explicitly refused (mentioned at q=0, with the other encoding not
+// refused) is never served. The unsatisfiable both-refused case is excluded
+// here and pinned explicitly in the golden matrix.
+func FuzzResolveResponseCodec(f *testing.F) {
+	f.Add("application/json, application/cbor;q=0.9")
+	f.Add("text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8")
+	f.Add("*/*")
+	f.Add("application/*")
+	f.Add("application/cbor;q=0")
+	f.Add("application/json;q=0, application/cbor;q=0")
+	f.Add("application/vnd.acme+cbor;Q=0.7")
+	f.Add("application/json;q=NaN")
+	f.Add("application/json;q=-Inf")
+	f.Add("application/cbor;q=")
+	f.Add(",,,;;;")
+	f.Add("application/json;  ;q=0.3;;")
+	f.Add(strings.Repeat("application/json;q=0.5, ", 100) + "application/cbor;q=0.8")
+
+	f.Fuzz(func(t *testing.T, accept string) {
+		for _, reqCodec := range []codec.Codec{codec.JSONCodec{}, codec.CBORCodec{}} {
+			req := httptest.NewRequest(http.MethodGet, "/discover", nil)
+			req.Header.Set("Accept", accept)
+
+			got := ResolveResponseCodec(req, reqCodec)
+
+			switch enc := got.Encoding(); enc {
+			case codec.EncodingJSON, codec.EncodingCBOR:
+			default:
+				t.Fatalf("Accept %q: unsupported encoding %q returned", accept, enc)
+			}
+
+			cborQ, cborMentioned := acceptQuality(accept, codec.EncodingCBOR)
+			jsonQ, jsonMentioned := acceptQuality(accept, codec.EncodingJSON)
+			cborRefused := cborMentioned && cborQ == 0
+			jsonRefused := jsonMentioned && jsonQ == 0
+
+			if cborRefused && jsonRefused {
+				continue
+			}
+
+			if jsonRefused && got.Encoding() == codec.EncodingJSON {
+				t.Fatalf("Accept %q: served refused encoding JSON (request %s)", accept, reqCodec.Encoding())
+			}
+
+			if cborRefused && got.Encoding() == codec.EncodingCBOR {
+				t.Fatalf("Accept %q: served refused encoding CBOR (request %s)", accept, reqCodec.Encoding())
+			}
+		}
+	})
+}

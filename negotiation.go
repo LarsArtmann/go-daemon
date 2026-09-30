@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -129,9 +130,11 @@ func bareMediaType(headerVal string) string {
 }
 
 // qualityParam extracts the quality value from a media type's parameter
-// list, defaulting to 1 (RFC 9110 §12.5.1) and clamping to [0, 1];
-// unparseable values count as 1. Parameter names are case-insensitive
-// (RFC 9110 §5.6.2.1), so "Q=" matches "q=".
+// list, defaulting to 1 (RFC 9110 §12.5.1) and clamping to [0, 1].
+// Parameter names are case-insensitive (RFC 9110 §5.6.2.1), so "Q=" matches
+// "q=". Values that fail to parse — including NaN, which orders against
+// nothing — are skipped, so a parseable q elsewhere in the entry still wins
+// and entries without any valid q default to 1.
 func qualityParam(params string) float64 {
 	for param := range strings.SplitSeq(params, ";") {
 		name, value, ok := strings.Cut(strings.TrimSpace(param), "=")
@@ -139,7 +142,7 @@ func qualityParam(params string) float64 {
 			continue
 		}
 
-		if q, err := strconv.ParseFloat(strings.TrimSpace(value), 64); err == nil {
+		if q, err := strconv.ParseFloat(strings.TrimSpace(value), 64); err == nil && !math.IsNaN(q) {
 			return min(max(q, 0), 1)
 		}
 	}
