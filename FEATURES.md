@@ -8,6 +8,12 @@ gate green — `go build`, `go vet`, `go test ./... -race -count=1`,
 `golangci-lint run` (strict config), `nix build .#default`. Every
 FULLY_FUNCTIONAL row below is backed by tests in that suite.
 
+**Coverage (measured 2026-09-30, `go test -covermode=atomic`):** 86.1% of
+statements total, 30 functions at 100%. The CI floor (80%, `ci.yml`) is real
+and passing, so it stays — no blind raise. Known weak spots are trivial
+option setters (`WithXxx`, 0%), `WriteEncoded`'s encode-error and
+non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
+
 ## Socket lifecycle
 
 | Feature                                                                                            | Status           | Evidence                                                        |
