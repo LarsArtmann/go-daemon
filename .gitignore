@@ -69,3 +69,4 @@ workflow-audit-log.*
 ## Go
 /go-daemon
 # <<< buildflow-managed (.gitignore) <<<
+.readmecheck/

@@ -118,6 +118,27 @@
             build = mkGoApp "run-build" "Build all go-daemon packages" [
               goPkg
             ] "${lib.getExe goPkg} build ./...";
+
+            # Compiles the first ```go fence of README.md (the quickstart)
+            # as a package main inside this module, so a broken example
+            # fails the build instead of shipping as a history blemish
+            # (the caf1f0c class). The second fence is an intentional
+            # fragment and is deliberately not extracted. Run from the
+            # repo root.
+            check-readme =
+              mkGoApp "check-readme" "Compile the README quickstart snippet against the library"
+                [
+                  goPkg
+                  pkgs.gawk
+                ]
+                ''
+                  [ -f README.md ] || { echo "check-readme: run from the repo root (README.md not found)"; exit 1; }
+                  trap 'rm -rf .readmecheck' EXIT
+                  mkdir -p .readmecheck
+                  awk 'BEGIN{inblock=0} /^```go$/{inblock=1; next} /^```$/{if(inblock) exit} inblock{print}' README.md > .readmecheck/main.go
+                  ${lib.getExe goPkg} build -o /dev/null ./.readmecheck
+                  echo "README quickstart snippet compiles."
+                '';
           };
 
           checks.build = library;
