@@ -8,6 +8,8 @@ import (
 )
 
 func TestParseSSEData_Dispatch(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		wire string

@@ -41,6 +41,13 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
 - Flat single package `daemon` at the repo root (no `pkg/`/`internal/`).
 - Tabs for Go; spaces for nix/json (`.editorconfig`, dprint.json).
 - Functional options (`WithXxx`) for configuration; no panics in library code.
+- Error construction is stdlib-only (`errors.New` sentinels, `fmt.Errorf` +
+  `%w` wraps, explicit `_ =` for best-effort cleanup): no samber/oops, no
+  coded-error wrappers. erraudit audit runs (`--no-suppress` plus the
+  enforce flags) surface these as findings — known-dismissed (reviewed
+  2026-10-01, 0/26 actionable). Do not migrate sentinels or wrap-style
+  errors without a cross-repo decision: project-discovery-daemon matches
+  the sentinels and pins this repo by rev.
 - Lifecycle ordering is a CONTRACT (see `Lifecycle` doc comment in
   socket.go): clean → Startup → listen/chmod → OnListen → READY → watchdog →
   serve → STOPPING → drain → remove socket → OnShutdown → startup cleanup.
