@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	errBoom         = errors.New("boom")
+	errEncodeBoom   = errors.New("boom")
 	errFallbackBoom = errors.New("fallback boom")
 )
 
@@ -27,14 +27,15 @@ func (c stubCodec) Encoding() codec.Encoding   { return c.encoding }
 func (c stubCodec) Encode(any) ([]byte, error) { return c.data, c.encErr }
 func (c stubCodec) Decode([]byte, any) error   { return nil }
 
-// stubBufferCodec adds the BufferEncoder interface with an injectable
-// EncodeToBuffer failure on top of stubCodec.
+// stubBufferCodec is a Codec + BufferEncoder whose EncodeToBuffer fails with
+// a canned error, isolating the WriteEncoded buffer path from real codecs.
 type stubBufferCodec struct {
-	stubCodec
-
 	bufErr error
 }
 
+func (stubBufferCodec) Encoding() codec.Encoding                  { return codec.EncodingJSON }
+func (stubBufferCodec) Encode(any) ([]byte, error)                { return nil, nil }
+func (stubBufferCodec) Decode([]byte, any) error                  { return nil }
 func (c stubBufferCodec) EncodeToBuffer(any, *bytes.Buffer) error { return c.bufErr }
 
 func TestWriteEncoded_BufferEncoderEncodeError(t *testing.T) {
@@ -43,8 +44,7 @@ func TestWriteEncoded_BufferEncoderEncodeError(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	WriteEncoded(rec, http.StatusOK, stubBufferCodec{
-		stubCodec: stubCodec{encoding: codec.EncodingJSON},
-		bufErr:    errBoom,
+		bufErr: errEncodeBoom,
 	}, map[string]string{"secret": "payload"})
 
 	if rec.Code != http.StatusInternalServerError {
@@ -53,7 +53,7 @@ func TestWriteEncoded_BufferEncoderEncodeError(t *testing.T) {
 
 	body := rec.Body.String()
 
-	wantBody := `{"error":"encode response: boom"}` + "\n"
+	wantBody := `{"error":"encode response: boom"}`
 	if body != wantBody {
 		t.Errorf("body = %q, want %q", body, wantBody)
 	}

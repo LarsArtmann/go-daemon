@@ -582,6 +582,7 @@ func TestSocketServer_Options(t *testing.T) {
 			if !tt.want(srv) {
 				t.Errorf("option state mismatch on %s", tt.wantMsg)
 			}
+
 			if got := srv.SocketPath(); got != "/run/test/options.sock" {
 				t.Errorf("SocketPath() = %q, want %q", got, "/run/test/options.sock")
 			}
