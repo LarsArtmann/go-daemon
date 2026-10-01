@@ -8,7 +8,8 @@
 # this script, and CI runs it directly — the two can never drift.
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+# Run from the repo root (the CI checkout dir, or the directory you call
+# `nix run .#check-readme` from): README.md and go.mod live there.
 
 [ -f README.md ] || {
 	echo "check-readme: run from the repo checkout (README.md not found)" >&2

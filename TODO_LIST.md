@@ -47,9 +47,8 @@
 
 ## CI gate completeness
 
-| Task                                                                                                                                                                | Status    | Impact | Effort | Evidence                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Harden ci.yml: run the check-readme gate (needs nix on the runner or a go-native port), add `nix flake check`, audit for private-runner/secret assumptions pre-flip | 🔴 `TODO` | High   | S      | 11-29 §f2/§f14, 10-33 §f14 — verified 2026-09-30: `.github/workflows/ci.yml` has none of the three; check-readme app exists at `flake.nix:128` |
+| Task | Status | Impact | Effort | Evidence |
+| ---- | ------ | ------ | ------ | -------- |
 
 ## Release follow-ups
 

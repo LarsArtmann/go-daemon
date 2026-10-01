@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- CI now enforces the two previously local-only gates: the README quickstart
+  compile check (via `scripts/check-readme.sh`, the single source of truth
+  that the flake's `check-readme` app also calls, so the gates cannot drift)
+  and a new `nix` job running `nix build .#default && nix flake check` on a
+  pinned installer — the only check that catches a stale `vendorHash`.
+  Private-assumption audit of the workflow came back clean: no secrets, no
+  GOPRIVATE, default `GITHUB_TOKEN` only.
 - Closed every measured test-coverage gap: the seven `WithXxx` option
   setters, `SocketPath`, `WriteEncoded`'s encode-error and non-buffer-codec
   fallback paths, `Start()`'s socket-directory failure modes (blocked parent

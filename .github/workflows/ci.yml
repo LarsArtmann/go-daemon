@@ -32,6 +32,9 @@ jobs:
       - name: Build
         run: go build ./...
 
+      - name: Check README quickstart snippet
+        run: bash scripts/check-readme.sh
+
       - name: Vet
         run: go vet ./...
 
@@ -60,3 +63,21 @@ jobs:
         with:
           version: v2.13.2
           args: --timeout=5m
+
+  nix:
+    # The only gate that catches a stale flake vendorHash: `nix build`
+    # re-derives the module hash on every run, so a dependency bump that
+    # forgot the hash fails here instead of at a consumer's `nix build`.
+    # All dependencies are public (no GOPRIVATE, no mkPreparedSource), so
+    # this needs no secrets on a public runner.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out go-daemon
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+
+      - name: Build and check flake
+        run: nix build .#default && nix flake check

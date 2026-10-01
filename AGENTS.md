@@ -20,6 +20,10 @@ golangci-lint run ./...     # strict config mirrored from project-discovery-daem
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
 nix run .#check-readme      # compiles the README quickstart snippet (run from repo root)
+
+The check-readme logic lives in `scripts/check-readme.sh` — the flake app
+and ci.yml both invoke that script, so edit the script only (never inline
+the awk in a second place).
 nix flake check
 nix fmt
 ```
