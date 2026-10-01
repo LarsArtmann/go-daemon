@@ -87,7 +87,7 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
 - `github.com/coreos/go-systemd/v22` — sd_notify + watchdog
 - `github.com/prometheus/client_golang` — flight-recorder metrics
 - `github.com/larsartmann/go-sse/sseparse` — ADOPTED as a test-only
-  dependency (v0.1.0; public module, so no GOPRIVATE/vendor cost):
+  dependency (v0.2.0; public module, so no GOPRIVATE/vendor cost):
   `sse_conformance_test.go` asserts `ParseSSEData` against
   `sseparse.MustCorpus(t)` — the WPT/Chromium wire-format vectors, projected
   onto the framing surface (dispatched data payloads). The corpus is the

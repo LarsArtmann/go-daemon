@@ -17,13 +17,6 @@
 | 🟡 `IN_PROGRESS` | Actively being worked on.                               |
 | 🔵 `BLOCKED`     | External dependency or decision needed before it moves. |
 
-## Standing (event-driven)
-
-| Task                                                                                        | Status    | Impact | Effort | Evidence                                                                                                                      |
-| ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Re-run `TestParseSSEData_CorpusConformance` after the next sseparse tag: bump the test-only | 🔴 `TODO` | Med    | 15min  | Oracle at `sse_conformance_test.go:19` vs `sseparse.MustCorpus`; keeps the framing parser pinned to the WPT/Chromium          |
-| dependency and re-run conformance                                                           |           |        |        | corpus (source: go-sse 07:03 report §f24). sseparse is still at v0.1.0 as of 2026-09-30 — verified via go.mod + module proxy. |
-
 ## Go-public cluster (pre-flip)
 
 | Task                                                                                           | Status       | Impact     | Effort | Evidence                                                                             |
