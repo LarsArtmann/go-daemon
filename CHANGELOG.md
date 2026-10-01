@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `SECURITY.md` (supported-versions table, private reporting channel,
+  scope notes on socket permissions and framing-only SSE parsing), GitHub
+  issue templates (bug + feature forms scoped to mechanism-not-policy), and
+  the repository description and topics. Private vulnerability reporting
+  cannot be enabled on a private repository, so the security contact path is
+  documented for both the private and post-flip states.
 - CI now enforces the two previously local-only gates: the README quickstart
   compile check (via `scripts/check-readme.sh`, the single source of truth
   that the flake's `check-readme` app also calls, so the gates cannot drift)

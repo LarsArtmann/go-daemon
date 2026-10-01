@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/LarsArtmann/go-daemon/security/advisories/new
-    about: Report security issues privately via GitHub vulnerability reporting — never in a public issue (see SECURITY.md).
+    url: https://github.com/LarsArtmann/go-daemon/blob/master/SECURITY.md
+    about: Never report security issues in a public issue — see SECURITY.md for the private channel.

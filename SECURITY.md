@@ -14,9 +14,11 @@ fixes. Consumers should track the latest tag.
 
 Please do **not** open a public issue for security reports.
 
-Use GitHub's private vulnerability reporting on this repository
-(Security → Report a vulnerability), which reaches the maintainer directly
-and keeps the report confidential until a fix ships.
+- While this repository is private, contact the maintainer directly on
+  GitHub (@LarsArtmann) — reports stay confidential by default.
+- Once the repository is public, use GitHub private vulnerability reporting
+  (Security → Report a vulnerability), which keeps the report confidential
+  until a fix ships.
 
 Include what you can of: the affected version (`go list -m
 github.com/LarsArtmann/go-daemon`), a minimal reproduction, and your
