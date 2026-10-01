@@ -1,12 +1,12 @@
 module github.com/LarsArtmann/go-daemon
 
-go 1.27
+go 1.27.1
 
 require (
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/larsartmann/go-codec v0.3.0
 	github.com/larsartmann/go-flightrecorder v0.2.0
-	github.com/larsartmann/go-sse/sseparse v0.1.0
+	github.com/larsartmann/go-sse/sseparse v0.2.0
 	github.com/prometheus/client_golang v1.24.1
 )
 
