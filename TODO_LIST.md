@@ -58,7 +58,7 @@
 
 ## Hygiene
 
-| Task                                                                                                      | Status    | Impact | Effort | Evidence                                                                            |
-| --------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ----------------------------------------------------------------------------------- |
-| `nix flake check --all-systems` pass (darwin omitted so far)                                              | 🔴 `TODO` | Low    | M      | 11-29 §f15                                                                          |
-| README: add a short "Non-goals" pointer to ROADMAP (mechanism-not-policy on the sales page)               | 🔴 `TODO` | Low    | XS     | 00-43 §f26                                                                          |
+| Task                                                                                        | Status    | Impact | Effort | Evidence   |
+| ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------- |
+| `nix flake check --all-systems` pass (darwin omitted so far)                                | 🔴 `TODO` | Low    | M      | 11-29 §f15 |
+| README: add a short "Non-goals" pointer to ROADMAP (mechanism-not-policy on the sales page) | 🔴 `TODO` | Low    | XS     | 00-43 §f26 |
