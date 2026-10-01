@@ -46,8 +46,10 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   coded-error wrappers. erraudit audit runs (`--no-suppress` plus the
   enforce flags) surface these as findings — known-dismissed (reviewed
   2026-10-01, 0/26 actionable). Do not migrate sentinels or wrap-style
-  errors without a cross-repo decision: project-discovery-daemon matches
-  the sentinels and pins this repo by rev.
+  errors without a cross-repo decision: project-discovery-daemon asserts
+  on `Validate()` error-message substrings (its metrics_test.go), making
+  message wording a consumer-visible contract, and it pins this repo by
+  rev.
 - Lifecycle ordering is a CONTRACT (see `Lifecycle` doc comment in
   socket.go): clean → Startup → listen/chmod → OnListen → READY → watchdog →
   serve → STOPPING → drain → remove socket → OnShutdown → startup cleanup.
@@ -60,6 +62,12 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
 - Table-driven tests lead with a `name` field; positional row literals must
   match the struct arity — mismatched rows fail the build, so gate before
   finishing (see Gotchas: auto-commit).
+- New `ParseSSEData` dispatch-shape cases (wire input → dispatched payloads)
+  become rows in the `TestParseSSEData_Dispatch` table (sse_test.go) — do
+  not add new same-shape top-level test functions; error/size-shaped cases
+  (`MaxEventBytesExceeded`, `LargeEvent`, `ScannerErrorWrapped`) stay
+  separate functions. art-dupl at `-t 1` flags the `default:` pair in
+  negotiation.go — accepted idiom, not a clone to fix.
 - Content-negotiation policy (exact matching, RFC 6839 suffixes, q-value
   ranking, tie → CBOR, `q=0` refusal substitution, wildcard neutrality) is a
   documented contract in the `negotiation.go` doc comments — change behavior,
