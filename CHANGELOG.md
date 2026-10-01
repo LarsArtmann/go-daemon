@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hosts/paths, and `.netrc`-shaped content. Zero findings; the single manual
   hit was the scan plan describing its own patterns (self-referential false
   positive).
+- Completed the dependency license inventory: all 15 build-closure modules
+  are MIT, BSD-2/3-Clause, or Apache-2.0 (no copyleft); the dev-only graph
+  adds nothing stricter than file-level MPL-2.0 (`pgregory.net/rapid`,
+  test-only). Inventory and the NOTICE-file decision recorded in
+  `docs/dependency-licenses.md`.
 
 ## [0.2.0] - 2026-09-30
 
