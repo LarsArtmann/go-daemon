@@ -21,7 +21,7 @@ trap 'chmod -R u+w "$work" 2>/dev/null; rm -rf "$work"' EXIT
 
 mkdir -p "$work"
 
-awk 'BEGIN{inblock=0} /^```go$/{inblock=1; next} /^```$/{if(inblock) exit} inblock{print}' README.md > "$work/main.go"
+awk 'BEGIN{inblock=0} /^```go$/{inblock=1; next} /^```$/{if(inblock) exit} inblock{print}' README.md >"$work/main.go"
 
 if [ ! -s "$work/main.go" ]; then
 	echo "check-readme: no go code fence found in README.md" >&2
