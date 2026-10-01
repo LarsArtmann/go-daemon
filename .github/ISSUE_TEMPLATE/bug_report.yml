@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a problem with the daemon building blocks.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please fill in the details below — a
+        minimal reproduction shortens the path to a fix considerably.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Observed behavior, including any error strings verbatim.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Code or a command sequence that triggers the problem.
+      render: go
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: go-daemon version
+      placeholder: v0.2.0
+    validations:
+      required: true
+  - type: input
+    id: go-version
+    attributes:
+      label: Go version
+      placeholder: go1.27.1
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Other
+    validations:
+      required: true

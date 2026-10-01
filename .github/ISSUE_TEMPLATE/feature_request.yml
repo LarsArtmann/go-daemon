@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an improvement to the daemon building blocks.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This library is deliberately mechanism-not-policy: sockets, lifecycle
+        ordering, codecs, framing. Feature requests that pull in domain
+        logic will likely be pointed at the consumer layer — lead with the
+        mechanism you are missing.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The underlying goal, not just the feature you imagine.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What do you do today instead?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed mechanism
+      description: API sketch or behavior description; note whether it changes the lifecycle contract.
+    validations:
+      required: true
