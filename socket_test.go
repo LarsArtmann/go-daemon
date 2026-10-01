@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -498,5 +499,92 @@ func TestSocketServer_watchdog_SendsWatchdogNotifications(t *testing.T) {
 	msg := string(buf[:n])
 	if !strings.Contains(msg, "WATCHDOG=1") {
 		t.Errorf("expected WATCHDOG=1 notification, got %q", msg)
+	}
+}
+
+func TestSocketServer_Options(t *testing.T) {
+	t.Parallel()
+
+	customLogger := slog.New(slog.DiscardHandler)
+
+	tests := []struct {
+		name    string
+		opts    []SocketServerOption
+		want    func(*SocketServer) bool
+		wantMsg string
+	}{
+		{
+			name:    "WithSocketDirMode",
+			opts:    []SocketServerOption{WithSocketDirMode(0o750)},
+			want:    func(s *SocketServer) bool { return s.socketDirMode == 0o750 },
+			wantMsg: "socketDirMode",
+		},
+		{
+			name:    "WithLogger",
+			opts:    []SocketServerOption{WithLogger(customLogger)},
+			want:    func(s *SocketServer) bool { return s.logger == customLogger },
+			wantMsg: "logger",
+		},
+		{
+			name:    "WithVersion",
+			opts:    []SocketServerOption{WithVersion("v9.9.9-test")},
+			want:    func(s *SocketServer) bool { return s.version == "v9.9.9-test" },
+			wantMsg: "version",
+		},
+		{
+			name:    "WithReadHeaderTimeout",
+			opts:    []SocketServerOption{WithReadHeaderTimeout(3 * time.Second)},
+			want:    func(s *SocketServer) bool { return s.readHeaderTimeout == 3*time.Second },
+			wantMsg: "readHeaderTimeout",
+		},
+		{
+			name:    "WithIdleTimeout",
+			opts:    []SocketServerOption{WithIdleTimeout(7 * time.Second)},
+			want:    func(s *SocketServer) bool { return s.idleTimeout == 7*time.Second },
+			wantMsg: "idleTimeout",
+		},
+		{
+			name:    "WithShutdownGracePeriod",
+			opts:    []SocketServerOption{WithShutdownGracePeriod(2 * time.Second)},
+			want:    func(s *SocketServer) bool { return s.shutdownGracePeriod == 2*time.Second },
+			wantMsg: "shutdownGracePeriod",
+		},
+		{
+			name:    "WithProbeTimeout",
+			opts:    []SocketServerOption{WithProbeTimeout(50 * time.Millisecond)},
+			want:    func(s *SocketServer) bool { return s.probeTimeout == 50*time.Millisecond },
+			wantMsg: "probeTimeout",
+		},
+		{
+			name: "defaults with no options",
+			opts: nil,
+			want: func(s *SocketServer) bool {
+				return s.socketMode == DefaultSocketMode &&
+					s.socketDirMode == DefaultSocketDirMode &&
+					s.logger == slog.Default() &&
+					s.version == "" &&
+					s.readHeaderTimeout == DefaultReadHeaderTimeout &&
+					s.idleTimeout == DefaultIdleTimeout &&
+					s.shutdownGracePeriod == DefaultShutdownGracePeriod &&
+					s.healthPath == DefaultHealthPath &&
+					s.probeTimeout == DefaultProbeTimeout
+			},
+			wantMsg: "defaults",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			srv := NewSocketServer("/run/test/options.sock", tt.opts...)
+
+			if !tt.want(srv) {
+				t.Errorf("option state mismatch on %s", tt.wantMsg)
+			}
+			if got := srv.SocketPath(); got != "/run/test/options.sock" {
+				t.Errorf("SocketPath() = %q, want %q", got, "/run/test/options.sock")
+			}
+		})
 	}
 }
