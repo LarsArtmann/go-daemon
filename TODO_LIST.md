@@ -56,6 +56,5 @@
 
 ## Hygiene
 
-| Task                                                         | Status    | Impact | Effort | Evidence   |
-| ------------------------------------------------------------ | --------- | ------ | ------ | ---------- |
-| `nix flake check --all-systems` pass (darwin omitted so far) | 🔴 `TODO` | Low    | M      | 11-29 §f15 |
+| Task | Status | Impact | Effort | Evidence |
+| ---- | ------ | ------ | ------ | -------- |
