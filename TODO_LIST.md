@@ -28,7 +28,6 @@
 
 | Task                                                                                           | Status       | Impact     | Effort | Evidence                                                                             |
 | ---------------------------------------------------------------------------------------------- | ------------ | ---------- | ------ | ------------------------------------------------------------------------------------ |
-| Write the reusable pre-publish audit script (history secrets, dep licenses, private-path scan) | 🔴 `TODO`    | leverage   | M      | 10-33 §f18 — generalizes task 1 above into a command                                 |
 | Post-flip: update AGENTS.md Gotchas (GOPRIVATE/`mkPreparedSource` notes become obsolete)       | 🔵 `BLOCKED` | doc truth  | XS     | 10-33 §f10 — gated on the flip; AGENTS.md:88-91 carries the private-repo notes today |
 | Post-flip: pdd drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash | 🔵 `BLOCKED` | the payoff | M      | 10-33 §f11 — pdd flake.nix:38 pins `git+ssh` today                                   |
 
