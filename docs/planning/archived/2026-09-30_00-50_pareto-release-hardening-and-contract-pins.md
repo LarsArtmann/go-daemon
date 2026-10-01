@@ -1,6 +1,6 @@
 # Pareto Plan — 2026-09-30 00:50 — Release Hardening & Contract Pins
 
-> **Closed 2026-09-30 (docs-health):** every task was executed — the closeout receipt lives in [docs/status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md](../status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md) §a. T-rows carry per-task verdicts with hashes; Level-2 subtasks are struck bare (their outcomes are the parent-task verdicts). Archived per docs-health classification — T9 remains a standing event row in TODO_LIST.md.
+> **Closed 2026-09-30 (docs-health):** every task was executed — the closeout receipt lives in [docs/status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md](../../status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md) §a. T-rows carry per-task verdicts with hashes; Level-2 subtasks are struck bare (their outcomes are the parent-task verdicts). Archived per docs-health classification — T9 remains a standing event row in TODO_LIST.md.
 
 **Scope:** every open TODO_LIST row (16) plus the routed-out fleet pointers from
 the 2026-09-30 status report §f. Sources: `TODO_LIST.md` (harvested
