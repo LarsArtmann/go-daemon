@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Output-verified godoc examples for the two remaining flagship
+  surfaces: `ExampleParseSSEData` (framing-only parse loop, multi-line data
+  included) and `ExampleNewSocketServer` (full serve-over-unix-socket round
+  trip ending in graceful shutdown). Examples run as tests.
 - Added `SECURITY.md` (supported-versions table, private reporting channel,
   scope notes on socket permissions and framing-only SSE parsing), GitHub
   issue templates (bug + feature forms scoped to mechanism-not-policy), and
