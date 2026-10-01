@@ -58,8 +58,7 @@
 
 ## Hygiene
 
-| Task                                                                                                                                        | Status    | Impact | Effort | Evidence                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | -------------------------------------------------------------------------------------------------------- |
-| `nix flake check --all-systems` pass (darwin omitted so far)                                                                                | 🔴 `TODO` | Low    | M      | 11-29 §f15                                                                                               |
-| Derive FEATURES.md counts mechanically (grep) instead of hand-maintained prose — they rotted once already                                   | 🔴 `TODO` | Low    | XS     | 00-43 §f24 — counts drifted (stale "1 PLANNED") and needed a hand fix on 2026-09-30                      |
-| README: add a short "Non-goals" pointer to ROADMAP (mechanism-not-policy on the sales page)                                                 | 🔴 `TODO` | Low    | XS     | 00-43 §f26                                                                                               |
+| Task                                                                                                      | Status    | Impact | Effort | Evidence                                                                            |
+| --------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ----------------------------------------------------------------------------------- |
+| `nix flake check --all-systems` pass (darwin omitted so far)                                              | 🔴 `TODO` | Low    | M      | 11-29 §f15                                                                          |
+| README: add a short "Non-goals" pointer to ROADMAP (mechanism-not-policy on the sales page)               | 🔴 `TODO` | Low    | XS     | 00-43 §f26                                                                          |

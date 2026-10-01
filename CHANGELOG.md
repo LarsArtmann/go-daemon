@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a `check-docs` flake app (and `scripts/check-docs.sh`) that turns
+  documentation health into one command: dprint format check, per-table row
+  completeness over the living docs, strikethrough presence in every
+  historical report (dprint has destroyed full-row strikes before), and a
+  mechanical FEATURES-count derivation that fails on drift. The row checker
+  is vendored at `scripts/check-rows.py` so the gate is self-contained.
 - Added Output-verified godoc examples for the two remaining flagship
   surfaces: `ExampleParseSSEData` (framing-only parse loop, multi-line data
   included) and `ExampleNewSocketServer` (full serve-over-unix-socket round

@@ -31,12 +31,16 @@ fi
 
 echo "== check-rows"
 script_dir="$(dirname "$0")"
+checker="$script_dir/check-rows.py"
+# When invoked from the flake app, the script itself lives in the nix store
+# while the repo checkout (with scripts/check-rows.py) is the cwd.
+[ -f "$checker" ] || checker="scripts/check-rows.py"
 # Living docs only: TODO_LIST/FEATURES/ROADMAP tables must be uniformly
 # struck or uniformly open. Historical reports under docs/status/ contain
 # deliberately-open rows frozen at annotation time (checked for strike
 # PRESENCE below, not per-table completeness).
 files=(TODO_LIST.md FEATURES.md ROADMAP.md)
-if ! python3 "$script_dir/check-rows.py" "${files[@]}"; then
+if ! python3 "$checker" "${files[@]}"; then
 	fail=1
 fi
 
