@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Changed
+
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+### Security
+
+- Nothing yet.
+
+## [0.3.0] - 2026-10-01
+
+### Added
+
 - Packaged the five owner decisions into
   `docs/decisions/2026-10-01_owner-decision-memo.md` (data +
   recommendation each: API policy, name, docs visibility, CI billing, the
@@ -62,14 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   than set, preserving handler-declared variance such as
   `Vary: Authorization`.
 
-### Fixed
-
-- `nix flake check --all-systems` now passes: x86_64-darwin is filtered
-  from the flake's systems list because Nixpkgs 26.11 dropped support for
-  it (evaluating any package there failed the check). aarch64-darwin and
-  both linux systems remain; the library cross-compiles to darwin/arm64,
-  verified with `GOOS=darwin go build`.
-
 ### Changed
 
 - README now reads as a first-time visitor's page: install command and Go
@@ -90,7 +100,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Nothing yet.
+- `nix flake check --all-systems` now passes: x86_64-darwin is filtered
+  from the flake's systems list because Nixpkgs 26.11 dropped support for
+  it (evaluating any package there failed the check). aarch64-darwin and
+  both linux systems remain; the library cross-compiles to darwin/arm64,
+  verified with `GOOS=darwin go build`.
 
 ### Security
 
@@ -216,7 +230,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configurable `MetricPrefix`, and a rate-limited `TraceHandler` streaming
   `go tool trace` files.
 
-[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/LarsArtmann/go-daemon/releases/tag/v0.1.0
