@@ -8,8 +8,6 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-
-    systems.url = "github:nix-systems/default";
   };
 
   outputs =
@@ -19,12 +17,15 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      # x86_64-darwin is filtered out: Nixpkgs 26.11 dropped support for it,
-      # so evaluating any package for that system fails `nix flake check
-      # --all-systems`. aarch64-darwin stays — the library cross-compiles
-      # and evaluates there. Overriding the systems input re-adds it for
-      # nixpkgs <= 26.05 consumers.
-      systems = builtins.filter (s: s != "x86_64-darwin") (import inputs.systems);
+      # Inline systems: nixpkgs 26.11 dropped x86_64-darwin (which
+      # github:nix-systems/default still lists), so evaluating that system
+      # fails `nix flake check --all-systems`. aarch64-darwin stays — the
+      # library cross-compiles and evaluates there.
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
 
       perSystem =
         {
