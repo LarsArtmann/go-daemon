@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
@@ -387,6 +388,79 @@ func TestSocketServer_HandlerRequired(t *testing.T) {
 	}
 }
 
+func TestSocketServer_StartupSocketDirErrors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		setup     func(t *testing.T) string
+		skipIf    func(t *testing.T) bool
+		wantErrIs error
+		wantErrIn string
+	}{
+		{
+			name: "socket directory path is a regular file",
+			setup: func(t *testing.T) string {
+				t.Helper()
+
+				blocker := filepath.Join(t.TempDir(), "blocker")
+				if err := os.WriteFile(blocker, []byte("not a dir"), 0o600); err != nil {
+					t.Fatalf("write blocker file: %v", err)
+				}
+
+				return filepath.Join(blocker, "daemon.sock")
+			},
+			wantErrIn: "create socket directory",
+		},
+		{
+			name: "socket directory is not writable",
+			setup: func(t *testing.T) string {
+				t.Helper()
+
+				dir := t.TempDir()
+				if err := os.Chmod(dir, 0o555); err != nil {
+					t.Fatalf("chmod dir: %v", err)
+				}
+
+				t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
+
+				return filepath.Join(dir, "sub", "daemon.sock")
+			},
+			skipIf: func(t *testing.T) bool {
+				t.Helper()
+
+				return os.Geteuid() == 0
+			},
+			wantErrIs: fs.ErrPermission,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if tt.skipIf != nil && tt.skipIf(t) {
+				t.Skip("cannot test permission denial as root")
+			}
+
+			srv := NewSocketServer(tt.setup(t))
+
+			err := srv.Start(t.Context(), Lifecycle{Handler: healthMux()})
+			if err == nil {
+				t.Fatal("expected startup error")
+			}
+
+			if tt.wantErrIs != nil && !errors.Is(err, tt.wantErrIs) {
+				t.Errorf("error = %v, want wrapped %v", err, tt.wantErrIs)
+			}
+
+			if tt.wantErrIn != "" && !strings.Contains(err.Error(), tt.wantErrIn) {
+				t.Errorf("error = %v, want it to contain %q", err, tt.wantErrIn)
+			}
+		})
+	}
+}
+
 func TestIsSocketAlive(t *testing.T) {
 	t.Parallel()
 
@@ -585,6 +659,77 @@ func TestSocketServer_Options(t *testing.T) {
 
 			if got := srv.SocketPath(); got != "/run/test/options.sock" {
 				t.Errorf("SocketPath() = %q, want %q", got, "/run/test/options.sock")
+			}
+		})
+	}
+}
+
+func TestSocketServer_notifyStopping(t *testing.T) {
+	// Cannot use t.Parallel: t.Setenv is not allowed in parallel tests.
+	tests := []struct {
+		name        string
+		notifyEnv   string
+		listen      bool
+		wantMessage string
+	}{
+		{
+			name:        "unset NOTIFY_SOCKET is a no-op",
+			notifyEnv:   "",
+			wantMessage: "",
+		},
+		{
+			name:        "unixgram NOTIFY_SOCKET receives STOPPING=1",
+			listen:      true,
+			wantMessage: "STOPPING=1",
+		},
+		{
+			name:        "unreachable NOTIFY_SOCKET logs and continues",
+			notifyEnv:   filepath.Join(t.TempDir(), "missing.sock"),
+			wantMessage: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var pc net.PacketConn
+
+			if tt.listen {
+				var err error
+
+				pc, err = (&net.ListenConfig{}).ListenPacket(
+					t.Context(), "unixgram", filepath.Join(t.TempDir(), "notify.sock"),
+				)
+				if err != nil {
+					t.Fatalf("create unixgram listener: %v", err)
+				}
+
+				defer func() { _ = pc.Close() }()
+
+				t.Setenv("NOTIFY_SOCKET", pc.LocalAddr().String())
+			} else {
+				t.Setenv("NOTIFY_SOCKET", tt.notifyEnv)
+			}
+
+			srv := NewSocketServer(filepath.Join(t.TempDir(), "unused.sock"))
+			srv.notifyStopping()
+
+			if tt.wantMessage == "" {
+				return
+			}
+
+			buf := make([]byte, 64)
+
+			if err := pc.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
+				t.Fatalf("set read deadline: %v", err)
+			}
+
+			n, _, err := pc.ReadFrom(buf)
+			if err != nil {
+				t.Fatalf("did not receive STOPPING notification: %v", err)
+			}
+
+			if got := string(buf[:n]); got != tt.wantMessage {
+				t.Errorf("notification = %q, want %q", got, tt.wantMessage)
 			}
 		})
 	}

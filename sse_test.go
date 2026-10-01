@@ -247,3 +247,59 @@ func FuzzParseSSEData(f *testing.F) {
 		}
 	})
 }
+
+func TestSSELineReader_LineAtEOF(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		input      string
+		wantFirst  string
+		wantSecond string
+	}{
+		{
+			name:       "unterminated final line is returned then clean EOF",
+			input:      "data",
+			wantFirst:  "data",
+			wantSecond: "",
+		},
+		{
+			name:       "empty stream is clean EOF on every call",
+			input:      "",
+			wantFirst:  "",
+			wantSecond: "",
+		},
+		{
+			name:       "terminated line then EOF yields nil",
+			input:      "data\n",
+			wantFirst:  "data",
+			wantSecond: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			r := newSSELineReader(strings.NewReader(tt.input), 1024)
+
+			first, err := r.next()
+			if err != nil {
+				t.Fatalf("first next: %v", err)
+			}
+
+			if string(first) != tt.wantFirst {
+				t.Errorf("first line = %q, want %q", first, tt.wantFirst)
+			}
+
+			second, err := r.next()
+			if err != nil {
+				t.Fatalf("second next: %v", err)
+			}
+
+			if string(second) != tt.wantSecond {
+				t.Errorf("second line = %q, want %q", second, tt.wantSecond)
+			}
+		})
+	}
+}
