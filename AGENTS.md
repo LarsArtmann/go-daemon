@@ -146,6 +146,11 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   (here or in the consuming repo) and commit the hash — do not wait for
   or ask the bot to fix nix. (2026-09-30: the go-codec v0.3.0 bump landed
   this way and the hash repaired cleanly.)
+- **Verify row edits with an immediate grep, not the edit tool's success
+  response.** Twice this session a TODO_LIST row removal reported success
+  but the row was still on disk afterward (cause undiagnosed). Pattern
+  that works: remove via script, `grep -c` in the SAME command, gate,
+  then commit.
 - dprint plugin pins are versioned URLs in `dprint.json` (checked
   2026-09-30: json 0.25.0, pretty_yaml 0.6.0, markdown 0.24.0,
   dockerfile 0.6.0). `dprint config update` refreshes versions but also
