@@ -141,6 +141,14 @@ bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
   each edit self-consistent and compile-clean on its own, gate
   synchronously between steps, and commit descriptively yourself when the
   change matters (heuristic `chore: auto-commit` messages flatten history).
+- **Release cuts race the auto-commit daemon in BOTH repos.** During the
+  v0.3.0 cut (2026-10-01) the daemon swept the CHANGELOG promotion into a
+  heuristic commit between gate and release commit, and pdd's daemon split
+  the consumer bump into two heuristic commits. Rules: commit release-
+  critical edits (CHANGELOG promote, TODO gate-row removal) descriptively
+  in the SAME bash call that makes them; in the consumer, squash
+  daemon-split bump commits with `git reset --soft HEAD~N` + one
+  descriptive commit before pushing (safe: local-only rewrite).
 - **Re-read files after any formatter run.** `nix fmt` / dprint /
   `golangci-lint fmt` rewrite files in place, and edit-tool stale-read
   checks will bounce the next edit until the file is re-read. Budget a

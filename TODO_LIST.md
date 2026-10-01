@@ -41,11 +41,12 @@
 
 ## Release follow-ups
 
-| Task                                                                                                          | Status       | Impact | Effort | Evidence                                                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Verify pkg.go.dev rendering after proxy pickup                                                                | 🔵 `BLOCKED` | Low    | XS     | 2026-10-01: pkg.go.dev returns 404 — it cannot index a private module; verify right after the visibility flip (part of the post-flip runbook) |
+| Task                                           | Status       | Impact | Effort | Evidence                                                                                                                                      |
+| ---------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verify pkg.go.dev rendering after proxy pickup | 🔵 `BLOCKED` | Low    | XS     | 2026-10-01: pkg.go.dev returns 404 — it cannot index a private module; verify right after the visibility flip (part of the post-flip runbook) |
 
 ## Hygiene
 
-| Task | Status | Impact | Effort | Evidence |
-| ---- | ------ | ------ | ------ | -------- |
+| Task                                                                                                                                                                | Status    | Impact      | Effort | Evidence                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ----------- | ------ | -------------------------------------------------------------- |
+| Harvest the three 2026-10-01 status reports (05-46, 05-51, 07-05): pull §f items here, then annotate — they leave `nix run .#check-docs` failing on missing strikes | 🔴 `TODO` | gate health | S      | check-docs exits 1 on strike presence since the reports landed |
