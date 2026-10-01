@@ -26,12 +26,11 @@
 
 ## Go-public cluster (pre-flip)
 
-| Task                                                                                           | Status       | Impact           | Effort | Evidence                                                                             |
-| ---------------------------------------------------------------------------------------------- | ------------ | ---------------- | ------ | ------------------------------------------------------------------------------------ |
-| Read README end-to-end; polish for external audience                                           | 🔴 `TODO`    | first impression | S      | 10-33 §f8 — README skimmed to line 80 only during the go-public review               |
-| Write the reusable pre-publish audit script (history secrets, dep licenses, private-path scan) | 🔴 `TODO`    | leverage         | M      | 10-33 §f18 — generalizes task 1 above into a command                                 |
-| Post-flip: update AGENTS.md Gotchas (GOPRIVATE/`mkPreparedSource` notes become obsolete)       | 🔵 `BLOCKED` | doc truth        | XS     | 10-33 §f10 — gated on the flip; AGENTS.md:88-91 carries the private-repo notes today |
-| Post-flip: pdd drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash | 🔵 `BLOCKED` | the payoff       | M      | 10-33 §f11 — pdd flake.nix:38 pins `git+ssh` today                                   |
+| Task                                                                                           | Status       | Impact     | Effort | Evidence                                                                             |
+| ---------------------------------------------------------------------------------------------- | ------------ | ---------- | ------ | ------------------------------------------------------------------------------------ |
+| Write the reusable pre-publish audit script (history secrets, dep licenses, private-path scan) | 🔴 `TODO`    | leverage   | M      | 10-33 §f18 — generalizes task 1 above into a command                                 |
+| Post-flip: update AGENTS.md Gotchas (GOPRIVATE/`mkPreparedSource` notes become obsolete)       | 🔵 `BLOCKED` | doc truth  | XS     | 10-33 §f10 — gated on the flip; AGENTS.md:88-91 carries the private-repo notes today |
+| Post-flip: pdd drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash | 🔵 `BLOCKED` | the payoff | M      | 10-33 §f11 — pdd flake.nix:38 pins `git+ssh` today                                   |
 
 ## Owner decisions (BLOCKED — nothing to code)
 
@@ -58,7 +57,6 @@
 
 ## Hygiene
 
-| Task                                                                                        | Status    | Impact | Effort | Evidence   |
-| ------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---------- |
-| `nix flake check --all-systems` pass (darwin omitted so far)                                | 🔴 `TODO` | Low    | M      | 11-29 §f15 |
-| README: add a short "Non-goals" pointer to ROADMAP (mechanism-not-policy on the sales page) | 🔴 `TODO` | Low    | XS     | 00-43 §f26 |
+| Task                                                         | Status    | Impact | Effort | Evidence   |
+| ------------------------------------------------------------ | --------- | ------ | ------ | ---------- |
+| `nix flake check --all-systems` pass (darwin omitted so far) | 🔴 `TODO` | Low    | M      | 11-29 §f15 |

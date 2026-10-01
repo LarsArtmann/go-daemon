@@ -50,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- README now reads as a first-time visitor's page: install command and Go
+  version requirement up front, a Non-goals section that states the
+  mechanism-not-policy boundary (no domain logic, no packaging, unix
+  sockets only) with a pointer to ROADMAP.md, and a Security section
+  linking SECURITY.md.
 - Rewrote CONTRIBUTING.md nix-first: the flake commands are the documented
   path (plain-Go equivalents listed), PR expectations now name the enforced
   gates (80% coverage floor, README compile check, lifecycle-contract and

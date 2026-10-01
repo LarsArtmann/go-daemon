@@ -10,6 +10,14 @@ The package is mechanism, not policy: it owns sockets, lifecycle ordering,
 codecs, and framing. Domain handlers, caching, and business logic stay with
 your daemon.
 
+## Install
+
+```bash
+go get github.com/LarsArtmann/go-daemon
+```
+
+Requires Go 1.27 or newer.
+
 ## What you get
 
 | Piece                                                                                         | What it does                                                                                                                                                                                                                                                                                |
@@ -86,6 +94,19 @@ The daemon's socket is `0600` by default: only the owning user may talk to it.
 `/run` is the FHS-standard location for runtime sockets — created by
 systemd/tmpfiles at boot, cleared on reboot. `/tmp` is world-writable and
 invites symlink attacks.
+
+## Non-goals
+
+This library deliberately stops at the mechanism layer. It does not provide
+domain handlers, caching, or business logic; it does not package, deploy, or
+supervise your daemon (systemd owns that); and it listens on unix domain
+sockets only — no TCP listener, no TLS termination. Longer-term ideas and
+raw directions live in [ROADMAP.md](ROADMAP.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the supported-versions policy and how to
+report vulnerabilities privately.
 
 ## License
 
