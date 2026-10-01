@@ -48,11 +48,10 @@
 
 ## Release follow-ups
 
-| Task                                                                                                          | Status       | Impact | Effort | Evidence                                                                        |
-| ------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------- |
-| Cut v0.3.0 when a consumer wants `Vary: Accept` (Vary + godoc example + boundary docs sit untagged on master) | 🔵 `BLOCKED` | High   | S      | 11-29 §f3 — demand-gated; v0.2.0 deliberately shipped without Vary              |
-| Visual check of the v0.2.0 GitHub Release page rendering                                                      | 🔴 `TODO`    | Low    | XS     | 11-29 §f16 — release created, never visually inspected                          |
-| Verify pkg.go.dev rendering after proxy pickup                                                                | 🔴 `TODO`    | Low    | XS     | 10-33 §f13 — `go list -m …@v0.2.0` resolution verified; rendering never checked |
+| Task                                                                                                          | Status       | Impact | Effort | Evidence                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cut v0.3.0 when a consumer wants `Vary: Accept` (Vary + godoc example + boundary docs sit untagged on master) | 🔵 `BLOCKED` | High   | S      | 11-29 §f3 — demand-gated; v0.2.0 deliberately shipped without Vary                                                                            |
+| Verify pkg.go.dev rendering after proxy pickup                                                                | 🔵 `BLOCKED` | Low    | XS     | 2026-10-01: pkg.go.dev returns 404 — it cannot index a private module; verify right after the visibility flip (part of the post-flip runbook) |
 
 ## Hygiene
 
