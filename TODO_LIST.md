@@ -59,15 +59,6 @@
 | Visual check of the v0.2.0 GitHub Release page rendering                                                      | 🔴 `TODO`    | Low    | XS     | 11-29 §f16 — release created, never visually inspected                          |
 | Verify pkg.go.dev rendering after proxy pickup                                                                | 🔴 `TODO`    | Low    | XS     | 10-33 §f13 — `go list -m …@v0.2.0` resolution verified; rendering never checked |
 
-## Test coverage gaps (all percentages re-measured 2026-09-30 with CI's exact flags)
-
-| Task                                                                  | Status    | Impact | Effort | Evidence                                                            |
-| --------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------- |
-| Unit-test the 7 uncovered `WithXxx` option setters (cheap table test) | 🔴 `TODO` | Med    | S      | 11-29 §f10 — `socket.go:82-120` all at 0.0% (`go tool cover -func`) |
-| Cover `WriteEncoded`'s encode-error path (inject a failing codec)     | 🔴 `TODO` | Med    | S      | 11-29 §f8 — `write.go:29` at 65.6%                                  |
-| Cover `Start()`'s startup-error paths                                 | 🔴 `TODO` | Med    | M      | 11-29 §f9 — `socket.go:195` at 76.2%                                |
-| Cover `notifyStopping` and `lineAtEOF`                                | 🔴 `TODO` | Med    | S      | 11-29 §f11 — `socket.go:327` at 50.0%, `sse.go:196` at 66.7%        |
-
 ## Hygiene
 
 | Task                                                                                                                                        | Status    | Impact | Effort | Evidence                                                                                                 |

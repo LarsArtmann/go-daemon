@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Closed every measured test-coverage gap: the seven `WithXxx` option
+  setters, `SocketPath`, `WriteEncoded`'s encode-error and non-buffer-codec
+  fallback paths, `Start()`'s socket-directory failure modes (blocked parent
+  path, unwritable directory), `notifyStopping` (set/unset/unreachable
+  systemd socket), and `lineAtEOF`'s EOF boundary branches. Total coverage
+  rose from 86.1% to 92.0% (CI gate: 80%); every targeted function is now at
+  100% except `Start` (77.1% — the remaining branches require
+  non-portable failure injection: chmod-after-listen, mid-serve listener
+  death).
 - `WriteEncoded` (and through it `WriteJSON`/`WriteErrorf`) now emits
   `Vary: Accept` on every response: response encodings are commonly chosen
   from the request's Accept header, so caches must not reuse a stored
