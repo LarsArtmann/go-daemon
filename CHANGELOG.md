@@ -48,6 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   than set, preserving handler-declared variance such as
   `Vary: Authorization`.
 
+### Fixed
+
+- `nix flake check --all-systems` now passes: x86_64-darwin is filtered
+  from the flake's systems list because Nixpkgs 26.11 dropped support for
+  it (evaluating any package there failed the check). aarch64-darwin and
+  both linux systems remain; the library cross-compiles to darwin/arm64,
+  verified with `GOOS=darwin go build`.
+
 ### Changed
 
 - README now reads as a first-time visitor's page: install command and Go

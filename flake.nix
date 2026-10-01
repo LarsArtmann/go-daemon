@@ -19,7 +19,12 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
+      # x86_64-darwin is filtered out: Nixpkgs 26.11 dropped support for it,
+      # so evaluating any package for that system fails `nix flake check
+      # --all-systems`. aarch64-darwin stays — the library cross-compiles
+      # and evaluates there. Overriding the systems input re-adds it for
+      # nixpkgs <= 26.05 consumers.
+      systems = builtins.filter (s: s != "x86_64-darwin") (import inputs.systems);
 
       perSystem =
         {
