@@ -31,8 +31,8 @@ shows 25+ modules named `go-daemon`; most have ≤12 importers, sevlyar has
 Go import paths are fully qualified, so nothing breaks technically.
 
 **Cost of keeping:** search results are dominated by sevlyar; this repo
-will never rank first for "go-daemon". Soft collision on the *package
-name* `daemon` — a consumer importing both libraries must alias one.
+will never rank first for "go-daemon". Soft collision on the _package
+name_ `daemon` — a consumer importing both libraries must alias one.
 **Cost of renaming:** module path change post-flip = a v2 migration for
 every consumer; pdd re-pins; docs/README/memo paths change.
 
@@ -40,7 +40,7 @@ every consumer; pdd re-pins; docs/README/memo paths change.
 people who already know it exists (pdd's README, this owner's other
 repos), not search traffic; and rename-after-flip is the single most
 expensive mistake available here. If search differentiation ever matters,
-differentiate the *package* name or the description, not the module path.
+differentiate the _package_ name or the description, not the module path.
 
 ## 3. Docs visibility (TODO: scrub vs keep `docs/status/`, `docs/planning/`, `reports/`)
 
@@ -73,6 +73,7 @@ unless private-master CI is wanted in the interim.
 ## 5. The visibility flip itself (TODO: after the pre-flip cluster is green)
 
 **Data — pre-flip cluster status 2026-10-01:**
+
 - History secret scan: CLEAN (gitleaks 53 commits + manual pass).
 - License inventory: all-permissive build closure, NOTICE decision
   documented (`docs/dependency-licenses.md`).

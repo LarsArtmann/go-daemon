@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Packaged the five owner decisions into
+  `docs/decisions/2026-10-01_owner-decision-memo.md` (data +
+  recommendation each: API policy, name, docs visibility, CI billing, the
+  flip), pre-written the ~30-minute post-flip mechanical tail as
+  `docs/runbooks/post-flip.md` (apply only after the flip), and drafted
+  the demand-gated v0.3.0 tag annotation and CHANGELOG compare-link diff
+  in `docs/release/v0.3.0-draft.md`. The v0.2.0 GitHub release page
+  rendering is verified; the pkg.go.dev check is owner-gated on the flip
+  (private modules cannot be indexed).
 - Added `scripts/pre-publish-audit.sh`, generalizing the pre-flip trust
   scans into one command for any repo flip: gitleaks history scan plus a
   manual credential-pattern pass, a working-tree private-path scan
