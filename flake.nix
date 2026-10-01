@@ -133,6 +133,21 @@
                 ''
                   ${lib.getExe pkgs.bash} ${./scripts/check-readme.sh}
                 '';
+
+            # Documentation health as one command: dprint check, table-row
+            # completeness, strike presence in historical reports, and the
+            # FEATURES counts derivation. Logic lives in
+            # scripts/check-docs.sh so CI can run the identical gate.
+            check-docs =
+              mkGoApp "check-docs" "Run the documentation health gates (format, rows, strikes, counts)"
+                [
+                  pkgs.bash
+                  pkgs.dprint
+                  pkgs.python3
+                ]
+                ''
+                  ${lib.getExe pkgs.bash} ${./scripts/check-docs.sh}
+                '';
           };
 
           checks.build = library;
