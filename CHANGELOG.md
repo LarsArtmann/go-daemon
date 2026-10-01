@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+### Security
+
+- Completed the pre-flip trust scan of the full git history: gitleaks across
+  all 53 commits (~612 KB of blobs) plus a manual pass for PEM keys, cloud
+  provider tokens, GitHub/GitHub-app tokens, high-entropy strings, internal
+  hosts/paths, and `.netrc`-shaped content. Zero findings; the single manual
+  hit was the scan plan describing its own patterns (self-referential false
+  positive).
+
 ## [0.2.0] - 2026-09-30
 
 ### Added

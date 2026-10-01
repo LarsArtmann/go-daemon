@@ -28,7 +28,6 @@
 
 | Task                                                                                           | Status       | Impact            | Effort | Evidence                                                                             |
 | ---------------------------------------------------------------------------------------------- | ------------ | ----------------- | ------ | ------------------------------------------------------------------------------------ |
-| Full git-history secret scan (all blobs, deleted files, `result/`/`coverage/` artifacts)       | 🔴 `TODO`    | blocking for flip | S      | 10-33 §f1/§c — working tree verified clean; history never scanned                    |
 | Dependency license inventory from go.sum (Apache-2.0 notices etc.)                             | 🔴 `TODO`    | legal hygiene     | S      | 10-33 §f7, 11-29 §f21 — prometheus/client_golang et al. unchecked                    |
 | Verify sevlyar/go-daemon + search pkg.go.dev for `go-daemon` module collisions                 | 🔴 `TODO`    | naming input      | XS     | 10-33 §f5 — sevlyar mention still hedged in the 10-33 report                         |
 | Read README end-to-end; polish for external audience                                           | 🔴 `TODO`    | first impression  | S      | 10-33 §f8 — README skimmed to line 80 only during the go-public review               |
