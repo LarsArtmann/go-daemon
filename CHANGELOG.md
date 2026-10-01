@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `scripts/pre-publish-audit.sh`, generalizing the pre-flip trust
+  scans into one command for any repo flip: gitleaks history scan plus a
+  manual credential-pattern pass, a working-tree private-path scan
+  (GOPRIVATE/git+ssh/home paths — expected to fail until the post-flip
+  runbook lands), and a permissive-license check over the build closure.
 - Added a `check-docs` flake app (and `scripts/check-docs.sh`) that turns
   documentation health into one command: dprint format check, per-table row
   completeness over the living docs, strikethrough presence in every

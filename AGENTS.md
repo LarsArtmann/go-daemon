@@ -21,6 +21,7 @@ nix build .#default         # hermetic build (all deps public — no mkPreparedS
 nix run .#test
 nix run .#check-readme      # compiles the README quickstart snippet (run from repo root)
 nix run .#check-docs        # documentation health: dprint check + row completeness + strike presence + FEATURES counts
+bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets + private paths + licenses (exit 1 is EXPECTED until the post-flip runbook removes the GOPRIVATE refs)
 
 The check-readme logic lives in `scripts/check-readme.sh` — the flake app
 and ci.yml both invoke that script, so edit the script only (never inline
