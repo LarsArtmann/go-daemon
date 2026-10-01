@@ -44,7 +44,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Nothing yet.
+- Rewrote CONTRIBUTING.md nix-first: the flake commands are the documented
+  path (plain-Go equivalents listed), PR expectations now name the enforced
+  gates (80% coverage floor, README compile check, lifecycle-contract and
+  negotiation-table coupling), and security reports point at SECURITY.md.
+  Also closed two provenance questions: `90f86db` is confirmed as the
+  auto-commit daemon's heuristic sweep of the 2026-09-30 00:43 session
+  (CONTRIBUTING creation, go.mod/go.sum alignment, vendorHash repair), and
+  the local `.golangci.yml` still diffs against project-discovery-daemon's
+  by exactly the three documented consumer-only prune entries — nothing to
+  sync.
 
 ### Fixed
 
