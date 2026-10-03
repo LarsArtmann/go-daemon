@@ -23,6 +23,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.4.0] - 2026-10-03
+
+### Added
+
+- Standalone sd_notify API, callable without `SocketServer`:
+  `NotifyReady`/`NotifyStopping` send READY=1/STOPPING=1, `Watchdog` keeps
+  the watchdog pinged, `WatchdogInterval` returns the recommended interval
+  (WatchdogSec/2, per `sd_watchdog_enabled(3)`), and `ReadNotifyCounters`
+  exposes process-global activity counters for `/metrics` scrapes. All are
+  silent no-ops without systemd. Decided in
+  `docs/decisions/2026-10-03_v040-notify-api-shape.md`.
+- Listener-agnostic `Server`: `NewServer(network, addr)` serves the full
+  production lifecycle on any network (e.g. TCP), `WithListener` serves a
+  pre-built listener with zero filesystem management. `SocketServer` is now
+  a type alias of `Server`, so unix behavior and every existing option are
+  unchanged. Contract tests (hook ordering, graceful drain, listen-error,
+  port restart) ported to TCP.
+
 ## [0.3.0] - 2026-10-01
 
 ### Added
