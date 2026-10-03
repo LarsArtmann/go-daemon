@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -510,72 +509,6 @@ func TestTransportOverSocket(t *testing.T) {
 	}
 }
 
-func TestSocketServer_watchdog_ExitsOnContextCancel(t *testing.T) {
-	t.Parallel()
-
-	srv := NewSocketServer(filepath.Join(t.TempDir(), "watchdog.sock"))
-
-	ctx, cancel := context.WithCancel(t.Context())
-
-	done := make(chan struct{})
-
-	go func() {
-		srv.watchdog(ctx, 10*time.Millisecond)
-		close(done)
-	}()
-
-	cancel()
-
-	select {
-	case <-done:
-	case <-time.After(time.Second):
-		t.Fatal("watchdog did not exit after context cancellation")
-	}
-}
-
-func TestSocketServer_watchdog_SendsWatchdogNotifications(t *testing.T) {
-	// Cannot run in parallel with other tests because t.Setenv is not allowed
-	// under t.Parallel in Go 1.26.
-
-	// Create a temporary unixgram socket to stand in for systemd's NOTIFY_SOCKET.
-	tmpDir := t.TempDir()
-
-	socketPath := filepath.Join(tmpDir, "notify.sock")
-
-	pc, err := (&net.ListenConfig{}).ListenPacket(t.Context(), "unixgram", socketPath)
-	if err != nil {
-		t.Fatalf("create unixgram listener: %v", err)
-	}
-
-	defer func() { _ = pc.Close() }()
-
-	t.Setenv("NOTIFY_SOCKET", socketPath)
-
-	srv := NewSocketServer(socketPath)
-
-	ctx, cancel := context.WithCancel(t.Context())
-
-	defer cancel()
-
-	go srv.watchdog(ctx, 20*time.Millisecond)
-
-	buf := make([]byte, 1024)
-
-	if err := pc.SetReadDeadline(time.Now().Add(500 * time.Millisecond)); err != nil {
-		t.Fatalf("set read deadline: %v", err)
-	}
-
-	n, _, err := pc.ReadFrom(buf)
-	if err != nil {
-		t.Fatalf("did not receive watchdog notification: %v", err)
-	}
-
-	msg := string(buf[:n])
-	if !strings.Contains(msg, "WATCHDOG=1") {
-		t.Errorf("expected WATCHDOG=1 notification, got %q", msg)
-	}
-}
-
 func TestSocketServer_Options(t *testing.T) {
 	t.Parallel()
 
@@ -659,77 +592,6 @@ func TestSocketServer_Options(t *testing.T) {
 
 			if got := srv.SocketPath(); got != "/run/test/options.sock" {
 				t.Errorf("SocketPath() = %q, want %q", got, "/run/test/options.sock")
-			}
-		})
-	}
-}
-
-func TestSocketServer_notifyStopping(t *testing.T) {
-	// Cannot use t.Parallel: t.Setenv is not allowed in parallel tests.
-	tests := []struct {
-		name        string
-		notifyEnv   string
-		listen      bool
-		wantMessage string
-	}{
-		{
-			name:        "unset NOTIFY_SOCKET is a no-op",
-			notifyEnv:   "",
-			wantMessage: "",
-		},
-		{
-			name:        "unixgram NOTIFY_SOCKET receives STOPPING=1",
-			listen:      true,
-			wantMessage: "STOPPING=1",
-		},
-		{
-			name:        "unreachable NOTIFY_SOCKET logs and continues",
-			notifyEnv:   filepath.Join(t.TempDir(), "missing.sock"),
-			wantMessage: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var pc net.PacketConn
-
-			if tt.listen {
-				var err error
-
-				pc, err = (&net.ListenConfig{}).ListenPacket(
-					t.Context(), "unixgram", filepath.Join(t.TempDir(), "notify.sock"),
-				)
-				if err != nil {
-					t.Fatalf("create unixgram listener: %v", err)
-				}
-
-				defer func() { _ = pc.Close() }()
-
-				t.Setenv("NOTIFY_SOCKET", pc.LocalAddr().String())
-			} else {
-				t.Setenv("NOTIFY_SOCKET", tt.notifyEnv)
-			}
-
-			srv := NewSocketServer(filepath.Join(t.TempDir(), "unused.sock"))
-			srv.notifyStopping()
-
-			if tt.wantMessage == "" {
-				return
-			}
-
-			buf := make([]byte, 64)
-
-			if err := pc.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
-				t.Fatalf("set read deadline: %v", err)
-			}
-
-			n, _, err := pc.ReadFrom(buf)
-			if err != nil {
-				t.Fatalf("did not receive STOPPING notification: %v", err)
-			}
-
-			if got := string(buf[:n]); got != tt.wantMessage {
-				t.Errorf("notification = %q, want %q", got, tt.wantMessage)
 			}
 		})
 	}

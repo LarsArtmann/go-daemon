@@ -216,6 +216,11 @@ linters:
       - path: flightrecorder_test\.go
         linters:
           - paralleltest
+      # notify_test.go: t.Setenv (NOTIFY_SOCKET/WATCHDOG_*) is not allowed
+      # under t.Parallel, so the sd_notify tests are deliberate serial tests.
+      - path: notify_test\.go
+        linters:
+          - paralleltest
       - path: _test\.go
         linters:
           - exhaustruct

@@ -11,8 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	sd "github.com/coreos/go-systemd/v22/daemon"
 )
 
 const (
@@ -48,14 +46,21 @@ const (
 // carries no Handler.
 var ErrHandlerRequired = errors.New("daemon: Lifecycle.Handler is required")
 
-// SocketServer serves an HTTP handler on a unix domain socket with the full
-// production daemon lifecycle: stale-socket cleanup, socket directory
-// creation, restrictive permissions, systemd readiness/watchdog notification,
-// graceful drain, and socket removal on every exit path.
+// Server serves an HTTP handler with the full production daemon lifecycle:
+// stale-endpoint cleanup, systemd readiness/watchdog notification, graceful
+// drain, and listener cleanup on every exit path. The lifecycle ordering is
+// a contract (see Lifecycle).
 //
-// Construct with NewSocketServer.
-type SocketServer struct {
-	socketPath          string
+// The constructor picks the network: NewSocketServer serves a unix domain
+// socket (filesystem permissions, stale-socket cleanup, unlink on exit);
+// NewServer serves any other network (e.g. "tcp"); WithListener serves a
+// pre-built listener with no filesystem management at all.
+//
+// Construct with NewSocketServer or NewServer.
+type Server struct {
+	network             string
+	addr                string
+	listener            net.Listener
 	socketMode          fs.FileMode
 	socketDirMode       fs.FileMode
 	logger              *slog.Logger
@@ -67,67 +72,93 @@ type SocketServer struct {
 	probeTimeout        time.Duration
 }
 
-// SocketServerOption configures a SocketServer.
-type SocketServerOption func(*SocketServer)
+// SocketServer is the unix-domain-socket form of Server: a type alias, so
+// every SocketServer option and method works on Server and vice versa. The
+// unix-specific extras (socket mode, directory creation, stale-socket
+// cleanup, unlink on exit) apply only when the server itself listens on a
+// unix socket and owns it (NewSocketServer or NewServer("unix", ...)), not
+// for WithListener.
+type SocketServer = Server
+
+// ServerOption configures a Server.
+type ServerOption func(*Server)
+
+// SocketServerOption configures a Server; retained name for the
+// unix-domain-socket form (alias of ServerOption).
+type SocketServerOption = ServerOption
 
 // WithSocketMode sets the filesystem permissions for the unix socket
 // (default 0o600, owner-only). Widen deliberately — any local process that
-// can write to the socket executes with the daemon user's privileges.
-func WithSocketMode(mode fs.FileMode) SocketServerOption {
+// can write to the socket executes with the daemon user's privileges. Unix
+// sockets only; ignored for other networks and WithListener.
+func WithSocketMode(mode fs.FileMode) ServerOption {
 	return func(s *SocketServer) { s.socketMode = mode }
 }
 
 // WithSocketDirMode sets the permissions for the socket's parent directory
-// (default 0o755), created on demand when it does not exist.
-func WithSocketDirMode(mode fs.FileMode) SocketServerOption {
+// (default 0o755), created on demand when it does not exist. Unix sockets
+// only; ignored for other networks and WithListener.
+func WithSocketDirMode(mode fs.FileMode) ServerOption {
 	return func(s *SocketServer) { s.socketDirMode = mode }
 }
 
 // WithLogger sets the structured logger (default slog.Default()).
-func WithLogger(logger *slog.Logger) SocketServerOption {
+func WithLogger(logger *slog.Logger) ServerOption {
 	return func(s *SocketServer) { s.logger = logger }
 }
 
 // WithVersion sets the version string included in the startup log line.
-func WithVersion(version string) SocketServerOption {
+func WithVersion(version string) ServerOption {
 	return func(s *SocketServer) { s.version = version }
 }
 
 // WithReadHeaderTimeout bounds per-request header reads (default 10s) so
 // slow or stuck clients cannot pin server slots.
-func WithReadHeaderTimeout(d time.Duration) SocketServerOption {
+func WithReadHeaderTimeout(d time.Duration) ServerOption {
 	return func(s *SocketServer) { s.readHeaderTimeout = d }
 }
 
 // WithIdleTimeout bounds idle keep-alive connections (default 120s).
-func WithIdleTimeout(d time.Duration) SocketServerOption {
+func WithIdleTimeout(d time.Duration) ServerOption {
 	return func(s *SocketServer) { s.idleTimeout = d }
 }
 
 // WithShutdownGracePeriod bounds the graceful-drain window after the
 // lifecycle context is canceled (default 5s).
-func WithShutdownGracePeriod(d time.Duration) SocketServerOption {
+func WithShutdownGracePeriod(d time.Duration) ServerOption {
 	return func(s *SocketServer) { s.shutdownGracePeriod = d }
 }
 
 // WithHealthPath sets the endpoint probed by the stale-socket liveness check
-// (default "/health").
-func WithHealthPath(path string) SocketServerOption {
+// (default "/health"). Unix sockets only; ignored for other networks and
+// WithListener.
+func WithHealthPath(path string) ServerOption {
 	return func(s *SocketServer) { s.healthPath = path }
 }
 
 // WithProbeTimeout bounds the stale-socket liveness probe (default 500ms).
-func WithProbeTimeout(d time.Duration) SocketServerOption {
+// Unix sockets only; ignored for other networks and WithListener.
+func WithProbeTimeout(d time.Duration) ServerOption {
 	return func(s *SocketServer) { s.probeTimeout = d }
 }
 
-// NewSocketServer creates a SocketServer listening on the given unix socket
-// path. The path is the bare filesystem path (e.g. "/run/mydaemon/daemon.sock"),
-// without a "unix://" prefix. Serve /run-derived paths: /tmp is world-writable
-// and invites symlink attacks.
-func NewSocketServer(socketPath string, opts ...SocketServerOption) *SocketServer {
-	s := &SocketServer{
-		socketPath:          socketPath,
+// WithListener supplies a pre-built net.Listener. Start serves on it as-is
+// and skips all filesystem socket management (stale-socket cleanup,
+// directory creation, chmod, unlink): the caller owns the listener's full
+// lifecycle, including unlinking a unix socket after shutdown. The
+// constructor's address is ignored for serving.
+func WithListener(ln net.Listener) ServerOption {
+	return func(s *Server) { s.listener = ln }
+}
+
+// NewServer creates a Server listening on the given network and address
+// (e.g. NewServer("tcp", "127.0.0.1:8080")). The network is passed straight
+// to net.Listen at Start; an invalid network surfaces as a Start error, not
+// a construction error. Unix-specific options apply only for network "unix".
+func NewServer(network, addr string, opts ...ServerOption) *Server {
+	s := &Server{
+		network:             network,
+		addr:                addr,
 		socketMode:          DefaultSocketMode,
 		socketDirMode:       DefaultSocketDirMode,
 		logger:              slog.Default(),
@@ -145,27 +176,38 @@ func NewSocketServer(socketPath string, opts ...SocketServerOption) *SocketServe
 	return s
 }
 
-// SocketPath returns the configured socket path.
-func (s *SocketServer) SocketPath() string { return s.socketPath }
+// NewSocketServer creates a Server listening on the unix socket at the given
+// path. The path is the bare filesystem path (e.g. "/run/mydaemon/daemon.sock"),
+// without a "unix://" prefix. Serve /run-derived paths: /tmp is world-writable
+// and invites symlink attacks.
+func NewSocketServer(socketPath string, opts ...SocketServerOption) *SocketServer {
+	return NewServer("unix", socketPath, opts...)
+}
 
-// Lifecycle wires a domain handler and optional hooks into the SocketServer
+// SocketPath returns the configured unix socket path (or address string for
+// other networks).
+func (s *Server) SocketPath() string { return s.addr }
+
+// Lifecycle wires a domain handler and optional hooks into the Server
 // lifecycle. The ordering below is the contract, proven by the
-// project-discovery-daemon shutdown-regression tests — do not reorder:
+// project-discovery-daemon shutdown-regression tests and the TCP
+// hook-ordering test — do not reorder:
 //
-//  1. CleanStaleSocket: probe healthPath; remove the socket file if dead.
+//  1. CleanStaleSocket: probe healthPath; remove the socket file if dead
+//     (unix-owned sockets only).
 //  2. Startup (if set): run before the socket exists. An error is logged as
 //     a warning and startup continues (flight-recorder semantics: degrade,
 //     never abort). A returned cleanup runs last, after OnShutdown.
-//  3. Build the http.Server (BaseContext = Start's ctx) and create the
-//     socket directory, listen, and chmod the socket.
+//  3. Build the http.Server (BaseContext = Start's ctx), listen, and — for
+//     unix-owned sockets — create the socket directory and chmod the socket.
 //  4. OnListen (if set): start background work (refresh loops, watchers).
 //  5. sd_notify READY=1 (no-op without NOTIFY_SOCKET); watchdog keepalive at
 //     WatchdogSec/2 when systemd requests one.
 //  6. Serve until the context is canceled or Serve fails.
 //  7. sd_notify STOPPING=1, graceful Shutdown within the grace period,
-//     remove the socket file.
+//     remove the socket file (unix-owned sockets only).
 //  8. OnShutdown (if set): drain background work (runs on BOTH exit paths,
-//     after socket removal).
+//     after the listener is gone and the socket file was removed).
 //  9. Startup cleanup (if any): stop the startup-only machinery, e.g. the
 //     flight recorder.
 type Lifecycle struct {
@@ -188,16 +230,18 @@ type Lifecycle struct {
 
 // Start runs the full daemon lifecycle (see Lifecycle for the ordering
 // contract) and blocks until the context is canceled or Serve fails. On
-// context cancellation the socket file is removed and nil is returned; a
-// Serve error is returned after the same cleanup.
+// context cancellation the unix socket file is removed (when the server owns
+// it) and nil is returned; a Serve error is returned after the same cleanup.
 //
 //nolint:cyclop // lifecycle composition root: one branch per lifecycle stage
-func (s *SocketServer) Start(ctx context.Context, lifecycle Lifecycle) error {
+func (s *Server) Start(ctx context.Context, lifecycle Lifecycle) error {
 	if lifecycle.Handler == nil {
 		return ErrHandlerRequired
 	}
 
-	s.CleanStaleSocket(ctx)
+	if s.managesUnixSocket() {
+		s.CleanStaleSocket(ctx)
+	}
 
 	// Run the startup hook before accepting requests so e.g. trace buffers
 	// capture startup activity. Non-fatal: log and continue without it.
@@ -225,48 +269,23 @@ func (s *SocketServer) Start(ctx context.Context, lifecycle Lifecycle) error {
 		IdleTimeout:       s.idleTimeout,
 	}
 
-	// Ensure the socket's parent directory exists. The default path lives under
-	// /run which is created by systemd/tmpfiles in production, but standalone
-	// and test deployments may use custom paths whose parent doesn't exist yet.
-	socketDir := filepath.Dir(s.socketPath)
-	if err := os.MkdirAll(socketDir, s.socketDirMode); err != nil {
-		return fmt.Errorf("create socket directory %s: %w", socketDir, err)
-	}
-
-	listenConfig := net.ListenConfig{}
-
-	ln, err := listenConfig.Listen(ctx, "unix", s.socketPath)
+	ln, err := s.listen(ctx)
 	if err != nil {
-		return fmt.Errorf("listen on unix socket %s: %w", s.socketPath, err)
+		return err
 	}
 
-	if err := os.Chmod(s.socketPath, s.socketMode); err != nil {
-		_ = ln.Close()
-
-		return fmt.Errorf("restrict socket permissions: %w", err)
-	}
-
-	s.logger.Info("daemon listening", "socket", s.socketPath, "version", s.version)
+	s.logger.Info("daemon listening", "network", s.network, "addr", ln.Addr().String(), "version", s.version)
 
 	if lifecycle.OnListen != nil {
 		lifecycle.OnListen(ctx)
 	}
 
 	// Notify systemd that the daemon is ready. No-op when NOTIFY_SOCKET is unset.
-	if sent, err := sd.SdNotify(false, sd.SdNotifyReady); err != nil {
-		s.logger.Warn("sd_notify READY failed", "error", err)
-	} else if sent {
-		s.logger.Debug("sd_notify READY=1 sent")
-	}
+	NotifyReady(s.logger)
 
 	// Start watchdog keepalive if systemd configured WatchdogSec.
-	watchdogInterval, watchdogErr := sd.SdWatchdogEnabled(false)
-	if watchdogErr != nil {
-		s.logger.Warn("sd_watchdog check failed", "error", watchdogErr)
-	}
-
-	if watchdogInterval > 0 {
-		go s.watchdog(ctx, watchdogInterval/2)
+	if interval, ok := WatchdogInterval(s.logger); ok {
+		go Watchdog(ctx, s.logger, interval)
 	}
 
 	errCh := make(chan error, 1)
@@ -284,7 +303,7 @@ func (s *SocketServer) Start(ctx context.Context, lifecycle Lifecycle) error {
 
 	select {
 	case <-ctx.Done():
-		s.notifyStopping()
+		NotifyStopping(s.logger)
 
 		s.logger.Info("daemon shutting down", "reason", ctx.Err())
 
@@ -296,17 +315,21 @@ func (s *SocketServer) Start(ctx context.Context, lifecycle Lifecycle) error {
 			s.logger.Error("daemon shutdown", "error", err)
 		}
 
-		_ = os.Remove(s.socketPath)
+		if s.managesUnixSocket() {
+			_ = os.Remove(s.addr)
+		}
 
 		s.runOnShutdown(lifecycle)
 
 		return nil
 	case err := <-errCh:
-		s.notifyStopping()
+		NotifyStopping(s.logger)
 
-		removeErr := os.Remove(s.socketPath)
-		if removeErr != nil {
-			s.logger.Warn("failed to remove socket on error", "path", s.socketPath, "error", removeErr)
+		if s.managesUnixSocket() {
+			removeErr := os.Remove(s.addr)
+			if removeErr != nil {
+				s.logger.Warn("failed to remove socket on error", "path", s.addr, "error", removeErr)
+			}
 		}
 
 		s.runOnShutdown(lifecycle)
@@ -315,62 +338,78 @@ func (s *SocketServer) Start(ctx context.Context, lifecycle Lifecycle) error {
 	}
 }
 
+// managesUnixSocket reports whether Start owns the unix socket file
+// lifecycle (stale cleanup, mkdir, chmod, unlink): only when the server
+// listens on "unix" AND the listener was not supplied by the caller.
+func (s *Server) managesUnixSocket() bool {
+	return s.listener == nil && s.network == "unix"
+}
+
+// listen returns the listener Start serves on: a caller-supplied one
+// (WithListener) as-is, or a freshly created one. Unix-owned sockets get
+// their parent directory created and permissions restricted here.
+func (s *Server) listen(ctx context.Context) (net.Listener, error) {
+	if s.listener != nil {
+		return s.listener, nil
+	}
+
+	if s.managesUnixSocket() {
+		// Ensure the socket's parent directory exists. The default path lives under
+		// /run which is created by systemd/tmpfiles in production, but standalone
+		// and test deployments may use custom paths whose parent doesn't exist yet.
+		socketDir := filepath.Dir(s.addr)
+		if err := os.MkdirAll(socketDir, s.socketDirMode); err != nil {
+			return nil, fmt.Errorf("create socket directory %s: %w", socketDir, err)
+		}
+	}
+
+	listenConfig := net.ListenConfig{}
+
+	ln, err := listenConfig.Listen(ctx, s.network, s.addr)
+	if err != nil {
+		return nil, fmt.Errorf("listen on %s %s: %w", s.network, s.addr, err)
+	}
+
+	if s.managesUnixSocket() {
+		if err := os.Chmod(s.addr, s.socketMode); err != nil {
+			_ = ln.Close()
+
+			return nil, fmt.Errorf("restrict socket permissions: %w", err)
+		}
+	}
+
+	return ln, nil
+}
+
 // runOnShutdown invokes the OnShutdown hook exactly once per Start call.
 // It must run on every exit path after the socket file was removed.
-func (s *SocketServer) runOnShutdown(lifecycle Lifecycle) {
+func (s *Server) runOnShutdown(lifecycle Lifecycle) {
 	if lifecycle.OnShutdown != nil {
 		lifecycle.OnShutdown()
 	}
 }
 
-// notifyStopping sends STOPPING=1 to systemd. No-op when not running under systemd.
-func (s *SocketServer) notifyStopping() {
-	if sent, err := sd.SdNotify(false, sd.SdNotifyStopping); err != nil {
-		s.logger.Warn("sd_notify STOPPING failed", "error", err)
-	} else if sent {
-		s.logger.Debug("sd_notify STOPPING=1 sent")
-	}
-}
-
-// watchdog sends periodic WATCHDOG=1 heartbeats to systemd at the given interval.
-// Stops when the context is cancelled.
-func (s *SocketServer) watchdog(ctx context.Context, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			if _, err := sd.SdNotify(false, sd.SdNotifyWatchdog); err != nil {
-				s.logger.Warn("sd_notify WATCHDOG failed", "error", err)
-			}
-		}
-	}
-}
-
 // CleanStaleSocket removes the socket file when it exists but no daemon is
 // answering the health probe on it. A live daemon's socket is left alone.
-func (s *SocketServer) CleanStaleSocket(ctx context.Context) {
-	if _, err := os.Stat(s.socketPath); err != nil {
+func (s *Server) CleanStaleSocket(ctx context.Context) {
+	if _, err := os.Stat(s.addr); err != nil {
 		return
 	}
 
 	if !s.IsSocketAlive(ctx) {
-		s.logger.Debug("removing stale socket", "path", s.socketPath)
+		s.logger.Debug("removing stale socket", "path", s.addr)
 
-		err := os.Remove(s.socketPath)
+		err := os.Remove(s.addr)
 		if err != nil {
-			s.logger.Warn("failed to remove stale socket", "path", s.socketPath, "error", err)
+			s.logger.Warn("failed to remove stale socket", "path", s.addr, "error", err)
 		}
 	}
 }
 
 // IsSocketAlive probes whether a daemon is already answering on this
 // SocketServer's socket path (GET healthPath with the configured probe timeout).
-func (s *SocketServer) IsSocketAlive(ctx context.Context) bool {
-	return isSocketAlive(ctx, s.socketPath, s.healthPath, s.probeTimeout)
+func (s *Server) IsSocketAlive(ctx context.Context) bool {
+	return isSocketAlive(ctx, s.addr, s.healthPath, s.probeTimeout)
 }
 
 // IsSocketAlive probes whether a daemon is already listening on the given

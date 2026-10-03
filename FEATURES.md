@@ -18,13 +18,15 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Socket lifecycle
 
-| Feature                                                                                            | Status           | Evidence                                                        |
-| -------------------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------- |
-| Unix-socket daemon server: stale-socket cleanup, socket-dir creation, `0600` default permissions   | FULLY_FUNCTIONAL | `socket.go:195-247`; tests `socket_test.go:108,140,164,329,353` |
-| systemd integration: `sd_notify` READY/STOPPING, watchdog keepalive at `WatchdogSec/2`             | FULLY_FUNCTIONAL | `socket.go:255-270,327-351`; tests `socket_test.go:438,461`     |
-| Graceful drain with configurable grace period; socket removed on every exit path                   | FULLY_FUNCTIONAL | `socket.go:285-315`; test `socket_test.go:108`                  |
-| Lifecycle hook contract: `Startup` → `OnListen` → `OnShutdown` → startup cleanup, test-enforced    | FULLY_FUNCTIONAL | `socket.go:151-187`; tests `socket_test.go:188,269`             |
-| Stale-socket liveness probe (`IsSocketAlive`/`CleanStaleSocket`, configurable health path/timeout) | FULLY_FUNCTIONAL | `socket.go:353-399`; tests `socket_test.go:329,353,389`         |
+| Feature                                                                                                                                                                                                                           | Status           | Evidence                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Unix-socket daemon server: stale-socket cleanup, socket-dir creation, `0600` default permissions                                                                                                                                  | FULLY_FUNCTIONAL | `socket.go:235-300,384-398`; tests `socket_test.go:109,141,165,330,354`                                                          |
+| Listener-agnostic server: `NewServer(network, addr)` (TCP or any network) and `WithListener` (pre-built listener, zero filesystem management) run the same lifecycle on every network; `SocketServer` is a type alias of `Server` | FULLY_FUNCTIONAL | `socket.go:60,150-180,235`; tests `server_test.go:40,106,181,216,290`                                                            |
+| Standalone sd_notify API: `NotifyReady`/`NotifyStopping`/`Watchdog`/`WatchdogInterval` (WatchdogSec/2 per sd_watchdog_enabled(3)) plus `ReadNotifyCounters` process-global counters — usable without `SocketServer`               | FULLY_FUNCTIONAL | `notify.go:44-140`; tests `notify_test.go:72,108,144,159,198,245`; decision `docs/decisions/2026-10-03_v040-notify-api-shape.md` |
+| systemd integration: `sd_notify` READY/STOPPING, watchdog keepalive at `WatchdogSec/2`                                                                                                                                            | FULLY_FUNCTIONAL | `notify.go:57-127` + wiring `socket.go:295-301`; tests `notify_test.go:72,108,198,245`                                           |
+| Graceful drain with configurable grace period; socket removed on every exit path                                                                                                                                                  | FULLY_FUNCTIONAL | `socket.go:316-347`; test `socket_test.go:109`                                                                                   |
+| Lifecycle hook contract: `Startup` → `OnListen` → `OnShutdown` → startup cleanup, test-enforced                                                                                                                                   | FULLY_FUNCTIONAL | `socket.go:190-233`; tests `socket_test.go:189,270`                                                                              |
+| Stale-socket liveness probe (`IsSocketAlive`/`CleanStaleSocket`, configurable health path/timeout)                                                                                                                                | FULLY_FUNCTIONAL | `socket.go:384-425`; tests `socket_test.go:330,354,463`                                                                          |
 
 ## Client transport
 
@@ -64,5 +66,5 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Counts
 
-Computed from this file: 15 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
-BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (16 rows total).
+Computed from this file: 17 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
+BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (18 rows total).
