@@ -40,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a type alias of `Server`, so unix behavior and every existing option are
   unchanged. Contract tests (hook ordering, graceful drain, listen-error,
   port restart) ported to TCP.
+- First consumer: bank-sync (2026-10-04) adopted v0.4.0 for all three serve
+  modes — shared lifecycle runner, opt-in `systemdNotify`/`watchdogSec`
+  NixOS module, `bank_sync_sd_notify_*` metrics from `ReadNotifyCounters`
+  (ADR-017 in that repo).
 
 ## [0.3.0] - 2026-10-01
 
