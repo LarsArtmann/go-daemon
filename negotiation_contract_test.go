@@ -303,6 +303,174 @@ func TestAcceptQualityDuplicateMax(t *testing.T) {
 	}
 }
 
+// taggedTestCodec is a comparable codec stub carrying a tag, so injection
+// tests can assert identity: which codec instance negotiation resolved to.
+type taggedTestCodec struct {
+	tag string
+	enc codec.Encoding
+}
+
+func (c taggedTestCodec) Encoding() codec.Encoding { return c.enc }
+
+func (taggedTestCodec) Encode(_ any) ([]byte, error) { return nil, nil }
+
+func (taggedTestCodec) Decode(_ []byte, _ any) error { return nil }
+
+var _ codec.Codec = taggedTestCodec{}
+
+// TestResolveResponseCodec_InjectedCodecs pins the codec injectability the
+// doc comment on ResolveResponseCodec promises: NegotiationOption values
+// substitute the codecs resolved for each encoding without changing the
+// ranking contract, and absent options keep the built-in defaults.
+func TestResolveResponseCodec_InjectedCodecs(t *testing.T) {
+	t.Parallel()
+
+	customJSON := taggedTestCodec{tag: "json-custom", enc: codec.EncodingJSON}
+	customCBOR := taggedTestCodec{tag: "cbor-custom", enc: codec.EncodingCBOR}
+	bothOpts := []NegotiationOption{WithJSONCodec(customJSON), WithCBORCodec(customCBOR)}
+
+	tests := []struct {
+		name     string
+		accept   string
+		reqCodec codec.Codec
+		opts     []NegotiationOption
+		want     codec.Codec
+	}{
+		{
+			name:     "q prefers JSON returns the injected JSON codec",
+			accept:   "application/json",
+			reqCodec: codec.CBORCodec{},
+			opts:     bothOpts,
+			want:     customJSON,
+		},
+		{
+			name:     "q prefers CBOR returns the injected CBOR codec",
+			accept:   "application/cbor",
+			reqCodec: codec.JSONCodec{},
+			opts:     bothOpts,
+			want:     customCBOR,
+		},
+		{
+			name:     "tie prefers the injected CBOR codec",
+			accept:   "application/json, application/cbor",
+			reqCodec: codec.JSONCodec{},
+			opts:     bothOpts,
+			want:     customCBOR,
+		},
+		{
+			name:     "q=0 refusal substitutes the other injected codec",
+			accept:   "application/json;q=0",
+			reqCodec: customJSON,
+			opts:     bothOpts,
+			want:     customCBOR,
+		},
+		{
+			name:     "wildcard echoes the request codec, not the injected JSON default",
+			accept:   "*/*",
+			reqCodec: taggedTestCodec{tag: "request", enc: codec.EncodingJSON},
+			opts:     []NegotiationOption{WithJSONCodec(customJSON)},
+			want:     taggedTestCodec{tag: "request", enc: codec.EncodingJSON},
+		},
+		{
+			name:     "absent header echoes the request codec, not the injected JSON default",
+			accept:   "",
+			reqCodec: taggedTestCodec{tag: "request", enc: codec.EncodingJSON},
+			opts:     []NegotiationOption{WithJSONCodec(customJSON)},
+			want:     taggedTestCodec{tag: "request", enc: codec.EncodingJSON},
+		},
+		{
+			name:     "no options keep the built-in JSON default",
+			accept:   "application/json",
+			reqCodec: codec.CBORCodec{},
+			want:     codec.JSONCodec{},
+		},
+		{
+			name:     "nil codec option keeps the built-in JSON default",
+			accept:   "application/json",
+			reqCodec: codec.CBORCodec{},
+			opts:     []NegotiationOption{WithJSONCodec(nil)},
+			want:     codec.JSONCodec{},
+		},
+		{
+			name:     "nil option value is skipped",
+			accept:   "application/cbor",
+			reqCodec: codec.JSONCodec{},
+			opts:     []NegotiationOption{nil},
+			want:     codec.CBORCodec{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := ResolveResponseCodec(requestWithAccept(tt.accept), tt.reqCodec, tt.opts...)
+			if got != tt.want {
+				t.Fatalf("ResolveResponseCodec(%q, %s): got %v, want %v",
+					tt.accept, tt.reqCodec.Encoding(), got, tt.want)
+			}
+		})
+	}
+}
+
+// TestCodecForContentType_InjectedCodecs pins the same injectability for the
+// Content-Type driven resolvers (CodecForContentType, ResolveRequestCodec).
+func TestCodecForContentType_InjectedCodecs(t *testing.T) {
+	t.Parallel()
+
+	customJSON := taggedTestCodec{tag: "json-custom", enc: codec.EncodingJSON}
+	customCBOR := taggedTestCodec{tag: "cbor-custom", enc: codec.EncodingCBOR}
+	bothOpts := []NegotiationOption{WithJSONCodec(customJSON), WithCBORCodec(customCBOR)}
+
+	tests := []struct {
+		name   string
+		header string
+		opts   []NegotiationOption
+		want   codec.Codec
+	}{
+		{
+			name:   "JSON content type resolves the injected JSON codec",
+			header: "application/json",
+			opts:   bothOpts,
+			want:   customJSON,
+		},
+		{
+			name:   "unknown content type resolves the injected JSON fallback",
+			header: "application/xml",
+			opts:   bothOpts,
+			want:   customJSON,
+		},
+		{
+			name:   "CBOR suffix type resolves the injected CBOR codec",
+			header: "application/vnd.acme+cbor",
+			opts:   bothOpts,
+			want:   customCBOR,
+		},
+		{
+			name:   "no options keep the built-in JSON default",
+			header: "application/json",
+			want:   codec.JSONCodec{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := CodecForContentType(tt.header, tt.opts...); got != tt.want {
+				t.Fatalf("CodecForContentType(%q): got %v, want %v", tt.header, got, tt.want)
+			}
+
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/discover", nil)
+			req.Header.Set("Content-Type", tt.header)
+
+			if got := ResolveRequestCodec(req, tt.opts...); got != tt.want {
+				t.Fatalf("ResolveRequestCodec(%q): got %v, want %v", tt.header, got, tt.want)
+			}
+		})
+	}
+}
+
 // FuzzResolveResponseCodec guards the hand-rolled Accept parser — plain
 // SplitSeq/Cut/ParseFloat over untrusted header bytes — against panics and
 // contract violations on arbitrary input. Invariants per input, for both

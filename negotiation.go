@@ -14,13 +14,64 @@ const (
 	contentTypeCBOR = "application/cbor"
 )
 
+// NegotiationOption customizes the codecs that negotiation resolves to. The
+// defaults are codec.JSONCodec and codec.CBORCodec; pass options to
+// ResolveRequestCodec, ResolveResponseCodec, or CodecForContentType to
+// substitute codecs with different semantics (e.g. JSONv2Codec for
+// encoding/json/v2 marshal options) without touching the negotiation
+// contract itself.
+type NegotiationOption func(*negotiationCodecs)
+
+// negotiationCodecs holds the codecs negotiation resolves to, one per
+// supported encoding.
+type negotiationCodecs struct {
+	json codec.Codec
+	cbor codec.Codec
+}
+
+// resolveCodecs applies opts to the built-in defaults.
+func resolveCodecs(opts []NegotiationOption) negotiationCodecs {
+	codecs := negotiationCodecs{json: codec.JSONCodec{}, cbor: codec.CBORCodec{}}
+
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&codecs)
+		}
+	}
+
+	return codecs
+}
+
+// WithJSONCodec substitutes the codec negotiation resolves to for JSON in
+// both directions. c must report codec.EncodingJSON so content-type
+// handling stays coherent; a nil codec keeps the default.
+func WithJSONCodec(c codec.Codec) NegotiationOption {
+	return func(codecs *negotiationCodecs) {
+		if c != nil {
+			codecs.json = c
+		}
+	}
+}
+
+// WithCBORCodec substitutes the codec negotiation resolves to for CBOR in
+// both directions. c must report codec.EncodingCBOR so content-type
+// handling stays coherent; a nil codec keeps the default.
+func WithCBORCodec(c codec.Codec) NegotiationOption {
+	return func(codecs *negotiationCodecs) {
+		if c != nil {
+			codecs.cbor = c
+		}
+	}
+}
+
 // ResolveRequestCodec determines the codec for decoding the request body
 // based on the Content-Type header. Defaults to JSON for backward
 // compatibility (existing clients send no Content-Type or application/json).
 // Structured-suffix media types count as their base type (RFC 6839), so
-// "application/vnd.acme+cbor" decodes as CBOR.
-func ResolveRequestCodec(r *http.Request) codec.Codec {
-	return CodecForContentType(r.Header.Get("Content-Type"))
+// "application/vnd.acme+cbor" decodes as CBOR. Pass NegotiationOption values
+// to substitute the resolved codecs (WithJSONCodec, WithCBORCodec).
+func ResolveRequestCodec(r *http.Request, opts ...NegotiationOption) codec.Codec {
+	return CodecForContentType(r.Header.Get("Content-Type"), opts...)
 }
 
 // ResolveResponseCodec determines the codec for encoding the response body
@@ -40,7 +91,12 @@ func ResolveRequestCodec(r *http.Request) codec.Codec {
 // format, so charset parameters carry no additional meaning here, and
 // content codings (gzip, zstd) belong to the HTTP transport layer, not
 // this package. Responses written via WriteEncoded carry "Vary: Accept".
-func ResolveResponseCodec(r *http.Request, reqCodec codec.Codec) codec.Codec {
+//
+// Pass NegotiationOption values to substitute the codecs resolved for each
+// encoding (WithJSONCodec, WithCBORCodec); negotiation ranks media types the
+// same way regardless of which codec instance each encoding maps to.
+func ResolveResponseCodec(r *http.Request, reqCodec codec.Codec, opts ...NegotiationOption) codec.Codec {
+	codecs := resolveCodecs(opts)
 	accept := r.Header.Get("Accept")
 	cborQ, cborWanted := acceptQuality(accept, codec.EncodingCBOR)
 	jsonQ, jsonWanted := acceptQuality(accept, codec.EncodingJSON)
@@ -49,26 +105,26 @@ func ResolveResponseCodec(r *http.Request, reqCodec codec.Codec) codec.Codec {
 	case cborWanted && jsonWanted:
 		switch {
 		case jsonQ > cborQ:
-			return codec.JSONCodec{}
+			return codecs.json
 		case cborQ > jsonQ:
-			return codec.CBORCodec{}
+			return codecs.cbor
 		case cborQ > 0:
-			return codec.CBORCodec{}
+			return codecs.cbor
 		default:
 			return reqCodec
 		}
 	case cborWanted:
 		if cborQ > 0 {
-			return codec.CBORCodec{}
+			return codecs.cbor
 		}
 
-		return substituteForRefused(codec.CBORCodec{}, reqCodec)
+		return substituteForRefused(codecs, codec.EncodingCBOR, reqCodec)
 	case jsonWanted:
 		if jsonQ > 0 {
-			return codec.JSONCodec{}
+			return codecs.json
 		}
 
-		return substituteForRefused(codec.JSONCodec{}, reqCodec)
+		return substituteForRefused(codecs, codec.EncodingJSON, reqCodec)
 	default:
 		return reqCodec
 	}
@@ -78,16 +134,16 @@ func ResolveResponseCodec(r *http.Request, reqCodec codec.Codec) codec.Codec {
 // quality-0 refusal: when the request codec is the refused encoding, the
 // other supported encoding is served so a refused encoding is never
 // returned; otherwise the request codec stands.
-func substituteForRefused(refused, reqCodec codec.Codec) codec.Codec {
-	if reqCodec.Encoding() == refused.Encoding() {
-		if refused.Encoding() == codec.EncodingCBOR {
-			return codec.JSONCodec{}
-		}
-
-		return codec.CBORCodec{}
+func substituteForRefused(codecs negotiationCodecs, refusedEnc codec.Encoding, reqCodec codec.Codec) codec.Codec {
+	if reqCodec.Encoding() != refusedEnc {
+		return reqCodec
 	}
 
-	return reqCodec
+	if refusedEnc == codec.EncodingCBOR {
+		return codecs.json
+	}
+
+	return codecs.cbor
 }
 
 // acceptQuality reports the highest quality value the Accept header assigns
@@ -170,11 +226,13 @@ func ContentTypeFor(c codec.Codec) string {
 // CodecForContentType resolves a codec from a Content-Type header value.
 // Structured-suffix media types count as their base type (RFC 6839), e.g.
 // "application/vnd.acme+json" resolves as JSON. Falls back to JSON for
-// unknown or missing content types.
-func CodecForContentType(headerVal string) codec.Codec {
+// unknown or missing content types. Pass NegotiationOption values to
+// substitute the resolved codecs (WithJSONCodec, WithCBORCodec).
+func CodecForContentType(headerVal string, opts ...NegotiationOption) codec.Codec {
+	codecs := resolveCodecs(opts)
 	if matchesEncoding(bareMediaType(headerVal), codec.EncodingCBOR) {
-		return codec.CBORCodec{}
+		return codecs.cbor
 	}
 
-	return codec.JSONCodec{}
+	return codecs.json
 }

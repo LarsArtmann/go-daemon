@@ -36,6 +36,17 @@ GOEXPERIMENT needed). Ambient go on this machine may be older — run
 bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
 `nix develop`.
 
+**go-codec v0.3.1 runs its v1 flavor on Go 1.27**: its json/v2 backend is
+gated behind the `goexperiment.jsonv2` build tag, and that tag is NOT
+satisfied on 1.27 (the experiment knob was removed at GA), verified
+2026-10-04 by probing for the v2-only `signingSafe()` method. So
+`codec.JSONCodec{}` here is `encoding/json` v1: unsorted map keys, no
+omitzero, nil slices as null. The json/v2 path in this repo is
+`JSONv2Codec` (jsonv2.go, stdlib `encoding/json/v2` with functional
+options), injectable into negotiation via `WithJSONCodec`/`WithCBORCodec`
+(NegotiationOption). Do not assume bumping go-codec flips the flavor —
+check its build tags first.
+
 ## Conventions
 
 - Flat single package `daemon` at the repo root (no `pkg/`/`internal/`).

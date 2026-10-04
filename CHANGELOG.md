@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet.
+- `JSONv2Codec`: a `codec.Codec` + `codec.BufferEncoder` adapter over
+  `encoding/json/v2` with caller-chosen marshal/unmarshal options, so
+  consumers already committed to json/v2 semantics (omitzero tags,
+  deterministic map ordering, integer-nanos durations) can adopt content
+  negotiation without regressing to the v1-backed `codec.JSONCodec` default.
+- Injectable negotiation codecs: `WithJSONCodec`/`WithCBORCodec` options let
+  `ResolveRequestCodec`, `ResolveResponseCodec`, and `CodecForContentType`
+  resolve consumer-supplied codecs; built-in defaults and the negotiation
+  ranking contract are unchanged.
 
 ### Changed
 
