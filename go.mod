@@ -1,6 +1,6 @@
 module github.com/LarsArtmann/go-daemon
 
-go 1.27.1
+go 1.27
 
 require (
 	github.com/coreos/go-systemd/v22 v22.7.0
