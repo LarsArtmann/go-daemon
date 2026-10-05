@@ -77,9 +77,7 @@ func Watchdog(ctx context.Context, logger *slog.Logger, interval time.Duration) 
 		return
 	}
 
-	if logger == nil {
-		logger = slog.Default()
-	}
+	logger = loggerOrDefault(logger)
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -102,9 +100,7 @@ func Watchdog(ctx context.Context, logger *slog.Logger, interval time.Duration) 
 // Returns (0, false) when no watchdog is configured, the variables name a
 // different process, or the check fails (logged as a warning).
 func WatchdogInterval(logger *slog.Logger) (time.Duration, bool) {
-	if logger == nil {
-		logger = slog.Default()
-	}
+	logger = loggerOrDefault(logger)
 
 	timeout, err := sd.SdWatchdogEnabled(false)
 	if err != nil {
@@ -123,9 +119,7 @@ func WatchdogInterval(logger *slog.Logger) (time.Duration, bool) {
 // sendNotify sends one sd_notify state, counts the outcome, and logs it.
 // Advisory by contract: a failure to reach systemd never aborts the caller.
 func sendNotify(logger *slog.Logger, label, state string, counter *atomic.Int64) {
-	if logger == nil {
-		logger = slog.Default()
-	}
+	logger = loggerOrDefault(logger)
 
 	wasSent, err := sd.SdNotify(false, state)
 	if err != nil {
@@ -135,4 +129,15 @@ func sendNotify(logger *slog.Logger, label, state string, counter *atomic.Int64)
 		counter.Add(1)
 		logger.Debug("sd_notify " + state + " sent")
 	}
+}
+
+// loggerOrDefault returns logger, or slog.Default() when logger is nil — the
+// single implementation of the "a nil logger defaults to slog.Default()"
+// contract documented on the notify entry points.
+func loggerOrDefault(logger *slog.Logger) *slog.Logger {
+	if logger == nil {
+		return slog.Default()
+	}
+
+	return logger
 }
