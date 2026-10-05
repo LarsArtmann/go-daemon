@@ -142,6 +142,13 @@ check its build tags first.
   code — a verification that is backgrounded, deferred to "after this
   analysis", or interrupted ships a broken commit to master (the
   negotiation overhaul landed a test table that never compiled).
+- **Capture a gate's exit code BEFORE any pipe.** `nix run .#check-docs |
+  tail; echo $?` reports `tail`'s status, not the gate's — on 2026-10-05
+  this shipped a false "check-docs green" claim while the strike-presence
+  check was failing on unannotated docs/status reports. Pattern that
+  works: run the gate bare (`cmd; echo $?`) or with `set -o pipefail`.
+  Same family as the stale-LSP gotcha below: the CLI is authoritative
+  only when you actually read the CLI's own exit status.
 - `nix develop` can take minutes on cold nix evaluation before the command
   inside even starts — a slow start is not a hang; run long gates in the
   background and keep verification in the foreground of the session.
