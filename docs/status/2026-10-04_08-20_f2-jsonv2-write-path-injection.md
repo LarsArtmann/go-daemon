@@ -139,6 +139,7 @@ line-splitting had moved. Caught by gates, cost two cycles.)
 ## e) WHAT WE SHOULD IMPROVE (self-review answers)
 
 **What did I forget?**
+
 - The error-path gap (b1) — I designed injection around the resolvers and never
   re-checked the whole write surface (`WriteErrorf`) against the new capability.
 - Durable registration of the watchdog flake (noticed → chat → nowhere).
@@ -146,6 +147,7 @@ line-splitting had moved. Caught by gates, cost two cycles.)
 - `lsp_restart` after diagnosing stale-LSP output as stale.
 
 **What could I have done better?**
+
 - Gate output discipline (d2): always grep `--- FAIL`, never `tail`.
 - Commit ordering (d1): read every background gate before writing history.
 - Prove consumer compat empirically (b4): a 30-second pdd replace-directive
@@ -154,6 +156,7 @@ line-splitting had moved. Caught by gates, cost two cycles.)
   sitting in /tmp — trivial, but tidy as you go.
 
 **What could I still improve?**
+
 - Close b1 (error-path codec) properly — it's the one item a consumer would
   actually hit.
 - Enforcement over documentation for the `Encoding()` constraint (b2): either
@@ -185,28 +188,28 @@ same conversation. Docs edits stayed proportionate.
 
 ## f) Next — prioritized (session-derived, not padded)
 
-| #  | Task                                                                                                                   | Impact | Effort |
-| -- | ---------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| #  | Task                                                                                                                          | Impact | Effort |
+| -- | ----------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
 | 1  | Close the error-path gap: `WriteErrorf`/`WriteJSON` on a v2-negotiated connection emit v1 bytes — new API or doc'd limitation | High   | S/M    |
-| 2  | Godoc examples: `ExampleJSONv2Codec`, injected `ExampleResolveResponseCodec` (repo convention is example files)         | High   | XS     |
-| 3  | pdd build+test against master via replace directive — empirically prove source-compat                                    | High   | XS     |
-| 4  | TODO row + fix for the watchdog flake (poll-based assertion or looser budget)                                             | Med    | S      |
-| 5  | Enforce or pin the injected-codec `Encoding()` constraint (guard in option, or table rows documenting current behavior)   | Med    | XS     |
-| 6  | File the go-codec upstream report (dead `goexperiment.jsonv2` tag on Go 1.27) after verify-before-filing                  | Med    | S      |
-| 7  | docs-health HARVEST the feedback inbox: annotate F2 as done (`c9bcc7d`), confirm F3 row, drop nothing silently            | Med    | S      |
-| 8  | Extend `FuzzResolveResponseCodec` with an injected-codec pass (refusal/ranking invariants under substitution)             | Med    | S      |
-| 9  | Document the `DeterministicCodec` limitation on `JSONv2Codec` (closed signing-safe interface) — or upstream ask           | Med    | XS     |
-| 10 | Harvest the three 2026-10-01 status reports (pre-existing check-docs strike failure — TODO row exists)                     | Med    | S      |
-| 11 | `lsp_restart` to clear phantom golines/gci warnings on `jsonv2.go`; trust-CLI rule already documented                      | Low    | XS     |
-| 12 | Test `JSONv2Codec` with nil elements inside the options slices (undefined edge today)                                     | Low    | XS     |
-| 13 | Benchmark `JSONv2Codec.EncodeToBuffer` vs the v1 buffer path (hot-path parity evidence)                                   | Low    | S      |
-| 14 | Track go-codec > v0.3.1 for the build-tag fix; bump + `buildflow -s nix-hash-fix --fix` when it lands                      | Low    | XS     |
-| 15 | erraudit pass over `jsonv2.go`/`negotiation.go` additions (repo error-policy audit)                                       | Low    | XS     |
-| 16 | HTTP-body integration test: `ResolveRequestCodec` + injected v2 codec + `FormatDurationAsNano` decode round trip          | Low    | XS     |
-| 17 | README: short json/v2 adoption paragraph under the API table (beyond the one table row)                                   | Low    | XS     |
-| 18 | Process rule into AGENTS: gates print failures (`grep -- --- FAIL`), never `tail`; read background gates before committing | Low    | XS     |
-| 19 | Decide the Negotiator bound-resolver question only IF per-call options prove noisy in a real consumer (YAGNI watch)        | Low    | —      |
-| 20 | rm -rf /tmp/codecprobe scratch module                                                                                    | Triv.  | XS     |
+| 2  | Godoc examples: `ExampleJSONv2Codec`, injected `ExampleResolveResponseCodec` (repo convention is example files)               | High   | XS     |
+| 3  | pdd build+test against master via replace directive — empirically prove source-compat                                         | High   | XS     |
+| 4  | TODO row + fix for the watchdog flake (poll-based assertion or looser budget)                                                 | Med    | S      |
+| 5  | Enforce or pin the injected-codec `Encoding()` constraint (guard in option, or table rows documenting current behavior)       | Med    | XS     |
+| 6  | File the go-codec upstream report (dead `goexperiment.jsonv2` tag on Go 1.27) after verify-before-filing                      | Med    | S      |
+| 7  | docs-health HARVEST the feedback inbox: annotate F2 as done (`c9bcc7d`), confirm F3 row, drop nothing silently                | Med    | S      |
+| 8  | Extend `FuzzResolveResponseCodec` with an injected-codec pass (refusal/ranking invariants under substitution)                 | Med    | S      |
+| 9  | Document the `DeterministicCodec` limitation on `JSONv2Codec` (closed signing-safe interface) — or upstream ask               | Med    | XS     |
+| 10 | Harvest the three 2026-10-01 status reports (pre-existing check-docs strike failure — TODO row exists)                        | Med    | S      |
+| 11 | `lsp_restart` to clear phantom golines/gci warnings on `jsonv2.go`; trust-CLI rule already documented                         | Low    | XS     |
+| 12 | Test `JSONv2Codec` with nil elements inside the options slices (undefined edge today)                                         | Low    | XS     |
+| 13 | Benchmark `JSONv2Codec.EncodeToBuffer` vs the v1 buffer path (hot-path parity evidence)                                       | Low    | S      |
+| 14 | Track go-codec > v0.3.1 for the build-tag fix; bump + `buildflow -s nix-hash-fix --fix` when it lands                         | Low    | XS     |
+| 15 | erraudit pass over `jsonv2.go`/`negotiation.go` additions (repo error-policy audit)                                           | Low    | XS     |
+| 16 | HTTP-body integration test: `ResolveRequestCodec` + injected v2 codec + `FormatDurationAsNano` decode round trip              | Low    | XS     |
+| 17 | README: short json/v2 adoption paragraph under the API table (beyond the one table row)                                       | Low    | XS     |
+| 18 | Process rule into AGENTS: gates print failures (`grep -- --- FAIL`), never `tail`; read background gates before committing    | Low    | XS     |
+| 19 | Decide the Negotiator bound-resolver question only IF per-call options prove noisy in a real consumer (YAGNI watch)           | Low    | —      |
+| 20 | rm -rf /tmp/codecprobe scratch module                                                                                         | Triv.  | XS     |
 
 ## g) Questions I cannot answer myself
 

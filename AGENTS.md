@@ -78,7 +78,11 @@ check its build tags first.
   not add new same-shape top-level test functions; error/size-shaped cases
   (`MaxEventBytesExceeded`, `LargeEvent`, `ScannerErrorWrapped`) stay
   separate functions. art-dupl at `-t 1` flags the `default:` pair in
-  negotiation.go — accepted idiom, not a clone to fix.
+  negotiation.go — accepted idiom, not a clone to fix. (As of 2026-10-05 it
+  is the ONLY finding shown at `-t 1`: the nil-logger defaulting that
+  art-dupl previously flagged in notify.go now has a single implementation,
+  `loggerOrDefault` — add new notify entry points by calling it, not by
+  re-inlining `if logger == nil`.)
 - Content-negotiation policy (exact matching, RFC 6839 suffixes, q-value
   ranking, tie → CBOR, `q=0` refusal substitution, wildcard neutrality) is a
   documented contract in the `negotiation.go` doc comments — change behavior,
