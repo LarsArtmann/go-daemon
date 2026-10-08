@@ -102,9 +102,11 @@ invites symlink attacks.
 
 This library deliberately stops at the mechanism layer. It does not provide
 domain handlers, caching, or business logic; it does not package, deploy, or
-supervise your daemon (systemd owns that); and it listens on unix domain
-sockets only — no TCP listener, no TLS termination. Longer-term ideas and
-raw directions live in [ROADMAP.md](ROADMAP.md).
+supervise your daemon (systemd owns that — but see
+[docs/supervision.md](docs/supervision.md) for recommended unit settings,
+including how to run the daemon at a lower resource priority); and it listens
+on unix domain sockets only — no TCP listener, no TLS termination.
+Longer-term ideas and raw directions live in [ROADMAP.md](ROADMAP.md).
 
 ## Security
 
