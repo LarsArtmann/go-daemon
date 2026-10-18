@@ -1,7 +1,12 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.27.1
+  go: "1.27"
+  build-tags:
+    - goexperiment.arenas
+    - goexperiment.goroutineleakprofile
+    - goexperiment.runtimesecret
+    - goexperiment.simd
   allow-parallel-runners: true
   allow-serial-runners: true
   issues-exit-code: 1
@@ -137,9 +142,17 @@ linters:
     ginkgolinter:
       forbid-focus-container: true
       forbid-spec-pollution: true
+    gocognit:
+      min-complexity: 25
+    goconst:
+      ignore-tests: true
+      min-len: 4
+      min-occurrences: 5
     gocritic:
       disabled-checks:
         - ifElseChain
+    gocyclo:
+      min-complexity: 20
     gomoddirectives:
       replace-local: true
     gosec:
@@ -162,12 +175,25 @@ linters:
         - "1"
         - "2"
         - "100"
+    nestif:
+      min-complexity: 6
     revive:
       rules:
         - disabled: true
           name: exported
         - disabled: true
           name: package-comments
+    tagalign:
+      align: false
+      order:
+        - binding
+        - json
+        - yaml
+        - xml
+        - toml
+        - validate
+        - mapstructure
+      sort: true
     tagliatelle:
       case:
         rules:
@@ -210,20 +236,15 @@ linters:
   exclusions:
     generated: lax
     rules:
-      # flightrecorder_test.go: runtime/trace permits exactly one active
-      # recorder per process — these tests cannot run in parallel with each
-      # other, so paralleltest findings there are deliberate serial tests.
       - path: flightrecorder_test\.go
         linters:
           - paralleltest
-      # notify_test.go: t.Setenv (NOTIFY_SOCKET/WATCHDOG_*) is not allowed
-      # under t.Parallel, so the sd_notify tests are deliberate serial tests.
       - path: notify_test\.go
         linters:
           - paralleltest
       - path: _test\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
           - testpackage
           - gochecknoglobals
           - funlen
@@ -261,5 +282,5 @@ formatters:
     paths:
       - _templ\.go$
 issues:
-  max-issues-per-linter: 50
-  max-same-issues: 10
+  max-issues-per-linter: 0
+  max-same-issues: 0
