@@ -25,7 +25,7 @@ github.com/LarsArtmann/go-daemon`), a minimal reproduction, and your
 assessment of impact. You will get an acknowledgement within a week, and a
 fix or a mitigation plan before any public disclosure.
 
-## Scope notes
+## Security Practices
 
 - The library terminates on a unix domain socket with owner-restricted
   permissions (`0o600` by default). Any process that can write to the socket
