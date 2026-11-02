@@ -4,7 +4,7 @@ go 1.27.2
 
 require (
 	github.com/coreos/go-systemd/v22 v22.7.0
-	github.com/larsartmann/go-codec v0.3.2
+	github.com/larsartmann/go-codec v0.3.3
 	github.com/larsartmann/go-flightrecorder v0.2.1
 	github.com/larsartmann/go-sse/sseparse v0.2.1
 	github.com/prometheus/client_golang v1.25.0
