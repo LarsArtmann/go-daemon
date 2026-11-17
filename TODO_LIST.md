@@ -44,6 +44,7 @@
 | Task                                           | Status       | Impact | Effort | Evidence                                                                                                                                      |
 | ---------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | Verify pkg.go.dev rendering after proxy pickup | 🔵 `BLOCKED` | Low    | XS     | 2026-10-01: pkg.go.dev returns 404 — it cannot index a private module; verify right after the visibility flip (part of the post-flip runbook) |
+| Re-tag v0.4.1 with a minor-form floor: strip master `go 1.27.2` → `go 1.27` (run `go-version-auto-configure who-forces` first to name whatever forces 1.27.2), bump the pre-re-tag sibling pins (sseparse → v0.2.1, go-codec → v0.3.1), tag, then bump consumers (nextd) | 🔴 `TODO` | fleet | S | Published v0.4.0 `.mod` serves `go 1.27.1` (GOMODCACHE download cache, 2026-11-17); registered Active in gvac's POISONERS.md; nextd is held at parity `go 1.27.1` by go-daemon v0.4.0 + sseparse v0.2.0 (who-forces, 2026-11-17) |
 
 ## Hygiene
 
