@@ -10,11 +10,11 @@ FULLY_FUNCTIONAL row below is backed by tests in that suite; the coverage
 numbers below were reproduced with CI's exact flags
 (`-covermode=atomic -coverprofile`).
 
-**Coverage (measured 2026-09-30, `go test -covermode=atomic`):** 86.1% of
-statements total, 30 functions at 100%. The CI floor (80%, `ci.yml`) is real
-and passing, so it stays — no blind raise. Known weak spots are trivial
-option setters (`WithXxx`, 0%), `WriteEncoded`'s encode-error and
-non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
+**Coverage (measured 2026-11-27, `go test -covermode=atomic`):** 96.7% of
+statements total. The CI floor (80%, `ci.yml`) is real and passing, so it
+stays — no blind raise. The weakest remaining functions are
+`FlightRecorder.Start` and `SnapshotToFile` (75.0%, error branches), SSE
+`consumeCR` (83.3%), `TraceHandler` (85.2%), and `isSocketAlive` (88.9%).
 
 ## Socket lifecycle
 

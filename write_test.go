@@ -176,6 +176,39 @@ func TestWriteJSONWithCodec(t *testing.T) {
 	}
 }
 
+// TestWriteJSON_DefaultWrapper pins the backward-compat wrapper: the body is
+// the default codec's output, with the JSON headers every write carries.
+func TestWriteJSON_DefaultWrapper(t *testing.T) {
+	t.Parallel()
+
+	payload := codecAwarePayload{Name: "daemon"}
+
+	want, err := (codec.JSONCodec{}).Encode(payload)
+	if err != nil {
+		t.Fatalf("encode with the default codec: %v", err)
+	}
+
+	rec := httptest.NewRecorder()
+
+	WriteJSON(rec, http.StatusOK, payload)
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+
+	if got := rec.Body.String(); got != string(want) {
+		t.Errorf("body = %q, want %q", got, want)
+	}
+
+	if got := rec.Header().Get("Content-Type"); got != "application/json" {
+		t.Errorf("Content-Type = %q, want application/json", got)
+	}
+
+	if got := rec.Header().Get("Vary"); got != "Accept" {
+		t.Errorf("Vary = %q, want Accept", got)
+	}
+}
+
 func TestWriteErrorfWithCodec(t *testing.T) {
 	t.Parallel()
 
