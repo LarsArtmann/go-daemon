@@ -64,15 +64,17 @@ Three facts forced the decision:
 
 ## Verification
 
-| Check                                                      | Result                                                        |
-| ---------------------------------------------------------- | ------------------------------------------------------------- |
-| Visibility                                                 | `gh repo view` → `PUBLIC`                                     |
-| Proxy resolution without private transport                 | `go list -m github.com/LarsArtmann/go-daemon@v0.5.0` → v0.5.0 |
-| pkg.go.dev                                                 | 200; renders `SocketServer` and `ParseSSEData`                |
-| Private vulnerability reporting                            | enabled                                                       |
-| `scripts/pre-publish-audit.sh`                             | exit 0, CLEAN                                                 |
-| Local gates (build, vet, race tests, lint, README snippet) | green with Go 1.27.4; `govulncheck` clean                     |
-| Hermetic builds, both repos                                | green after re-deriving the consumer's vendor hash            |
+| Check                                                      | Result                                                           |
+| ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| Visibility                                                 | `gh repo view` → `PUBLIC`                                        |
+| Proxy resolution without private transport                 | `go list -m github.com/LarsArtmann/go-daemon@v0.5.0` → v0.5.0    |
+| pkg.go.dev                                                 | 200; renders `SocketServer` and `ParseSSEData`                   |
+| Private vulnerability reporting                            | enabled                                                          |
+| Secret scanning + push protection                          | enabled (free on public repositories; unavailable while private) |
+| `scripts/pre-publish-audit.sh`                             | exit 0, CLEAN                                                    |
+| Local gates (build, vet, race tests, lint, README snippet) | green with Go 1.27.4; `govulncheck` clean                        |
+| Hermetic builds, both repos                                | green after re-deriving the consumer's vendor hash               |
+| CI on the public repository                                | run 46022249899 — both jobs green                                |
 
 ## Consequences
 
