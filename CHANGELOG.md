@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ResolveRequestCodec`, `ResolveResponseCodec`, and `CodecForContentType`
   resolve consumer-supplied codecs; built-in defaults and the negotiation
   ranking contract are unchanged.
+- `ClassifyTransportError` and `TransportErrorKind`: transport-error
+  classification for daemon clients, promoted from
+  project-discovery-daemon's `classifyTransportError`. A done caller
+  context is `TransportErrorCanceled`; a deadline under a live context is
+  `TransportErrorTimeout` (the client's own timeout: the daemon accepted
+  and never answered); connection refused, socket missing, reset and EOF
+  name the other ways a daemon stops answering, and
+  `TransportErrorKind.Unavailable()` is the one verdict a consumer maps
+  onto its own sentinel.
 
 ### Changed
 
