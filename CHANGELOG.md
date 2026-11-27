@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ResolveRequestCodec`, `ResolveResponseCodec`, and `CodecForContentType`
   resolve consumer-supplied codecs; built-in defaults and the negotiation
   ranking contract are unchanged.
+- `WaitForSocket` and `ProbeUntilAlive`: context-bounded wait helpers
+  for tests and restart loops. `WaitForSocket` returns once a listener
+  accepts on the socket path (a leftover socket file does not count);
+  `ProbeUntilAlive` once a daemon answers the health probe. Both poll
+  every `DefaultWaitPollInterval` (50ms, `WithPollInterval` overrides)
+  and return an error wrapping `ctx.Err()` when the context ends first.
 
 ### Changed
 

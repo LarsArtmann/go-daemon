@@ -27,6 +27,7 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 | Graceful drain with configurable grace period; socket removed on every exit path                                                                                                                                                  | FULLY_FUNCTIONAL | `socket.go:316-347`; test `socket_test.go:109`                                                                                   |
 | Lifecycle hook contract: `Startup` → `OnListen` → `OnShutdown` → startup cleanup, test-enforced                                                                                                                                   | FULLY_FUNCTIONAL | `socket.go:190-233`; tests `socket_test.go:189,270`                                                                              |
 | Stale-socket liveness probe (`IsSocketAlive`/`CleanStaleSocket`, configurable health path/timeout)                                                                                                                                | FULLY_FUNCTIONAL | `socket.go:384-425`; tests `socket_test.go:330,354,463`                                                                          |
+| Wait helpers: `WaitForSocket(ctx, path)` returns once a listener accepts on the path; `ProbeUntilAlive(ctx, path, healthPath)` once a daemon answers the health probe                                                             | FULLY_FUNCTIONAL | `wait.go`; tests `TestWaitForSocket`, `TestProbeUntilAlive`                                                                      |
 
 ## Client transport
 
@@ -68,5 +69,5 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Counts
 
-Computed from this file: 19 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
-BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (20 rows total).
+Computed from this file: 20 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
+BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (21 rows total).
