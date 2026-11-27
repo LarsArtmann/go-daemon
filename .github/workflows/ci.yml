@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
-          go-version: "1.27.3"
+          go-version: "1.27.4"
           cache: true
 
       - name: Validate workflow (actionlint)
@@ -81,9 +81,13 @@ jobs:
 
       - name: Build and check flake
         # --all-systems evaluates the outputs of every system in flake.nix's
-        # `systems` list (x86_64-linux, aarch64-linux, aarch64-darwin). The
-        # plain check skips the non-native ones with exit 0 plus a warning, so
-        # it cannot catch a system nixpkgs stopped evaluating (adding
-        # x86_64-darwin today passes the plain check and fails this one).
-        # Builds still run for the runner's own system only.
-        run: nix build .#default && nix flake check --all-systems
+        # `systems` list (x86_64-linux, aarch64-linux, aarch64-darwin) and
+        # --no-build keeps it evaluation-only: without it Nix also tries to
+        # BUILD every system's checks and dies on `platform mismatch`
+        # (measured 2026-11-27 in the first public run, 46020081576). The
+        # plain check skips the non-native systems with exit 0 plus a
+        # warning, so it cannot catch a system nixpkgs stopped evaluating
+        # (adding x86_64-darwin today passes the plain check and fails this
+        # one). The native build runs first, so source and vendorHash are
+        # still really built.
+        run: nix build .#default && nix flake check --no-build --all-systems

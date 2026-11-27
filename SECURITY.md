@@ -29,3 +29,7 @@ fix or a mitigation plan before any public disclosure.
   deliberate operator decision, not a bug report.
 - The SSE parser is framing-only: it never evaluates payload bytes. Payload
   decoding bugs belong to the consumer that decodes them.
+- Build with Go 1.27.4 or newer. Go 1.27.0–1.27.3 ship CVE-2026-97054
+  (GO-2026-6859), a net/http/1 server panic on a MaxBytesReader header
+  race; `govulncheck` reports it against every daemon that serves HTTP.
+  The fix is in the toolchain, not in this library.

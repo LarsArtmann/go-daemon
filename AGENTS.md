@@ -26,7 +26,7 @@ bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets 
 The check-readme logic lives in `scripts/check-readme.sh` — the flake app
 and ci.yml both invoke that script, so edit the script only (never inline
 the awk in a second place).
-nix flake check --all-systems  # evaluates every listed system; builds only the native one
+nix flake check --no-build --all-systems  # evaluates every listed system (see Gotchas)
 nix fmt
 ```
 
@@ -37,6 +37,14 @@ writing). `encoding/json/v2` is GA there. Ambient go on this machine may
 differ — run `go version` (or trust the editor's gopls diagnostics)
 BEFORE writing code; bare `go` that refuses means use
 `nix shell nixpkgs#go_1_27` or `nix develop`.
+
+**Build with Go 1.27.4+, because 1.27.3 and earlier carry
+CVE-2026-97054 / GO-2026-6859** (net/http MaxBytesReader header race →
+server crash; it spans 87 reachable net/http symbols, so the
+reachability trace is nearly all of `socket.go`). CI pin `1.27.4`;
+nixpkgs was still shipping `go_1_27 = 1.27.3` on 2026-11-27, so the
+devShell's govulncheck reports that stdlib finding until nixpkgs catches
+up — bump the flake's Go then, and do not treat the finding as ours.
 
 **The default JSON codec is the json/v2 backend, and the module cannot
 build with it disabled.** go-codec v0.3.3 compiles `json_compat_v2.go`
@@ -118,15 +126,19 @@ toolchain; probe behavior, not the tag.
 
 ## Gotchas
 
-- **Plain `nix flake check` skips every non-native system.** Nix 2.35
-  evaluates only the current system in that mode and reports the rest as
-  `warning: The check omitted these incompatible systems: aarch64-darwin,
-  aarch64-linux` — with exit 0. Measured 2026-11-27 at nixpkgs
-  `0bb8272318b4`: with `x86_64-darwin` added to `systems`, the plain check
-  still passed while `nix flake check --all-systems` failed with `Nixpkgs
-  26.11 has dropped support for x86_64-darwin`. `--all-systems` evaluates
-  all three listed systems (~5s) and still builds only the current
-  system's `checks.*`, so it is the check CI runs.
+- **`nix flake check --all-systems` BUILDS every system's checks; add
+  `--no-build` for eval-only.** Measured 2026-11-27 in the first public
+  run (46020081576): `nix build .#default && nix flake check
+  --all-systems` died with `Cannot build ... Reason: platform mismatch /
+  Required system: 'aarch64-linux'`, because the check phase builds
+  `checks.<system>.build` for each listed system. `--no-build` evaluates
+  every system (~5s) and builds nothing, which is what CI runs. The plain
+  check (no flags) still evaluates only the native system and reports the
+  rest as `warning: The check omitted these incompatible systems` with
+  exit 0 — also measured 2026-11-27 at nixpkgs `0bb8272318b4`, where with
+  `x86_64-darwin` added to `systems` the plain check passed while the
+  `--all-systems` form failed with `Nixpkgs 26.11 has dropped support for
+  x86_64-darwin`.
 - **No `//go:build` guards, by design — do not add any for the notify
   path.** `SdNotify` and `SdWatchdogEnabled` in go-systemd v22.7.0 are
   run-time switched (`NOTIFY_SOCKET` / `WATCHDOG_USEC` unset → not sent,

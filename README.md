@@ -16,6 +16,8 @@ go get github.com/LarsArtmann/go-daemon
 ```
 
 Requires Go 1.27.2 or newer (the floor go-codec's JSON codec declares).
+Build with Go 1.27.4 or newer: 1.27.0–1.27.3 carry CVE-2026-97054, a
+net/http server panic reachable from any daemon that serves HTTP.
 
 ## What you get
 
