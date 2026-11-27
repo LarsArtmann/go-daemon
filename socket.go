@@ -70,6 +70,12 @@ type Server struct {
 	shutdownGracePeriod time.Duration
 	healthPath          string
 	probeTimeout        time.Duration
+
+	// chmodSocket applies socketMode to the socket file: os.Chmod outside
+	// tests. Tests substitute a failing function to reach the error branch,
+	// because no portable unprivileged filesystem state makes chmod(2) fail
+	// on a socket the process itself just created.
+	chmodSocket func(string, fs.FileMode) error
 }
 
 // SocketServer is the unix-domain-socket form of Server: a type alias, so
@@ -161,6 +167,7 @@ func NewServer(network, addr string, opts ...ServerOption) *Server {
 		addr:                addr,
 		socketMode:          DefaultSocketMode,
 		socketDirMode:       DefaultSocketDirMode,
+		chmodSocket:         os.Chmod,
 		logger:              slog.Default(),
 		readHeaderTimeout:   DefaultReadHeaderTimeout,
 		idleTimeout:         DefaultIdleTimeout,
@@ -371,7 +378,7 @@ func (s *Server) listen(ctx context.Context) (net.Listener, error) {
 	}
 
 	if s.managesUnixSocket() {
-		if err := os.Chmod(s.addr, s.socketMode); err != nil {
+		if err := s.chmodSocket(s.addr, s.socketMode); err != nil {
 			_ = ln.Close()
 
 			return nil, fmt.Errorf("restrict socket permissions: %w", err)

@@ -7,9 +7,11 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -457,6 +459,283 @@ func TestSocketServer_StartupSocketDirErrors(t *testing.T) {
 				t.Errorf("error = %v, want it to contain %q", err, tt.wantErrIn)
 			}
 		})
+	}
+}
+
+// errChmodDenied stands in for an os.Chmod failure on the socket (e.g. a
+// security module denying the call). No portable unprivileged filesystem
+// state makes chmod(2) fail on a socket the process itself just created, so
+// the test substitutes the server's chmod seam.
+var errChmodDenied = errors.New("chmod denied")
+
+func TestSocketServer_ChmodErrorSurfaces(t *testing.T) {
+	t.Parallel()
+
+	socketPath := filepath.Join(t.TempDir(), "chmod-fail.sock")
+
+	srv := NewSocketServer(socketPath)
+	srv.chmodSocket = func(string, fs.FileMode) error { return errChmodDenied }
+
+	var onListenRan, onShutdownRan bool
+
+	err := srv.Start(t.Context(), Lifecycle{
+		Handler:    healthMux(),
+		OnListen:   func(context.Context) { onListenRan = true },
+		OnShutdown: func() { onShutdownRan = true },
+	})
+	if !errors.Is(err, errChmodDenied) {
+		t.Fatalf("Start error = %v, want wrapped errChmodDenied", err)
+	}
+
+	if !strings.Contains(err.Error(), "restrict socket permissions") {
+		t.Fatalf("Start error = %v, want it to contain %q", err, "restrict socket permissions")
+	}
+
+	if onListenRan || onShutdownRan {
+		t.Fatal("OnListen and OnShutdown must not run when chmod fails before serving")
+	}
+
+	// The listener behind the failed chmod is closed, and Go's UnixListener
+	// unlinks its socket file on Close: the path must be gone ...
+	if _, statErr := os.Stat(socketPath); !os.IsNotExist(statErr) {
+		t.Fatalf("socket file must be unlinked with the closed listener, stat err: %v", statErr)
+	}
+
+	// ... so a successor binds the same path immediately.
+	ln, listenErr := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
+	if listenErr != nil {
+		t.Fatalf("listen on the same path after a failed chmod: %v", listenErr)
+	}
+
+	_ = ln.Close()
+}
+
+func TestSocketServer_ServeErrorRunsShutdownHooks(t *testing.T) {
+	t.Parallel()
+
+	// WithListener hands Start a listener the test owns, so Serve itself can
+	// be made to fail after it began serving (TestSocketServer_LiveSocketKept
+	// only reaches the listen step): close the listener under the server.
+	socketPath := filepath.Join(t.TempDir(), "serve-error.sock")
+
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
+	if err != nil {
+		t.Fatalf("pre-build listener: %v", err)
+	}
+
+	// Keep the socket file on Close, same as
+	// TestServer_WithListener_ServesWithoutSocketManagement.
+	ln.(*net.UnixListener).SetUnlinkOnClose(false)
+
+	srv := NewSocketServer(socketPath, WithListener(ln))
+
+	var mu sync.Mutex
+
+	hooks := make([]string, 0, 4)
+
+	record := func(name string) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		hooks = append(hooks, name)
+	}
+
+	startErr := make(chan error, 1)
+
+	go func() {
+		startErr <- srv.Start(t.Context(), Lifecycle{
+			Handler: healthMux(),
+			Startup: func() (func(), error) {
+				record("startup")
+
+				return func() { record("startup-cleanup") }, nil
+			},
+			OnListen:   func(context.Context) { record("on-listen") },
+			OnShutdown: func() { record("on-shutdown") },
+		})
+	}()
+
+	// Serve must be running before the listener is pulled away.
+	served := false
+	deadline := time.Now().Add(5 * time.Second)
+
+	for time.Now().Before(deadline) && !served {
+		resp, err := getOverSocketQuiet(t, socketPath, "/health", time.Second)
+		if err == nil {
+			_ = resp.Body.Close()
+			served = true
+		} else {
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+
+	if !served {
+		t.Fatal("server never came up")
+	}
+
+	if err := ln.Close(); err != nil {
+		t.Fatalf("close listener: %v", err)
+	}
+
+	select {
+	case err := <-startErr:
+		if err == nil {
+			t.Fatal("Start must return the Serve error")
+		}
+
+		if !errors.Is(err, net.ErrClosed) {
+			t.Fatalf("Start error = %v, want wrapped net.ErrClosed", err)
+		}
+
+		if !strings.Contains(err.Error(), "serve:") {
+			t.Fatalf("Start error = %v, want it to contain %q", err, "serve:")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Start did not return after the listener was closed")
+	}
+
+	mu.Lock()
+	got := slices.Clone(hooks)
+	mu.Unlock()
+
+	want := []string{"startup", "on-listen", "on-shutdown", "startup-cleanup"}
+
+	if !slices.Equal(got, want) {
+		t.Fatalf("hook order: got %v, want %v", got, want)
+	}
+}
+
+func TestSocketServer_DrainTimeoutStillCleansUp(t *testing.T) {
+	t.Parallel()
+
+	socketPath := filepath.Join(t.TempDir(), "drain-timeout.sock")
+
+	handlerEntered := make(chan struct{})
+
+	release := make(chan struct{})
+
+	handlerReturned := make(chan struct{})
+
+	mux := healthMux()
+	// The slow handler ignores its request context on purpose: canceling the
+	// lifecycle context alone unblocks ctx-aware handlers before the grace
+	// period matters, which would never exercise the drain timeout.
+	mux.HandleFunc("GET /slow", func(_ http.ResponseWriter, _ *http.Request) {
+		close(handlerEntered)
+		<-release
+		close(handlerReturned)
+	})
+
+	var onShutdownRan bool
+
+	// A grace period far shorter than the slow request: the drain must time
+	// out while the handler still holds its connection.
+	_, cancel, errCh := runSocketServer(
+		t,
+		socketPath,
+		Lifecycle{
+			Handler:    mux,
+			OnShutdown: func() { onShutdownRan = true },
+		},
+		WithShutdownGracePeriod(50*time.Millisecond),
+	)
+
+	clientDone := make(chan struct{})
+
+	go func() {
+		defer close(clientDone)
+
+		resp, err := getOverSocketQuiet(t, socketPath, "/slow", 2*time.Second)
+		if err == nil {
+			_ = resp.Body.Close()
+		}
+	}()
+
+	select {
+	case <-handlerEntered:
+	case <-time.After(5 * time.Second):
+		t.Fatal("slow handler was never reached")
+	}
+
+	cancel()
+
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("a drain timeout must not fail Start: %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Start did not return after the drain window")
+	}
+
+	if _, err := os.Stat(socketPath); !os.IsNotExist(err) {
+		t.Fatalf("socket file must be removed even when the drain timed out, stat err: %v", err)
+	}
+
+	if !onShutdownRan {
+		t.Fatal("OnShutdown must run after a timed-out drain")
+	}
+
+	// Let the abandoned handler return; its client is released with it.
+	close(release)
+
+	for _, ch := range []chan struct{}{handlerReturned, clientDone} {
+		select {
+		case <-ch:
+		case <-time.After(5 * time.Second):
+			t.Fatal("handler or client never finished after the drain timed out")
+		}
+	}
+}
+
+func TestSocketServer_StaleSocketRemovalFailureSurfaces(t *testing.T) {
+	t.Parallel()
+
+	if os.Geteuid() == 0 {
+		t.Skip("cannot test permission denial as root")
+	}
+
+	// A crashed predecessor's socket in a directory the daemon cannot write
+	// to: CleanStaleSocket finds it dead but cannot remove it, so listen
+	// must surface the leftover file instead of silently replacing it.
+	dir := t.TempDir()
+	socketPath := filepath.Join(dir, "daemon.sock")
+
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
+	if err != nil {
+		t.Fatalf("bind stale socket: %v", err)
+	}
+
+	// Without this the close below would unlink the socket being simulated.
+	ln.(*net.UnixListener).SetUnlinkOnClose(false)
+
+	if err := ln.Close(); err != nil {
+		t.Fatalf("close stale listener: %v", err)
+	}
+
+	if err := os.Chmod(dir, 0o555); err != nil {
+		t.Fatalf("chmod dir: %v", err)
+	}
+
+	// Registered after t.TempDir's cleanup, so it runs first and the
+	// directory is writable again when the temp dir is removed.
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
+
+	srv := NewSocketServer(socketPath)
+
+	err = srv.Start(t.Context(), Lifecycle{Handler: healthMux()})
+	if err == nil {
+		t.Fatal("expected listen error: the un-removable stale socket still occupies the path")
+	}
+
+	if !strings.Contains(err.Error(), "listen on unix") {
+		t.Fatalf("Start error = %v, want a listen error", err)
+	}
+
+	// The stale socket is left exactly as found.
+	info, statErr := os.Stat(socketPath)
+	if statErr != nil || info.Mode()&os.ModeSocket == 0 {
+		t.Fatalf("stale socket must survive the failed removal, stat err: %v", statErr)
 	}
 }
 
