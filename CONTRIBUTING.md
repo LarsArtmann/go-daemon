@@ -13,6 +13,7 @@ gate. From a checkout with nix installed:
 ```bash
 nix develop          # shell with go, golangci-lint, dprint
 nix build .#default  # hermetic build (also catches a stale vendorHash)
+nix flake check --all-systems  # evaluate every listed system (CI runs this)
 nix run .#test       # go test ./... -race -count=1
 nix run .#lint       # golangci-lint run ./...
 nix fmt              # format nix files
@@ -33,7 +34,7 @@ golangci-lint fmt && golangci-lint run ./...
 
 - Every gate above must pass; CI runs the same checks (build, vet, race
   suite with an 80% coverage floor, vulnerability scan, lint, README
-  compile check, nix build + flake check).
+  compile check, nix build + `nix flake check --all-systems`).
 - Lifecycle ordering is a contract — see the `Lifecycle` doc comment in
   `socket.go`. Do not reorder stages; the hook-ordering test pins it.
 - Content-negotiation behavior, doc comments, and
