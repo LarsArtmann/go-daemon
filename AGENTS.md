@@ -111,6 +111,16 @@ check its build tags first.
 
 ## Gotchas
 
+- **No `//go:build` guards, by design — do not add any for the notify
+  path.** `SdNotify` and `SdWatchdogEnabled` in go-systemd v22.7.0 are
+  run-time switched (`NOTIFY_SOCKET` / `WATCHDOG_USEC` unset → not sent,
+  no error, no log, no counter), the same on every platform. The only
+  build-constrained pair there wraps `SdNotifyMonotonicUsec` (`unix` vs
+  `!unix`), unused here — and that `unix` file is why the library does
+  not compile on netbsd (`unix.CLOCK_MONOTONIC` is undefined in x/sys
+  there). Cross-compile check 2026-11-27, Go 1.27.3, `CGO_ENABLED=0`:
+  builds for linux, darwin, windows, freebsd, openbsd, dragonfly, solaris,
+  js/wasm and wasip1/wasm.
 - This repo is PRIVATE (`github.com/LarsArtmann/...`). Consumers resolve it
   direct via git/SSH (`GOPRIVATE=github.com/larsartmann/*,github.com/LarsArtmann/*`);
   hermetic nix consumers must pin it as a `git+ssh` flake input fed into

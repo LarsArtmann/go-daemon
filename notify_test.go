@@ -306,6 +306,29 @@ func TestWatchdogInterval(t *testing.T) {
 	}
 }
 
+// TestNotifyWithoutSystemdIsSilent pins what "silent no-op" means off
+// systemd: with the notify environment unset, READY and STOPPING change no
+// counter and no watchdog is configured.
+func TestNotifyWithoutSystemdIsSilent(t *testing.T) {
+	// Cannot use t.Parallel: t.Setenv is not allowed in parallel tests.
+	t.Setenv("NOTIFY_SOCKET", "")
+	t.Setenv("WATCHDOG_USEC", "")
+	t.Setenv("WATCHDOG_PID", "")
+
+	before := ReadNotifyCounters()
+
+	NotifyReady(nil)
+	NotifyStopping(nil)
+
+	if after := ReadNotifyCounters(); after != before {
+		t.Errorf("counters moved without systemd: before %+v, after %+v", before, after)
+	}
+
+	if interval, enabled := WatchdogInterval(nil); enabled {
+		t.Errorf("watchdog enabled at %v without systemd, want disabled", interval)
+	}
+}
+
 func TestWatchdogInterval_CurrentPidHonored(t *testing.T) {
 	// Cannot use t.Parallel: t.Setenv is not allowed in parallel tests.
 	t.Setenv("WATCHDOG_USEC", "10000000")

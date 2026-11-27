@@ -98,6 +98,21 @@ The daemon's socket is `0600` by default: only the owning user may talk to it.
 systemd/tmpfiles at boot, cleared on reboot. `/tmp` is world-writable and
 invites symlink attacks.
 
+## Without systemd, and on other platforms
+
+No file in this package carries a build constraint. The `sd_notify` calls
+are ordinary `net` and `os` code on every platform: go-systemd's `daemon`
+package switches on `NOTIFY_SOCKET` and `WATCHDOG_USEC` at run time, not on
+the OS, so the same binary runs unchanged in the foreground, under launchd,
+or without any service manager. (The only build-constrained pair in
+go-systemd v22.7.0 guards `SdNotifyMonotonicUsec`, which this library does
+not call.)
+
+Off systemd nothing is logged and no notify counter moves:
+`ReadNotifyCounters` stays at zero for the life of the process. A set but
+unreachable `NOTIFY_SOCKET` is the one failure that is logged, as a
+warning, and counted in `NotifyFailures`.
+
 ## Non-goals
 
 This library deliberately stops at the mechanism layer. It does not provide

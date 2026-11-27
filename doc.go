@@ -10,6 +10,11 @@
 // codecs, and framing. Domain handlers, caching, and business logic stay with
 // the consuming daemon.
 //
+// No file in the package carries a build constraint. The sd_notify
+// integration switches on NOTIFY_SOCKET at run time, so one binary runs
+// unchanged in the foreground, under launchd, or under systemd, and
+// without systemd every notify call is a silent no-op.
+//
 // Extracted from project-discovery-daemon, whose lifecycle ordering,
 // shutdown-regression tests, and metric names this library preserves.
 package daemon

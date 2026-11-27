@@ -15,6 +15,15 @@ import (
 // needs no per-instance wiring. Expose them from a /metrics endpoint to make
 // readiness and watchdog keepalive observable without parsing logs.
 //
+// Platform behaviour: nothing in this package is behind a build constraint.
+// The sd_notify calls go through go-systemd's daemon package, which is plain
+// net and os code on every GOOS and switches on the environment at run time,
+// not on the platform. With NOTIFY_SOCKET unset (WATCHDOG_USEC for the
+// watchdog) a call reports "not sent, no error", so nothing is logged and
+// no counter here moves for the life of the process. The only
+// build-constrained pair in go-systemd v22.7.0 wraps SdNotifyMonotonicUsec
+// (unix vs !unix), which this package does not call.
+//
 //nolint:gochecknoglobals // process-global sd_notify state by design; docs/decisions/2026-10-03_v040-notify-api-shape.md
 var (
 	notifyReadySent     atomic.Int64
