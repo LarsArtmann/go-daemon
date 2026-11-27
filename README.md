@@ -26,6 +26,7 @@ Requires Go 1.27 or newer.
 | `NewServer` / `WithListener`                                                                  | The same lifecycle — hooks, graceful drain, sd_notify — on any network (e.g. `NewServer("tcp", "127.0.0.1:8080")`), or on a pre-built listener with zero filesystem management (`SocketServer` is a type alias of `Server`)                                                                 |
 | `NotifyReady` / `NotifyStopping` / `Watchdog` / `ReadNotifyCounters`                          | Standalone sd_notify integration for any `http.Server`: readiness, shutdown, watchdog keepalive at `WatchdogSec/2` (per `sd_watchdog_enabled(3)`), and process-global observability counters — silent no-ops without systemd                                                                |
 | `NewHTTPClient` / `NewHTTPClientNoTimeout`                                                    | Unix-socket HTTP transports for clients (pooled keep-alive connections tuned for socket traffic; no-timeout variant for SSE streams)                                                                                                                                                        |
+| `ClassifyTransportError`                                                                      | Transport-error classification for daemon clients: a `TransportErrorKind` (canceled, connection refused, socket missing, reset, EOF, timeout, other) with `Unavailable()`, the daemon-did-not-answer verdict — a live caller context separates a client timeout from a caller that gave up  |
 | `ResolveRequestCodec` / `ResolveResponseCodec` / `WriteEncoded` / `WriteJSON` / `WriteErrorf` | JSON/CBOR content negotiation — exact media-type matching with RFC 6839 structured suffixes, Accept q-value ranking, `q=0` refusals never served, `Vary: Accept` on every written response — with pooled-buffer response writes                                                             |
 | `WithJSONCodec` / `WithCBORCodec` / `JSONv2Codec`                                             | Injectable negotiation codecs plus an `encoding/json/v2` adapter with caller-chosen marshal options — adopt negotiation without leaving json/v2 semantics (omitzero, deterministic map ordering, integer-nanos durations)                                                                   |
 | `ParseSSEData`                                                                                | WHATWG-spec SSE framing (multi-line data joins, heartbeat comments, one-space stripping, size limits) — pinned to the WPT/Chromium conformance corpus, so every dispatch decision is checked against the same vectors that test the reference parser — decode payloads your way             |
@@ -89,6 +90,14 @@ Client side:
 ```go
 client := godmn.NewHTTPClient("/run/mydaemon/daemon.sock", 5*time.Second)
 resp, err := client.Do(req) // dials the unix socket; host in URLs is ignored
+```
+
+A failed request classifies without guessing at error strings:
+
+```go
+if kind := godmn.ClassifyTransportError(ctx, err); kind.Unavailable() {
+	// The daemon did not answer: fall back, or fail with your own sentinel.
+}
 ```
 
 ## Why unix sockets (and `/run`)?

@@ -30,10 +30,11 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Client transport
 
-| Feature                                                                                         | Status           | Evidence                                        |
-| ----------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------- |
-| Unix-socket HTTP clients: `NewHTTPClient` (timeout) and `NewHTTPClientNoTimeout` (SSE streams), | FULLY_FUNCTIONAL | `transport.go:25-51`; test `socket_test.go:407` |
-| pooled keep-alive tuned for socket traffic                                                      |                  |                                                 |
+| Feature                                                                                         | Status           | Evidence                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unix-socket HTTP clients: `NewHTTPClient` (timeout) and `NewHTTPClientNoTimeout` (SSE streams), | FULLY_FUNCTIONAL | `transport.go:25-51`; test `socket_test.go:407`                                                                                                  |
+| pooled keep-alive tuned for socket traffic                                                      |                  |                                                                                                                                                  |
+| Transport-error classification: `ClassifyTransportError(ctx, err)` → `TransportErrorKind`       | FULLY_FUNCTIONAL | `transport_error.go`; tests `TestClassifyTransportError`, `TestClassifyTransportError_ClientErrors`, `TestGoStillUsesServerClosedIdleConnString` |
 
 ## Content negotiation
 
@@ -68,5 +69,5 @@ non-BufferEncoder paths (65.6%), and `Start`'s startup-error paths (76.2%).
 
 ## Counts
 
-Computed from this file: 19 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
-BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (20 rows total).
+Computed from this file: 20 FULLY_FUNCTIONAL, 0 PARTIALLY_FUNCTIONAL, 0
+BROKEN, 0 DISABLED, 0 PLANNED, 1 ON_HOLD (21 rows total).
