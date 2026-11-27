@@ -61,7 +61,10 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.13.2
+          # v2.15.0 reads Go 1.27.4 export data; v2.13.2 dies with "export
+          # data version 5 is greater than maximum supported version 4"
+          # (measured 2026-11-27, run 46021629245).
+          version: v2.15.0
           args: --timeout=5m
 
   nix:
