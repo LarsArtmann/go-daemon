@@ -228,8 +228,8 @@ func TestCBOR_RoundTrip(t *testing.T) {
 	t.Parallel()
 
 	payload := codecTestPayload{Projects: []codecTestProject{
-		{Path: "/home/user/projects", DirName: "projects"},
-		{Path: "/home/user/work", DirName: "work"},
+		{Path: "/srv/projects", DirName: "projects"},
+		{Path: "/srv/work", DirName: "work"},
 	}}
 
 	data, err := codec.CBORCodec{}.Encode(payload)
@@ -242,7 +242,7 @@ func TestCBOR_RoundTrip(t *testing.T) {
 		t.Fatalf("decode: %v", err)
 	}
 
-	if len(decoded.Projects) != 2 || decoded.Projects[0].Path != "/home/user/projects" {
+	if len(decoded.Projects) != 2 || decoded.Projects[0].Path != "/srv/projects" {
 		t.Fatalf("round-trip mismatch: %+v", decoded)
 	}
 }

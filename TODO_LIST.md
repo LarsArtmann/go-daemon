@@ -17,22 +17,13 @@
 | 🟡 `IN_PROGRESS` | Actively being worked on.                               |
 | 🔵 `BLOCKED`     | External dependency or decision needed before it moves. |
 
-## Go-public cluster (pre-flip)
+## Go-public cluster (flip executed 2026-11-27)
 
-| Task                                                                                           | Status       | Impact     | Effort | Evidence                                                                             |
-| ---------------------------------------------------------------------------------------------- | ------------ | ---------- | ------ | ------------------------------------------------------------------------------------ |
-| Post-flip: update AGENTS.md Gotchas (GOPRIVATE/`mkPreparedSource` notes become obsolete)       | 🔵 `BLOCKED` | doc truth  | XS     | 10-33 §f10 — gated on the flip; AGENTS.md:88-91 carries the private-repo notes today |
-| Post-flip: pdd drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash | 🔵 `BLOCKED` | the payoff | M      | 10-33 §f11 — pdd flake.nix:38 pins `git+ssh` today                                   |
-
-## Owner decisions (BLOCKED — nothing to code)
-
-| Task                                                                                                                       | Status       | Impact            | Effort | Evidence                                                                                                                                                                                                                                                                                                                                   |
-| -------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| API stability policy: v0.x no-promises vs v1 freeze                                                                        | 🔵 `BLOCKED` | contract decision | owner  | 10-33 §f2/§g1                                                                                                                                                                                                                                                                                                                              |
-| Name decision: keep `go-daemon` vs rename pre-flip                                                                         | 🔵 `BLOCKED` | hard to reverse   | owner  | 10-33 §f3/§g2; collision data 2026-10-01: sevlyar/go-daemon (MIT, 2.3k★, active) dominates the search; 25+ same-name modules on pkg.go.dev; no hard path collision (`github.com/LarsArtmann/go-daemon` unclaimed) but the `daemon` package name collides with sevlyar's — both facts in `docs/decisions/2026-10-01_owner-decision-memo.md` |
-| Visibility of `docs/status/`, `docs/planning/`, `reports/` in a public repo (scrub vs keep)                                | 🔵 `BLOCKED` | privacy           | owner  | 10-33 §f4/§g3, 11-29 §f22                                                                                                                                                                                                                                                                                                                  |
-| The visibility flip itself (after the pre-flip cluster is green)                                                           | 🔵 `BLOCKED` | the decision      | owner  | 10-33 §c                                                                                                                                                                                                                                                                                                                                   |
-| Fix GitHub Actions billing; then confirm CI green on the v0.2.0 tag commit AND the never-executed actions v7/v9.3 workflow | 🔵 `BLOCKED` | blocking trust    | owner  | 11-29 §f1/§f5/§b — `gh run 36645862196`: "payments failed"; tag-CI never ran                                                                                                                                                                                                                                                               |
+The repository is public as of 2026-11-27. The four owner gates (API
+stability, name, docs visibility, the flip) were answered by that
+instruction and are recorded with their evidence in
+`docs/decisions/2026-11-27_visibility-flip.md`; the pre-flip and post-flip
+tail items are closed, so this section carries no open work.
 
 ## CI gate completeness
 

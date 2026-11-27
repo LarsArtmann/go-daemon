@@ -1,10 +1,9 @@
 # go-daemon
 
 Production-proven building blocks for superb long-lived daemons served over
-unix domain sockets — extracted from
-[project-discovery-daemon](https://github.com/LarsArtmann/project-discovery-daemon),
-whose lifecycle ordering, shutdown-regression tests, and metric names this
-library preserves.
+unix domain sockets — extracted from a production discovery daemon, whose
+lifecycle ordering, shutdown-regression tests, and metric names this library
+preserves.
 
 The package is mechanism, not policy: it owns sockets, lifecycle ordering,
 codecs, and framing. Domain handlers, caching, and business logic stay with

@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
-          go-version: "1.27.1"
+          go-version: "1.27.3"
           cache: true
 
       - name: Validate workflow (actionlint)
@@ -68,7 +68,7 @@ jobs:
     # The only gate that catches a stale flake vendorHash: `nix build`
     # re-derives the module hash on every run, so a dependency bump that
     # forgot the hash fails here instead of at a consumer's `nix build`.
-    # All dependencies are public (no GOPRIVATE, no mkPreparedSource), so
+    # All dependencies are public (no vendored-source helper needed), so
     # this needs no secrets on a public runner.
     runs-on: ubuntu-latest
 

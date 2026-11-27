@@ -1,6 +1,6 @@
 # Consumer Feedback — DiscordSync Adoption Delta
 
-**Source:** DiscordSync's go-daemon evaluation (`/home/lars/projects/DiscordSync/docs/adr/ADR-070-godaemon-hardening-pattern-adoption.md`, 2026-10-03), filed 2026-10-04 against go-daemon `e2187e7` (v0.4.0 tag `0a5d806` + dep-sweep patch bumps only).
+**Source:** DiscordSync's go-daemon evaluation (its `docs/adr/ADR-070-godaemon-hardening-pattern-adoption.md`, 2026-10-03), filed 2026-10-04 against go-daemon `e2187e7` (v0.4.0 tag `0a5d806` + dep-sweep patch bumps only).
 **Question answered:** what would go-daemon need to change for DiscordSync to adopt it as a dependency?
 
 > **Update 2026-10-04 (same day):** F2 RESOLVED (`c9bcc7d` — `JSONv2Codec` + injectable negotiation codecs). F3 reclassified from "parity nicety" to **the adoption driver**: with a deferrable-READY option, `go-daemon`'s lifecycle API can natively express DiscordSync's stricter READY contract, the hand-rolled `cmd/discordsync/systemd.go` port becomes redundant library surface, and it gets deleted in favor of `go-daemon/notify`. Remaining for adoption: F3 shipped + F1 (go public).

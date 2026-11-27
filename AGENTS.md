@@ -109,7 +109,7 @@ toolchain; probe behavior, not the tag.
 - `github.com/coreos/go-systemd/v22` — sd_notify + watchdog
 - `github.com/prometheus/client_golang` — flight-recorder metrics
 - `github.com/larsartmann/go-sse/sseparse` — ADOPTED as a test-only
-  dependency (v0.2.1; public module, so no GOPRIVATE/vendor cost):
+  dependency (v0.2.1; public module, so no vendor cost):
   `sse_conformance_test.go` asserts `ParseSSEData` against
   `sseparse.MustCorpus(t)` — the WPT/Chromium wire-format vectors, projected
   onto the framing surface (dispatched data payloads). The corpus is the
@@ -137,10 +137,11 @@ toolchain; probe behavior, not the tag.
   there). Cross-compile check 2026-11-27, Go 1.27.3, `CGO_ENABLED=0`:
   builds for linux, darwin, windows, freebsd, openbsd, dragonfly, solaris,
   js/wasm and wasip1/wasm.
-- This repo is PRIVATE (`github.com/LarsArtmann/...`). Consumers resolve it
-  direct via git/SSH (`GOPRIVATE=github.com/larsartmann/*,github.com/LarsArtmann/*`);
-  hermetic nix consumers must pin it as a `git+ssh` flake input fed into
-  `mkPreparedSource` (see project-discovery-daemon's flake.nix).
+- This repo is PUBLIC (flipped 2026-11-27): consumers resolve it through
+  the Go module proxy and pin it as a plain flake input
+  (`github:LarsArtmann/go-daemon/<rev-or-tag>`, see
+  project-discovery-daemon's flake.nix). No vendored-source helper is
+  needed for it any more.
 - The SSE parser is framing-only on purpose (mechanism vs policy); payload
   decoding lives with consumers.
 - Version bumps should follow the primary consumer's needs — its nix build

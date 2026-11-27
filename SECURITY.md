@@ -4,21 +4,17 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.2.x   | :white_check_mark: |
-| < 0.2   | :x:                |
+| 0.5.x   | :white_check_mark: |
+| < 0.5   | :x:                |
 
 This library is pre-1.0: only the latest minor release receives security
 fixes. Consumers should track the latest tag.
 
 ## Reporting a vulnerability
 
-Please do **not** open a public issue for security reports.
-
-- While this repository is private, contact the maintainer directly on
-  GitHub (@LarsArtmann) — reports stay confidential by default.
-- Once the repository is public, use GitHub private vulnerability reporting
-  (Security → Report a vulnerability), which keeps the report confidential
-  until a fix ships.
+Please do **not** open a public issue for security reports. Use GitHub
+private vulnerability reporting (Security → Report a vulnerability), which
+keeps the report confidential until a fix ships.
 
 Include what you can of: the affected version (`go list -m
 github.com/LarsArtmann/go-daemon`), a minimal reproduction, and your

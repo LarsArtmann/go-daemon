@@ -36,13 +36,11 @@
         let
           goPkg = pkgs.go_1_27;
 
-          # All dependencies are public and resolve via the Go proxy; no
-          # mkPreparedSource needed (contrast: private-repo consumers like
-          # project-discovery-daemon pin this repo as a git+ssh flake input).
-          # GOTOOLCHAIN=local keeps go on the nixpkgs toolchain, GOWORK=off
-          # ignores any workspace file up the tree.
+          # All dependencies are public and resolve via the Go proxy, so no
+          # mkPreparedSource is needed. GOTOOLCHAIN=local keeps go on the
+          # nixpkgs toolchain, GOWORK=off ignores any workspace file up the
+          # tree.
           goEnv = {
-            GOPRIVATE = "github.com/larsartmann/*,github.com/LarsArtmann/*";
             GOWORK = "off";
             GOTOOLCHAIN = "local";
           };
@@ -68,11 +66,7 @@
               vendorHash = "sha256-LHju8yvGTXm8lgFJKotvPqWZJUpSj/tiK8EUisuHJws=";
               proxyVendor = false;
               env = {
-                inherit
-                  GOPRIVATE
-                  GOWORK
-                  GOTOOLCHAIN
-                  ;
+                inherit GOWORK GOTOOLCHAIN;
               };
               doCheck = false; # tests run via `nix run .#test` (race + tmp sockets)
 
@@ -95,7 +89,6 @@
                 inherit name;
                 inherit runtimeInputs;
                 text = with goEnv; ''
-                  export GOPRIVATE="${GOPRIVATE}"
                   export GOWORK="${GOWORK}"
                   export GOTOOLCHAIN="${GOTOOLCHAIN}"
                   ${text}
