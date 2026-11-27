@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   name the other ways a daemon stops answering, and
   `TransportErrorKind.Unavailable()` is the one verdict a consumer maps
   onto its own sentinel.
+- `WaitForSocket` and `ProbeUntilAlive`: context-bounded wait helpers
+  for tests and restart loops. `WaitForSocket` returns once a listener
+  accepts on the socket path (a leftover socket file does not count);
+  `ProbeUntilAlive` once a daemon answers the health probe. Both poll
+  every `DefaultWaitPollInterval` (50ms, `WithPollInterval` overrides)
+  and return an error wrapping `ctx.Err()` when the context ends first.
 
 ### Changed
 
