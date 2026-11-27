@@ -38,21 +38,21 @@ differ — run `go version` (or trust the editor's gopls diagnostics)
 BEFORE writing code; bare `go` that refuses means use
 `nix shell nixpkgs#go_1_27` or `nix develop`.
 
-**The default JSON codec's flavour follows the toolchain, not this repo.**
-go-codec builds its `encoding/json/v2` backend when the `jsonv2`
-experiment is enabled (`json_compat_v2.go`, tag `goexperiment.jsonv2`),
-and Go 1.27 has that experiment on by default: re-probed 2026-11-27 on
-go1.27.3 with go-codec v0.3.3 — `codec.JSONCodec{}` yields nil slices as
-`[]` (not null), an _error_ for `time.Duration`, and unordered map keys.
-`GOEXPERIMENT=none` selects `json_compat_v1.go` again (null slices,
-integer-nanos durations, sorted map keys), so a `time.Duration` carrier
-encodes on one build and fails on the other. Do not assume a flavour.
-The explicit paths are `JSONv2Codec` (jsonv2.go, caller-chosen options
-such as `FormatNilSliceAsNull(true)` / `FormatDurationAsNano(true)` to
-restore v1 wire shapes) and `WithJSONCodec`/`WithCBORCodec` for
-negotiation. The pre-v0.3.3 note here claiming `codec.JSONCodec{}` was
-v1 on Go 1.27 does not hold with this toolchain; when in doubt, probe the
-behavior, not the tag.
+**The default JSON codec is the json/v2 backend, and the module cannot
+build with it disabled.** go-codec v0.3.3 compiles `json_compat_v2.go`
+when the `jsonv2` experiment is on, which Go 1.27 does by default;
+re-probed 2026-11-27 on go1.27.3 — `codec.JSONCodec{}` yields nil slices
+as `[]` (not null), an _error_ for `time.Duration`, and unordered map
+keys. That is this module's actual wire behavior, not a per-build coin
+flip: `GOEXPERIMENT=none` fails to build at all, because jsonv2.go
+imports `encoding/json/v2` and prometheus/common imports
+`encoding/json/jsontext`, both excluded without the experiment (verified
+2026-11-27). Consumers needing v1 shapes must pass an explicit codec:
+`JSONv2Codec` (jsonv2.go) with `FormatNilSliceAsNull(true)` /
+`FormatDurationAsNano(true)`, routed through `WriteJSONWithCodec` /
+`WriteErrorfWithCodec` or `WithJSONCodec`. The pre-v0.3.3 note here
+claiming `codec.JSONCodec{}` was v1 on Go 1.27 does not hold with this
+toolchain; probe behavior, not the tag.
 
 ## Conventions
 

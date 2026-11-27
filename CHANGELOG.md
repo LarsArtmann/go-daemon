@@ -60,16 +60,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Dependency bumps since 0.4.0: go-codec v0.3.0 → v0.3.3, go-flightrecorder
   v0.2.0 → v0.2.1, go-sse/sseparse v0.2.0 → v0.2.1,
   prometheus/client_golang v1.24.1 → v1.25.0.
-- **The default JSON codec's wire flavour now follows the toolchain.**
-  go-codec v0.3.3 compiles its `encoding/json/v2` backend when the `jsonv2`
-  experiment is enabled, which Go 1.27 does by default: through
-  `codec.JSONCodec{}` (and therefore `WriteJSON`, `WriteErrorf`, and
+- **The default JSON codec now emits json/v2 wire shapes, and it is not
+  switchable off.** go-codec v0.3.3 compiles its `encoding/json/v2` backend
+  when the `jsonv2` experiment is enabled, which Go 1.27 does by default:
+  through `codec.JSONCodec{}` (and therefore `WriteJSON`, `WriteErrorf`, and
   `WriteEncoded` with the default codec, plus negotiation's JSON default) a
   nil slice now encodes as `[]` not `null`, `time.Duration` fails to encode
-  rather than emitting integer nanos, and map key order is unordered;
-  `GOEXPERIMENT=none` selects the v1 backend again. Pass an explicit codec
-  when the wire shape matters: `WriteJSONWithCodec`,
-  `WriteErrorfWithCodec`, or negotiation's `WithJSONCodec`, with
+  rather than emitting integer nanos, and map key order is unordered. This
+  module cannot be built with the experiment disabled (`GOEXPERIMENT=none`
+  excludes `encoding/json/v2`, which jsonv2.go imports), so the v2 shapes
+  are unconditional. Pass an explicit codec when the wire shape matters:
+  `WriteJSONWithCodec`, `WriteErrorfWithCodec`, or negotiation's
+  `WithJSONCodec`, with
   `JSONv2Codec{MarshalOptions: []json.Options{json.FormatNilSliceAsNull(true),
   json.FormatDurationAsNano(true)}}` for the v1 shapes.
 
