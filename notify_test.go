@@ -243,8 +243,17 @@ func TestWatchdog_SendsWatchdogNotifications(t *testing.T) {
 		t.Errorf("expected WATCHDOG=1 notification, got %q", msg)
 	}
 
-	if got := ReadNotifyCounters().WatchdogPings; got != pingsBefore+1 {
-		t.Errorf("WatchdogPings = %d, want %d", got, pingsBefore+1)
+	// The ping is counted right after the datagram goes out, so the counter
+	// can trail the message by one scheduling step. Wait for it instead of
+	// racing the Watchdog goroutine.
+	deadline := time.Now().Add(time.Second)
+
+	for ReadNotifyCounters().WatchdogPings < pingsBefore+1 && time.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+
+	if got := ReadNotifyCounters().WatchdogPings; got < pingsBefore+1 {
+		t.Errorf("WatchdogPings = %d, want at least %d", got, pingsBefore+1)
 	}
 }
 

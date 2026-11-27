@@ -108,6 +108,40 @@ func stopSocketServer(t *testing.T, cancel context.CancelFunc, errCh <-chan erro
 	}
 }
 
+// runServerUntilListening is runSocketServer for tests that assert on the
+// socket file itself: bind(2) creates the file a moment before Start chmods
+// it, so an immediate stat can still see the pre-chmod mode. OnListen runs
+// after the chmod, and this helper returns only once it has.
+func runServerUntilListening(
+	t *testing.T,
+	socketPath string,
+	lifecycle Lifecycle,
+	opts ...SocketServerOption,
+) (*SocketServer, context.CancelFunc, <-chan error) {
+	t.Helper()
+
+	listening := make(chan struct{})
+
+	onListen := lifecycle.OnListen
+	lifecycle.OnListen = func(ctx context.Context) {
+		if onListen != nil {
+			onListen(ctx)
+		}
+
+		close(listening)
+	}
+
+	srv, cancel, errCh := runSocketServer(t, socketPath, lifecycle, opts...)
+
+	select {
+	case <-listening:
+	case <-time.After(5 * time.Second):
+		t.Fatal("OnListen did not run: the socket never finished listening")
+	}
+
+	return srv, cancel, errCh
+}
+
 func TestSocketServer_ServesAndShutsDownGracefully(t *testing.T) {
 	t.Parallel()
 
@@ -146,7 +180,7 @@ func TestSocketServer_CreatesSocketDirWithMode(t *testing.T) {
 	root := t.TempDir()
 	socketPath := filepath.Join(root, "nested", "deeper", "daemon.sock")
 
-	_, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: healthMux()})
+	_, cancel, errCh := runServerUntilListening(t, socketPath, Lifecycle{Handler: healthMux()})
 
 	info, err := os.Stat(socketPath)
 	if err != nil {
@@ -169,7 +203,7 @@ func TestSocketServer_CustomSocketMode(t *testing.T) {
 
 	socketPath := filepath.Join(t.TempDir(), "mode.sock")
 
-	_, cancel, errCh := runSocketServer(
+	_, cancel, errCh := runServerUntilListening(
 		t,
 		socketPath,
 		Lifecycle{Handler: healthMux()},
