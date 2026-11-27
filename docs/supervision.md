@@ -64,8 +64,36 @@ required set):
   weights rather than global niceness. The right knob when you want "half as
   much CPU as my other services", not absolute deference.
 
-None of these bound memory — nice does nothing for RAM. To cap an optional
-daemon, add `MemoryMax=` (and consider `OOMPolicy=`) instead.
+## Memory: a separate knob with a separate failure mode
+
+None of the CPU/I/O knobs bound memory — nice does nothing for RAM. Memory
+limits are cgroup limits, and they fail _loudly_: when a unit hits its cap
+the kernel OOM-killer picks a victim, so the limit must be paired with a
+restart policy and a deliberate `OOMPolicy=`:
+
+```ini
+[Service]
+MemoryHigh=256M
+MemoryMax=512M
+OOMPolicy=stop
+Restart=on-failure
+RestartSec=2s
+```
+
+- `MemoryHigh=` is the throttle: the kernel reclaims aggressively and slows
+  the cgroup down. Use it when you want pressure before death.
+- `MemoryMax=` is the hard wall: crossing it triggers the OOM killer. Leave
+  headroom for the Go runtime's heap target and any flight-recorder snapshot
+  buffer (`MaxSnapshots` × trace size), which is the usual surge.
+- `OOMPolicy=stop` (the default is `continue`) stops the whole unit when a
+  process is OOM-killed, so `Restart=on-failure` sees a failed unit instead
+  of a half-dead process. `OOMPolicy=continue` is only right when one
+  process dying must not take its siblings down.
+
+A daemon with an unbounded flight recorder or an in-memory cache has no
+natural memory ceiling; `MemoryMax=` is the only thing that turns a slow
+leak into a restart instead of an OOM-killed host. Watch the unit's
+`MemoryPeak` (systemd 254+) when choosing the numbers.
 
 ## NixOS module
 

@@ -1,5 +1,7 @@
 # Session Status — SSE Test Deduplication (art-dupl Review)
 
+> **Live remainder:** §a done; §b/c clone-hygiene and gate-chain items are recorded in AGENTS.md and ROADMAP theme 3. Live work: TODO_LIST.md.
+
 - **Date:** 2026-10-01 05:46 CEST
 - **Session window:** ~05:30–05:55 CEST, single session
 - **Scope:** per owner instruction, this report covers THIS session's run only
@@ -90,27 +92,27 @@ run — item 19 in section f.
 
 ## a) FULLY DONE
 
-1. **art-dupl output reviewed with judgment** — both shown clone groups
-   classified extract/accept per the deduplicate-code skill.
-2. **9 same-shape tests → 1 table** — `TestParseSSEData_Dispatch`
-   (sse_test.go:9): the 7 flagged groups + `MultipleEvents` +
-   `StreamEndsMidEvent` (identical prologue/call/assert, differing only in
-   wire input and expected payloads). Keyed rows, `name` field first per repo
-   convention, spec messages preserved as row names. Net −130 lines.
-3. **Error/size-shaped cases kept separate** — `MaxEventBytesExceeded`,
-   `LargeEvent`, `ScannerErrorWrapped` (different assertion shapes, not
-   clones). Fuzz target and corpus-conformance test untouched.
-4. **negotiation.go `default:` pair accepted** — idiomatic switch structure,
-   not extractable; fallback rationale already in `ResolveResponseCodec`'s
-   doc comment. No code change.
-5. **All gates green (final state)** — gofmt clean; `go build`; `go vet`;
-   `golangci-lint run` 0 issues; `go test ./... -race -count=1` ok.
-6. **Re-scan clean** — art-dupl re-run: sse_test.go groups gone; only the
-   accepted `default:` group remains shown.
-7. **Stale-reference sweep** — zero repo references to the 9 removed test
-   names.
-8. **Memory updated** — AGENTS.md Conventions: new dispatch-shape cases go
-   into the table; accepted-clone note for the `default:` pair.
+1. ~~**art-dupl output reviewed with judgment** — both shown clone groups~~
+   ~~classified extract/accept per the deduplicate-code skill.~~ done (session §a; re-verified 2026-11-27)
+2. ~~**9 same-shape tests → 1 table** — `TestParseSSEData_Dispatch`~~
+   ~~(sse_test.go:9): the 7 flagged groups + `MultipleEvents` +~~
+   ~~`StreamEndsMidEvent` (identical prologue/call/assert, differing only in~~
+   ~~wire input and expected payloads). Keyed rows, `name` field first per repo~~
+   ~~convention, spec messages preserved as row names. Net −130 lines.~~ done (session §a; re-verified 2026-11-27)
+3. ~~**Error/size-shaped cases kept separate** — `MaxEventBytesExceeded`,~~
+   ~~`LargeEvent`, `ScannerErrorWrapped` (different assertion shapes, not~~
+   ~~clones). Fuzz target and corpus-conformance test untouched.~~ done (session §a; re-verified 2026-11-27)
+4. ~~**negotiation.go `default:` pair accepted** — idiomatic switch structure,~~
+   ~~not extractable; fallback rationale already in `ResolveResponseCodec`'s~~
+   ~~doc comment. No code change.~~ done (session §a; re-verified 2026-11-27)
+5. ~~**All gates green (final state)** — gofmt clean; `go build`; `go vet`;~~
+   ~~`golangci-lint run` 0 issues; `go test ./... -race -count=1` ok.~~ done (session §a; re-verified 2026-11-27)
+6. ~~**Re-scan clean** — art-dupl re-run: sse_test.go groups gone; only the~~
+   ~~accepted `default:` group remains shown.~~ done (session §a; re-verified 2026-11-27)
+7. ~~**Stale-reference sweep** — zero repo references to the 9 removed test~~
+   ~~names.~~ done (session §a; re-verified 2026-11-27)
+8. ~~**Memory updated** — AGENTS.md Conventions: new dispatch-shape cases go~~
+   ~~into the table; accepted-clone note for the `default:` pair.~~ done (session §a; re-verified 2026-11-27)
 
 ## b) PARTIALLY DONE
 
@@ -233,12 +235,12 @@ today.
 20. Bounded fuzz runs (`-fuzz=FuzzParseSSEData -fuzztime=60s`, same for
     `FuzzResolveResponseCodec`) as periodic hygiene; commit any crash input
     per the seed-only corpus policy. Med/low.
-21. Table-drive any additional same-shape groups the `-t 3` sweep (item 5)
+    ~~21. Table-drive any additional same-shape groups the `-t 3` sweep (item 5)~~ done — no additional same-shape groups at -t 1 (re-run 2026-11-27)
     finds. Med/med.
-22. If any external CI/script `-run` filter targeted the old test names,
+21. If any external CI/script `-run` filter targeted the old test names,
     update it — repo-internal grep is clean, external references unknown.
     Low/low.
-23. Restore the lost spec-WHY (dispatch fires only on blank line) either in
+22. Restore the lost spec-WHY (dispatch fires only on blank line) either in
     the row name or `ParseSSEData`'s doc comment — owner's call on comment
     policy. Low/low.
 

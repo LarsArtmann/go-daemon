@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet.
+- `docs/DOMAIN_LANGUAGE.md`: the ubiquitous language for the library (core
+  terms, bounded contexts, anti-language, deprecated terms), each term
+  cited to the code that implements it and stamped against a code review.
+- `docs/decisions/2026-11-27_jsonv2-default-and-wire-shapes.md`: the record
+  for the default JSON codec's unconditional json/v2 wire shapes, the
+  v1-shape escape hatches, and the consumer consequences.
 
 ### Changed
 
@@ -21,12 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   deploy key. `go.mod` keeps its 1.27.2 floor, but Go 1.27.0–1.27.3 carry
   CVE-2026-97054 in `net/http`, so build with 1.27.4+ (now what CI pins).
   See `docs/decisions/2026-11-27_visibility-flip.md`.
+- **Documentation corpus archived and gated.** Every status report through
+  2026-10-08 now lives in `docs/status/archived/` with per-item verdicts or
+  a `Live remainder` banner naming the owning sections; the executed pre-flip
+  Pareto plan moved to `docs/planning/archived/`. `docs-gates run .`
+  (freshness, annotate, routing, cadence, glossary) is green, and
+  `CONTRIBUTING.md`/`AGENTS.md` document the two docs gates.
+- AGENTS.md corrections: the language floor is 1.27.2 (not `go 1.27`), the
+  pre-publish audit exits 0, consumers resolve through the proxy from
+  `go.mod` (no flake pin), and the docs-gate split is documented.
+- README: CI and pkg.go.dev badges, the non-goal now says TCP is supported
+  through `NewServer` without TLS, and links the domain-language glossary.
+- `docs/dependency-licenses.md` regenerated for the v0.5.0 dependency set
+  (16-module build closure, all permissive) and the proxy-only resolution
+  path.
+- `docs/supervision.md` now covers memory limits (`MemoryHigh`, `MemoryMax`,
+  `OOMPolicy`) as a separate failure mode from CPU/I/O priority.
 
 ### Fixed
 
 - CI's flake gate no longer tries to build other platforms' checks: it
   builds the native package and then evaluates every listed system with
   `nix flake check --no-build --all-systems`.
+- The pre-publish audit's private-path scan now excludes whole files
+  (historical docs, `CHANGELOG.md`, the script itself) instead of masking
+  matching lines, so a real reference can no longer hide behind a mention of
+  an excluded path.
 
 ## [0.5.0] - 2026-11-27
 

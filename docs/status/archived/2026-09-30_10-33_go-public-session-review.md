@@ -1,5 +1,7 @@
 # Session Review — go-public PRO/CONTRA + takama/daemon comparison
 
+> **Live remainder:** §f flip/license/name/visibility items were executed 2026-11-27 (docs/decisions/2026-11-27_visibility-flip.md); remaining rows are cross-repo or open questions routed to ROADMAP.
+
 > **Annotated 2026-09-30 (docs-health):** struck items are resolved (verdict inline, with evidence); unstruck items remain open — the go-public pre-flip cluster and owner decisions now live in TODO_LIST.md, and this report's §f was harvested into TODO_LIST.md + ROADMAP.md the same day.
 
 **Date:** 2026-09-30 10:33 CEST
@@ -85,6 +87,10 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 
 ### f) Things to get done next (impact-ordered; grounded in this session)
 
+> **§f disposition (2026-11-27):** this brainstorm table is a ledger of candidate work, not a commitment list. Done items are struck in place; the surviving work lives in `TODO_LIST.md`, `ROADMAP.md`, or the named sibling repo. Rows stay unstruck by design (absence of a marker is the open signal).
+
+<!-- check-rows:ledger -->
+
 | #                                                                                                                                             | Task                                                                                                                                      | Impact                     | Effort |
 | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------ |
 | 1                                                                                                                                             | Full git-history secret scan (all blobs, deleted files, artifacts)                                                                        | blocking for flip          | S      |
@@ -98,7 +104,7 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 | 9                                                                                                                                             | Run full gate (build/test/vet/lint/`nix build`) so the flip happens on green master                                                       | safety                     | S      |
 | 10                                                                                                                                            | After flip: update AGENTS.md Gotchas (GOPRIVATE/mkPreparedSource notes become obsolete)                                                   | doc truth                  | XS     |
 | 11                                                                                                                                            | After flip: primary consumer drops GOPRIVATE entry + `git+ssh` flake pin → plain input, re-derive vendorHash (go-ecosystem-upgrade skill) | the actual payoff          | M      |
-| ~~12~~ done — v0.2.0 tagged 2026-09-30 with a full WHY-narrative annotation (tag `3c66d39`)                                                   | ~~Tag a release via go-release flow so the module proxy indexes cleanly~~                                                                 | ~~publishing~~             | ~~S~~  |
+| ~~12~~ done — v0.2.0 tagged 2026-09-30 with a full WHY-narrative annotation (tag `v0.2.0`)                                                    | ~~Tag a release via go-release flow so the module proxy indexes cleanly~~                                                                 | ~~publishing~~             | ~~S~~  |
 | 13                                                                                                                                            | Verify pkg.go.dev rendering after proxy pickup                                                                                            | publishing                 | XS     |
 | 14                                                                                                                                            | Confirm `ci.yml` has no private-runner or secret assumptions                                                                              | safety                     | XS     |
 | 15                                                                                                                                            | Set GitHub repo description + topics for discoverability                                                                                  | marketing                  | XS     |
@@ -119,6 +125,10 @@ No — but one claim was wrong-from-memory until corrected one turn later, and t
 ---
 
 ## Verification status (external claims this session)
+
+> **Ledger (2026-11-27):** these rows are claims, each carrying its own verdict column (verified/inferred); they are not action items.
+
+<!-- check-rows:ledger -->
 
 | Claim                                                                                      | Status                                                                         | Source                                          |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------- |

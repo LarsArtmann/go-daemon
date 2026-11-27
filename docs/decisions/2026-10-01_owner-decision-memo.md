@@ -8,8 +8,8 @@
 
 **Date:** 2026-10-01
 **Status:** answered 2026-11-27 (superseded by the visibility-flip decision)
-**Companion:** `docs/runbooks/post-flip.md` (written before the flip, retired
-after execution)
+**Companion:** the post-flip runbook (written before the flip, executed and
+retired 2026-11-27; the execution record is the visibility-flip decision)
 
 Everything below the fold is data gathered this session so each decision is
 a one-sitting answer. Nothing here is code work; the five gates are the
@@ -94,7 +94,8 @@ unless private-master CI is wanted in the interim.
 - `scripts/pre-publish-audit.sh`: exists; it exited 1 on the private-module
   environment references until the post-flip cleanup ran (expected,
   documented). Now exits 0.
-- Remaining flip-tail: `docs/runbooks/post-flip.md` (~30 min mechanical).
+- Remaining flip-tail: the post-flip runbook (~30 min mechanical); executed
+  and retired 2026-11-27.
 
 **Recommendation:** flip is one word away. Do 3 (keep docs), skim 1-2,
 then flip; billing (4) becomes optional afterwards.
@@ -102,4 +103,5 @@ then flip; billing (4) becomes optional afterwards.
 ## How to answer
 
 Reply per number (e.g. "1 keep-v0x, 2 keep-name, 3 keep-docs, 4 skip, 5
-flip"). On "5 flip": execute `docs/runbooks/post-flip.md` top to bottom.
+flip"). On "5 flip": execute the post-flip runbook top to bottom (it was
+executed and retired on 2026-11-27).

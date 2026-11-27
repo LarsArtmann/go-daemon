@@ -38,7 +38,13 @@ for oid in "${oids[@]}"; do
 done
 
 echo "== 2/3 working-tree private-path scan"
-if grep -rnE 'GOPRIVATE|git\+ssh|/home/[a-z]+' --include='*.nix' --include='*.go' --include='*.mod' --include='*.yml' --include='*.md' . 2>/dev/null | grep -v '^\.git' | grep -vE 'docs/(status|planning)/|scripts/pre-publish-audit.sh|CHANGELOG'; then
+# Exclusions are FILE-scoped on purpose: a line-scoped pattern silently
+# dropped any line that merely mentioned the historical docs or this script
+# (AGENTS.md carried a stale "audit exits 1" sentence that way for weeks).
+if grep -rnE 'GOPRIVATE|git\+ssh|/home/[a-z]+' \
+	--include='*.nix' --include='*.go' --include='*.mod' --include='*.yml' --include='*.md' \
+	--exclude='pre-publish-audit.sh' --exclude='CHANGELOG.md' \
+	--exclude-dir='.git' --exclude-dir='status' --exclude-dir='planning' . 2>/dev/null; then
 	echo "pre-publish: private-path references above — de-GOPRIVATE or scrub before flipping" >&2
 	fail=1
 else

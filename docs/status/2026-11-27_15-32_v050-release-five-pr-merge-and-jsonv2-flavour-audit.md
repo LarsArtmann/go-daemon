@@ -55,59 +55,74 @@
 
 ## a) FULLY DONE
 
-| Item                                                     | What was done                                                         | Evidence                                                                                                                                              |
-| -------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~ done — five PRs integrated                         | ~~Rebase all open PRs onto master and merge~~                         | Linear history `9b684f6`, `81781c7`, `adac893`, `898e97e`, `e191a52`, `f73c081`; `git log` on `master`                                                |
-| ~~2~~ done — conflicts resolved on merit                 | ~~Resolve the two real conflicts without dropping either side~~       | `AGENTS.md` keeps both Gotchas bullets; `CHANGELOG.md` keeps both Added bullets; FEATURES counts 21/1 (22)                                            |
-| ~~3~~ done — every merge gated                           | ~~Build, vet, race tests, lint after each merge~~                     | `go test ./... -race -count=1` green at every step; `golangci-lint run` 0 issues after PRs 5, 6, 7                                                    |
-| ~~4~~ done — issue #4's named gap closed                 | ~~Make the write helpers accept a negotiated codec~~                  | `WriteJSONWithCodec`, `WriteErrorfWithCodec` (`write.go`), tests `TestWriteJSONWithCodec`, `TestWriteErrorfWithCodec`, `TestWriteJSON_DefaultWrapper` |
-| ~~5~~ done — v0.5.0 released                             | ~~Promote CHANGELOG, tag, push, GitHub release~~                      | Tag `v0.5.0` on `d0b8259`; release https://github.com/LarsArtmann/go-daemon/releases/tag/v0.5.0 (`prerelease`)                                        |
-| ~~6~~ done — release verified as a consumer              | ~~Prove the tag resolves and compiles outside the repo~~              | `go get …@v0.5.0` + build with `Unavailable`/`DefaultWaitPollInterval`/`ClassifyTransportError` in `/tmp/release-verify-050`                          |
-| ~~7~~ done — issue #4 closed                             | ~~Close with the release and the corrected framing~~                  | `gh issue view 4`: CLOSED 2026-11-27T14:28:14Z                                                                                                        |
-| ~~8~~ done — default JSON codec behaviour established    | ~~Probe what `codec.JSONCodec{}` actually does on this toolchain~~    | `/tmp/jsonprobe`: nil slice `[]`, duration encode error, unordered map keys                                                                           |
-| ~~9~~ done — the false escape hatch removed              | ~~Delete the untested `GOEXPERIMENT=none` claim everywhere~~          | `AGENTS.md` (rewritten block), `CHANGELOG.md` (`beefcd7`), release notes (`gh release edit`)                                                          |
-| ~~10~~ done — docs gates that can pass, pass             | ~~dprint, row completeness, FEATURES counts~~                         | `nix run .#check-docs`: dprint clean, `check-rows: 3 file(s) complete`, counts 21/22 match                                                            |
-| ~~11~~ done — stale TODO rows made truthful              | ~~Replace the impossible v0.4.1 re-tag row; widen the hygiene row~~   | `TODO_LIST.md` rows 47 and 53                                                                                                                         |
-| ~~12~~ done — coverage regressions absent                | ~~Measure, find `WriteJSON` at 0%, fix it~~                           | 96.7% total; weakest function 75.0%; `TestWriteJSON_DefaultWrapper` added                                                                             |
-| ~~13~~ done — stale measurement docs refreshed           | ~~Coverage paragraph, sseparse version~~                              | `FEATURES.md:13`; `AGENTS.md:111-112`                                                                                                                 |
-| ~~14~~ done — flake lock change isolated and re-verified | ~~Split the auto-update out of the docs commit and re-run nix gates~~ | `4e8ba04`; `nix build` + `nix flake check --all-systems` run against the new lock                                                                     |
-| ~~15~~ done — PR list cleared                            | ~~Every PR is out of OPEN state~~                                     | `gh pr list --state open` empty                                                                                                                       |
+| Item                                                     | What was done                                                         | Evidence                                                                                                                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ done — five PRs integrated                         | ~~Rebase all open PRs onto master and merge~~                         | ~~Linear history `9b684f6`, `81781c7`, `adac893`, `898e97e`, `e191a52`, `f73c081`; `git log` on `master`~~                                                |
+| ~~2~~ done — conflicts resolved on merit                 | ~~Resolve the two real conflicts without dropping either side~~       | ~~`AGENTS.md` keeps both Gotchas bullets; `CHANGELOG.md` keeps both Added bullets; FEATURES counts 21/1 (22)~~                                            |
+| ~~3~~ done — every merge gated                           | ~~Build, vet, race tests, lint after each merge~~                     | ~~`go test ./... -race -count=1` green at every step; `golangci-lint run` 0 issues after PRs 5, 6, 7~~                                                    |
+| ~~4~~ done — issue #4's named gap closed                 | ~~Make the write helpers accept a negotiated codec~~                  | ~~`WriteJSONWithCodec`, `WriteErrorfWithCodec` (`write.go`), tests `TestWriteJSONWithCodec`, `TestWriteErrorfWithCodec`, `TestWriteJSON_DefaultWrapper`~~ |
+| ~~5~~ done — v0.5.0 released                             | ~~Promote CHANGELOG, tag, push, GitHub release~~                      | ~~Tag `v0.5.0` on `d0b8259`; release https://github.com/LarsArtmann/go-daemon/releases/tag/v0.5.0 (`prerelease`)~~                                        |
+| ~~6~~ done — release verified as a consumer              | ~~Prove the tag resolves and compiles outside the repo~~              | ~~`go get …@v0.5.0` + build with `Unavailable`/`DefaultWaitPollInterval`/`ClassifyTransportError` in `/tmp/release-verify-050`~~                          |
+| ~~7~~ done — issue #4 closed                             | ~~Close with the release and the corrected framing~~                  | ~~`gh issue view 4`: CLOSED 2026-11-27T14:28:14Z~~                                                                                                        |
+| ~~8~~ done — default JSON codec behaviour established    | ~~Probe what `codec.JSONCodec{}` actually does on this toolchain~~    | ~~`/tmp/jsonprobe`: nil slice `[]`, duration encode error, unordered map keys~~                                                                           |
+| ~~9~~ done — the false escape hatch removed              | ~~Delete the untested `GOEXPERIMENT=none` claim everywhere~~          | ~~`AGENTS.md` (rewritten block), `CHANGELOG.md` (`beefcd7`), release notes (`gh release edit`)~~                                                          |
+| ~~10~~ done — docs gates that can pass, pass             | ~~dprint, row completeness, FEATURES counts~~                         | ~~`nix run .#check-docs`: dprint clean, `check-rows: 3 file(s) complete`, counts 21/22 match~~                                                            |
+| ~~11~~ done — stale TODO rows made truthful              | ~~Replace the impossible v0.4.1 re-tag row; widen the hygiene row~~   | ~~`TODO_LIST.md` rows 47 and 53~~                                                                                                                         |
+| ~~12~~ done — coverage regressions absent                | ~~Measure, find `WriteJSON` at 0%, fix it~~                           | ~~96.7% total; weakest function 75.0%; `TestWriteJSON_DefaultWrapper` added~~                                                                             |
+| ~~13~~ done — stale measurement docs refreshed           | ~~Coverage paragraph, sseparse version~~                              | ~~`FEATURES.md:13`; `AGENTS.md:111-112`~~                                                                                                                 |
+| ~~14~~ done — flake lock change isolated and re-verified | ~~Split the auto-update out of the docs commit and re-run nix gates~~ | ~~`4e8ba04`; `nix build` + `nix flake check --all-systems` run against the new lock~~                                                                     |
+| ~~15~~ done — PR list cleared                            | ~~Every PR is out of OPEN state~~                                     | ~~`gh pr list --state open` empty~~                                                                                                                       |
 
 ## b) PARTIALLY DONE
 
-| Item                       | What works                                                                                             | What remains                                                                                                              | Effort |
-| -------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------ |
-| PR merged-state semantics  | PR #9 is MERGED; #5–#8 carry the landing SHA in a comment and their work is fully in `master`          | GitHub shows them CLOSED; origin branch tips still point at pre-rebase SHAs; stale worktrees under `~/go-daemon-rows`     | S      |
-| Tag vs `master`            | Tag is correct and immutable on `d0b8259`                                                              | `master` is now 3+ commits ahead (formatting, docs truth, lock, this report); `git describe` shows `v0.5.0-N-g…`          | XS     |
-| Release verification       | Gates green at/around the tag; consumer build verified                                                 | CI never ran (billing); `nix build` ran on a dirty-tree window, not the exact tagged tree; govulncheck/actionlint not run | S      |
-| Consumer propagation       | `nextd` gap identified and recorded as a TODO row                                                      | No consumer was actually bumped; `project-discovery-daemon` compatibility with the v2 default codec unverified            | M      |
-| Docs health                | dprint, rows, counts green; the new report is self-struck                                              | Five historical reports still lack strikes, so `nix run .#check-docs` still exits 1                                       | M      |
-| Codec policy documentation | AGENTS, CHANGELOG, README, release notes all now say "v2 shapes, unconditionally; pass a codec for v1" | No ADR; no test pinning the wire contract as a named invariant; no `JSONv1Codec` convenience adapter                      | S/M    |
+| Item | What works | What remains | Effort |
+
+> **Ledger:** rows carry their own verdict (done / routed / open); open rows are the live remainder named in the routing arrows.
+
+<!-- check-rows:ledger -->
+
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------ |
+| PR merged-state semantics | PR #9 is MERGED; #5–#8 carry the landing SHA in a comment and their work is fully in `master` | GitHub shows them CLOSED; origin branch tips still point at pre-rebase SHAs; stale worktrees under `~/go-daemon-rows` | S |
+| Tag vs `master` | Tag is correct and immutable on `d0b8259` | `master` is now 3+ commits ahead (formatting, docs truth, lock, this report); `git describe` shows `v0.5.0-N-g…` | XS |
+| Release verification | Gates green at/around the tag; consumer build verified | CI never ran (billing); `nix build` ran on a dirty-tree window, not the exact tagged tree; govulncheck/actionlint not run | S |
+| Consumer propagation | `nextd` gap identified and recorded as a TODO row | No consumer was actually bumped; `project-discovery-daemon` compatibility with the v2 default codec unverified | M |
+| ~~Docs health~~ done — 2026-11-27: corpus annotated and archived; both docs gates green | ~~dprint, rows, counts green; the new report is self-struck~~ | ~~Five historical reports still lack strikes, so `nix run .#check-docs` still exits 1~~ | ~~M~~ |
+| Codec policy documentation | AGENTS, CHANGELOG, README, release notes all now say "v2 shapes, unconditionally; pass a codec for v1" | No ADR; no test pinning the wire contract as a named invariant; no `JSONv1Codec` convenience adapter | S/M |
 
 ## c) NOT STARTED
 
-| Item                                                               | Why not started                                                            | Still wanted?                                  |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------- | ---------------------------------------------- |
-| CI/tag-CI green run for `v0.5.0`                                   | GitHub Actions billing suspended (owner-level, external)                   | Yes — the release has no CI evidence           |
-| Bump `nextd` to v0.5.0 / `go 1.27.2`                               | Consumer repo, separate change; only the TODO row was written              | Yes                                            |
-| Bump `project-discovery-daemon` to v0.5.0 + re-derive `vendorHash` | Same; also blocked on the `time.Duration` wire question                    | Yes                                            |
-| Audit consumers for `time.Duration`/`omitempty` JSON fields        | Scope discipline: no unrelated research this session                       | Yes — this is the release's real risk          |
-| Annotate/archive the five unannotated status reports               | A docs-health pass, not this task                                          | Yes                                            |
-| `docs/decisions/…-jsonv2-default.md`                               | Not asked; the facts are captured in AGENTS/CHANGELOG for now              | Recommended                                    |
-| `govulncheck`, `actionlint`, coverage-threshold run                | Not run this session                                                       | Yes (release hygiene)                          |
-| `GOEXPERIMENT`/toolchain build matrix in CI                        | Discovered only at the end that the matrix is a single point (jsonv2 only) | Debatable — the module cannot build without it |
+| Item | Why not started | Still wanted? |
+
+> **Ledger:** rows carry their own verdict (done / routed / open); open rows are the live remainder named in the routing arrows.
+
+<!-- check-rows:ledger -->
+
+| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| CI/tag-CI green run for `v0.5.0` | GitHub Actions billing suspended (owner-level, external) | Yes — the release has no CI evidence |
+| Bump `nextd` to v0.5.0 / `go 1.27.2` **→ TODO_LIST release follow-ups (nextd bump)** | Consumer repo, separate change; only the TODO row was written | Yes |
+| Bump `project-discovery-daemon` to v0.5.0 + re-derive `vendorHash` **→ TODO_LIST release follow-ups (pdd bump + DTO audit)** | Same; also blocked on the `time.Duration` wire question | Yes |
+| Audit consumers for `time.Duration`/`omitempty` JSON fields **→ TODO_LIST release follow-ups (consumer DTO audit)** | Scope discipline: no unrelated research this session | Yes — this is the release's real risk |
+| ~~Annotate/archive the five unannotated status reports~~ done — 2026-11-27 (15 reports and 1 plan archived; docs-gates green) | ~~A docs-health pass, not this task~~ | ~~Yes~~ |
+| ~~`docs/decisions/…-jsonv2-default.md`~~ done — docs/decisions/2026-11-27_jsonv2-default-and-wire-shapes.md | ~~Not asked; the facts are captured in AGENTS/CHANGELOG for now~~ | ~~Recommended~~ |
+| `govulncheck`, `actionlint`, coverage-threshold run **→ TODO_LIST documentation and gates (govulncheck/actionlint parity)** | Not run this session | Yes (release hygiene) |
+| `GOEXPERIMENT`/toolchain build matrix in CI **→ ROADMAP (GOEXPERIMENT matrix is moot: the module requires jsonv2)** | Discovered only at the end that the matrix is a single point (jsonv2 only) | Debatable — the module cannot build without it |
 
 ## d) TOTALLY FUCKED UP
 
 Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken commit pushed to `master`, no PR content lost. The failures that did happen:
 
-| # | What went wrong                                                                                                                                 | Severity   | Status                                                           |
-| - | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------- |
-| 1 | ~~Published a false build claim (`GOEXPERIMENT=none` selects v1) in AGENTS, CHANGELOG and the live GitHub release notes~~                       | High trust | Fixed within the session (`beefcd7`, `gh release edit`)          |
-| 2 | Four PRs read CLOSED instead of MERGED because rebasing changed the SHAs and I chose not to force-push                                          | Low        | Open — needs an operator decision (g2)                           |
-| 3 | An unrelated `flake.lock` auto-update was swept into a docs commit by `git add -A`                                                              | Low        | Fixed before push (split into `4e8ba04`)                         |
-| 4 | `WriteJSON` fell to 0% coverage because I rewired the wrappers without a test for the wrapper itself                                            | Low        | Fixed (`TestWriteJSON_DefaultWrapper`)                           |
-| 5 | Tag sits behind `master`; the release notes' "green on the tagged commit" evidence mixes a dirty-tree `nix build` with a clean-tree flake check | Low        | Partially open — re-verification on the exact tag is a follow-up |
+| # | What went wrong | Severity | Status |
+
+> **Ledger:** rows carry their own verdict (done / routed / open); open rows are the live remainder named in the routing arrows.
+
+<!-- check-rows:ledger -->
+
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------- |
+| 1 | ~~Published a false build claim (`GOEXPERIMENT=none` selects v1) in AGENTS, CHANGELOG and the live GitHub release notes~~ | High trust | Fixed within the session (`beefcd7`, `gh release edit`) |
+| 2 | Four PRs read CLOSED instead of MERGED because rebasing changed the SHAs and I chose not to force-push | Low | Open — needs an operator decision (g2) |
+| ~~3~~ done — fixed before push (split into 4e8ba04) | ~~An unrelated `flake.lock` auto-update was swept into a docs commit by `git add -A`~~ | ~~Low~~ | ~~Fixed before push (split into `4e8ba04`)~~ |
+| ~~4~~ done — fixed (TestWriteJSON_DefaultWrapper) | ~~`WriteJSON` fell to 0% coverage because I rewired the wrappers without a test for the wrapper itself~~ | ~~Low~~ | ~~Fixed (`TestWriteJSON_DefaultWrapper`)~~ |
+| 5 | Tag sits behind `master`; the release notes' "green on the tagged commit" evidence mixes a dirty-tree `nix build` with a clean-tree flake check | Low | Partially open — re-verification on the exact tag is a follow-up |
 
 ## e) WHAT WE SHOULD IMPROVE
 
@@ -147,33 +162,33 @@ Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken
 21. Add a godoc example for `WriteJSONWithCodec` / `WriteErrorfWithCodec` showing a negotiated-codec handler.
 22. Add the same round trip to the README quickstart (it currently only shows default-codec writes).
 23. Add a no-op-injection test proving `WriteErrorfWithCodec` never regresses to v1 when a JSONv2Codec is passed.
-24. Consider `TransportErrorKind` gaining `PermissionDenied` (EACCES) for socket-mode mistakes.
+24. Consider `TransportErrorKind` gaining `PermissionDenied` (EACCES) for socket-mode mistakes. **→ ROADMAP theme 2 (TransportErrorKind PermissionDenied)**
 25. Consider `ProbeUntilAlive` taking a per-probe timeout option instead of the fixed `DefaultProbeTimeout`.
 26. Consider `WaitForSocket` taking a network argument (TCP parity with `NewServer`).
 27. Add `-shuffle=on` to CI tests to catch order dependencies (two timing fixes in PR 5 hint at them).
-28. Add a nightly `-count=15` run for the timing-sensitive socket/notify tests.
+28. Add a nightly `-count=15` run for the timing-sensitive socket/notify tests. **→ TODO_LIST documentation and gates (nightly timing run)**
 29. Update the `Verify pkg.go.dev rendering` TODO row with the current v0.5.0 facts.
-30. Annotate the five unannotated status reports (docs-health ANNOTATE) so `check-docs` can go green.
-31. Add `check-docs` to `nix flake check` or CI so it cannot rot again.
-32. Harvest this report's §f items into `TODO_LIST.md`/`ROADMAP.md` and strike/annotate this report.
-33. Clean up the stale worktrees under `/home/lars/projects/go-daemon-rows/` and reconcile local vs origin branches.
-34. Delete or refresh the origin branch tips for #5–#8 after g2 is decided.
-35. Decide whether the four closed PRs should instead be re-opened and merged through GitHub for auditability.
-36. Add a `.github/workflows/release.yml` (tag-triggered) so release gates are machine-enforced.
-37. Add a pre-push hook (build+vet+test) to defend against the auto-commit daemon shipping broken intermediate states.
-38. Inspect the untracked/odd root artifacts (`coverage`, `reports/`, `result/`) and either track, ignore or remove them.
-39. Confirm `.config/metadata.yaml` is tool-managed and belongs under dprint (it is now formatted and committed).
-40. Re-check `AGENTS.md` against the tree once more (it grew three new gotchas this session; watch for length/duplication).
-41. Update `CONTRIBUTING.md` with the "pass an explicit codec" guidance added to README/AGENTS.
-42. Add a release-notes template to the repo so the verification section is written from executed commands, not memory.
-43. Set a policy for v0.x GitHub releases: `--prerelease` (current) vs "latest" badge; document it once.
-44. Verify the new `v0.5.0` `go.mod` floor against `gvac`'s POISONERS registry and update that list if the floor stands.
-45. Record the go-codec floor rationale in the go-codec repo (its version contract is now a downstream floor).
-46. Add a consumer smoke test script (`scripts/consumer-smoke.sh`) that `go get`s the newest tag in a scratch module.
-47. Decide whether `WriteJSONWithCodec`/`WriteErrorfWithCodec` should be flagged in FEATURES with their own row rather than sharing one.
-48. Re-measure coverage after the consumer-driven changes and keep `FEATURES.md:13` honest.
-49. Clean the temp artifacts from this session (`/tmp/jsonprobe`, `/tmp/release-verify-050`, `/tmp/cover.out`, `/tmp/go-daemon-v0.5.0-notes.md`).
-50. After the `nextd` bump lands, strike the TODO row with the evidence (and update the release follow-ups table).
+    ~~30. Annotate the five unannotated status reports (docs-health ANNOTATE) so `check-docs` can go green.~~ done — 2026-11-27 (five reports annotated; corpus archived)
+    ~~31. Add `check-docs` to `nix flake check` or CI so it cannot rot again.~~ done — check-docs now runs in the CI nix job
+    ~~32. Harvest this report's §f items into `TODO_LIST.md`/`ROADMAP.md` and strike/annotate this report.~~ done — this report's §f triaged into TODO_LIST/ROADMAP
+30. Clean up the stale worktrees under `/home/lars/projects/go-daemon-rows/` and reconcile local vs origin branches.
+31. Delete or refresh the origin branch tips for #5–#8 after g2 is decided.
+32. Decide whether the four closed PRs should instead be re-opened and merged through GitHub for auditability.
+33. Add a `.github/workflows/release.yml` (tag-triggered) so release gates are machine-enforced. **→ TODO_LIST release follow-ups (tag-triggered release workflow)**
+34. Add a pre-push hook (build+vet+test) to defend against the auto-commit daemon shipping broken intermediate states.
+    ~~38. Inspect the untracked/odd root artifacts (`coverage`, `reports/`, `result/`) and either track, ignore or remove them.~~ done — verified — coverage/reports/result and the Python caches are ignored
+35. Confirm `.config/metadata.yaml` is tool-managed and belongs under dprint (it is now formatted and committed).
+    ~~40. Re-check `AGENTS.md` against the tree once more (it grew three new gotchas this session; watch for length/duplication).~~ done — AGENTS re-checked 2026-11-27
+    ~~41. Update `CONTRIBUTING.md` with the "pass an explicit codec" guidance added to README/AGENTS.~~ done — CONTRIBUTING gained the explicit-codec guidance
+36. Add a release-notes template to the repo so the verification section is written from executed commands, not memory.
+37. Set a policy for v0.x GitHub releases: `--prerelease` (current) vs "latest" badge; document it once.
+38. Verify the new `v0.5.0` `go.mod` floor against `gvac`'s POISONERS registry and update that list if the floor stands.
+39. Record the go-codec floor rationale in the go-codec repo (its version contract is now a downstream floor).
+40. Add a consumer smoke test script — `scripts/consumer-smoke.sh` — that runs `go get` against the newest tag in a scratch module.
+41. Decide whether `WriteJSONWithCodec`/`WriteErrorfWithCodec` should be flagged in FEATURES with their own row rather than sharing one.
+    ~~48. Re-measure coverage after the consumer-driven changes and keep `FEATURES.md:13` honest.~~ done — 96.7% re-measured 2026-11-27
+42. Clean the temp artifacts from this session (`/tmp/jsonprobe`, `/tmp/release-verify-050`, `/tmp/cover.out`, `/tmp/go-daemon-v0.5.0-notes.md`).
+43. After the `nextd` bump lands, strike the TODO row with the evidence (and update the release follow-ups table).
 
 ## g) Questions I Cannot Answer Myself
 

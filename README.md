@@ -1,5 +1,8 @@
 # go-daemon
 
+[![CI](https://github.com/LarsArtmann/go-daemon/actions/workflows/ci.yml/badge.svg)](https://github.com/LarsArtmann/go-daemon/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/LarsArtmann/go-daemon.svg)](https://pkg.go.dev/github.com/LarsArtmann/go-daemon)
+
 Production-proven building blocks for superb long-lived daemons served over
 unix domain sockets — extracted from a production discovery daemon, whose
 lifecycle ordering, shutdown-regression tests, and metric names this library
@@ -130,9 +133,13 @@ This library deliberately stops at the mechanism layer. It does not provide
 domain handlers, caching, or business logic; it does not package, deploy, or
 supervise your daemon (systemd owns that — but see
 [docs/supervision.md](docs/supervision.md) for recommended unit settings,
-including how to run the daemon at a lower resource priority); and it listens
-on unix domain sockets only — no TCP listener, no TLS termination.
-Longer-term ideas and raw directions live in [ROADMAP.md](ROADMAP.md).
+including how to run the daemon at a lower resource priority); and unix
+domain sockets are the default target — the same lifecycle also runs on any
+other network via `NewServer`/`WithListener`, but there is no TLS
+termination or service-manager integration.
+Longer-term ideas and raw directions live in [ROADMAP.md](ROADMAP.md); the
+vocabulary used throughout the code and docs is in
+[docs/DOMAIN_LANGUAGE.md](docs/DOMAIN_LANGUAGE.md).
 
 ## Security
 

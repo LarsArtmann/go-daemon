@@ -1,5 +1,7 @@
 # Status Report — 2026-10-01 05:51 CEST — erraudit review & stdlib-error policy
 
+> **Live remainder:** §a done; §b/c residuals (erraudit automation, baseline artifact) are routed to ROADMAP theme 3. Live work: TODO_LIST.md.
+
 Scope: this session only (erraudit audit-output review + policy recording +
 verification follow-ups). No other research was done; everything below is
 grounded in files read this session.
@@ -22,32 +24,32 @@ flagged (type-aware working).
 
 ## a) FULLY DONE
 
-1. **Full review of all 26 erraudit findings** — classified into 4 clusters,
-   each verified against source (flightrecorder.go, socket.go, sse.go,
-   write.go read at every flagged line). Verdict: **0/26 actionable**.
-   - `stdlib_constructor` ×15: flag-policy mismatch — go.mod has no
-     samber/oops, zero oops usage in repo; `errors.New` sentinels are
-     exported API; `%w` wraps carry real context (socket path, dir).
-   - `ignored` ×4: intentional best-effort cleanup with explicit `_ =`
-     intent markers (socket.go:244,299,396; write.go:56) — exactly the
-     class `--no-suppress` is designed to surface.
-   - `context_loss` ×1 (flightrecorder.go:267): the "lost" variables are
-     Prometheus collector objects, not diagnostic context — printing them
-     would put Go pointers in the message.
-   - `generic_return` ×6: pure wraps, no structured fields; concrete types
-     would be ceremony (two of six are internal helpers).
-2. **Dependency fact-check**: go.mod confirms no samber/oops;
-   go-error-family v0.11.0 is indirect only; toolchain go 1.27.
-3. **AGENTS.md Conventions bullet recorded** (stdlib-error policy + the
-   2026-10-01 dismissal baseline so future audits pre-dismiss these
-   clusters). Grep-verified on disk; dprint check passes (exit 0).
-   Manual commit skipped per harness rule — the auto-commit daemon ships it.
-4. **Self-caught and corrected an unverified claim** (see d): the original
-   bullet said the consumer "matches the sentinels"; verification showed it
-   asserts on `Validate()` error-message substrings
-   (project-discovery-daemon metrics_test.go:131-145), NOT `errors.Is`.
-   Bullet corrected in-session; message wording is the actual
-   consumer-visible contract — which strengthens the anti-oops argument.
+1. ~~**Full review of all 26 erraudit findings** — classified into 4 clusters,~~
+   ~~each verified against source (flightrecorder.go, socket.go, sse.go,~~
+   ~~write.go read at every flagged line). Verdict: **0/26 actionable**.~~ done (session §a; re-verified 2026-11-27)
+   - ~~`stdlib_constructor` ×15: flag-policy mismatch — go.mod has no~~
+     ~~samber/oops, zero oops usage in repo; `errors.New` sentinels are~~
+     ~~exported API; `%w` wraps carry real context (socket path, dir).~~ done (session §a; re-verified 2026-11-27)
+   - ~~`ignored` ×4: intentional best-effort cleanup with explicit `_ =`~~
+     ~~intent markers (socket.go:244,299,396; write.go:56) — exactly the~~
+     ~~class `--no-suppress` is designed to surface.~~ done (session §a; re-verified 2026-11-27)
+   - ~~`context_loss` ×1 (flightrecorder.go:267): the "lost" variables are~~
+     ~~Prometheus collector objects, not diagnostic context — printing them~~
+     ~~would put Go pointers in the message.~~ done (session §a; re-verified 2026-11-27)
+   - ~~`generic_return` ×6: pure wraps, no structured fields; concrete types~~
+     ~~would be ceremony (two of six are internal helpers).~~ done (session §a; re-verified 2026-11-27)
+2. ~~**Dependency fact-check**: go.mod confirms no samber/oops;~~
+   ~~go-error-family v0.11.0 is indirect only; toolchain go 1.27.~~ done (session §a; re-verified 2026-11-27)
+3. ~~**AGENTS.md Conventions bullet recorded** (stdlib-error policy + the~~
+   ~~2026-10-01 dismissal baseline so future audits pre-dismiss these~~
+   ~~clusters). Grep-verified on disk; dprint check passes (exit 0).~~
+   ~~Manual commit skipped per harness rule — the auto-commit daemon ships it.~~ done (session §a; re-verified 2026-11-27)
+4. ~~**Self-caught and corrected an unverified claim** (see d): the original~~
+   ~~bullet said the consumer "matches the sentinels"; verification showed it~~
+   ~~asserts on `Validate()` error-message substrings~~
+   ~~(project-discovery-daemon metrics_test.go:131-145), NOT `errors.Is`.~~
+   ~~Bullet corrected in-session; message wording is the actual~~
+   ~~consumer-visible contract — which strengthens the anti-oops argument.~~ done (session §a; re-verified 2026-11-27)
 
 ## b) PARTIALLY DONE
 

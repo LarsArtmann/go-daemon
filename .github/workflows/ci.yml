@@ -94,3 +94,10 @@ jobs:
         # one). The native build runs first, so source and vendorHash are
         # still really built.
         run: nix build .#default && nix flake check --no-build --all-systems
+
+      - name: Documentation health
+        # The docs corpus went red for two months because no job ran this
+        # (docs/status/2026-11-27_16-16 §f29). check-docs covers dprint, row
+        # completeness, strike presence, and the FEATURES counts; the fuller
+        # freshness/annotate battery runs in the session ritual.
+        run: nix run .#check-docs

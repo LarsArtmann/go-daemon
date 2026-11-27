@@ -5,10 +5,11 @@ Enduring context for AI sessions working in this repository.
 ## What This Is
 
 A Go library with the production-proven building blocks for long-lived
-daemons over unix domain sockets. Extracted from
-`project-discovery-daemon` (which is now also the primary consumer).
-Mechanism, not policy: sockets, lifecycle ordering, codecs, framing — no
-domain logic.
+daemons over unix domain sockets (or any other network through
+`NewServer`). Extracted from `project-discovery-daemon` (which is now also
+the primary consumer). Mechanism, not policy: sockets, lifecycle ordering,
+codecs, framing — no domain logic. The vocabulary lives in
+`docs/DOMAIN_LANGUAGE.md`.
 
 ## Essential Commands
 
@@ -20,22 +21,28 @@ golangci-lint run ./...     # strict config mirrored from project-discovery-daem
 nix build .#default         # hermetic build (all deps public — no mkPreparedSource)
 nix run .#test
 nix run .#check-readme      # compiles the README quickstart snippet (run from repo root)
-nix run .#check-docs        # documentation health: dprint check + row completeness + strike presence + FEATURES counts
-bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets + private paths + licenses (exit 1 is EXPECTED until the post-flip runbook removes the GOPRIVATE refs)
+nix run .#check-docs        # repo docs gate: dprint check + row completeness + strike presence + FEATURES counts (scripts/check-docs.sh)
+nix run github:Artmann-Technologies/docs-gates -- run .  # full docs-health battery: freshness, annotate, routing, cadence, glossary (an installed `docs-gates` works too; see Gotchas)
+bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets + private paths + licenses (exits 0 since the flip)
+nix flake check --no-build --all-systems  # evaluates every listed system (see Gotchas)
+nix fmt                      # nix files only; markdown/json/yaml: nix develop -c dprint fmt
+```
 
 The check-readme logic lives in `scripts/check-readme.sh` — the flake app
 and ci.yml both invoke that script, so edit the script only (never inline
-the awk in a second place).
-nix flake check --no-build --all-systems  # evaluates every listed system (see Gotchas)
-nix fmt
-```
+the awk in a second place). The docs gate logic lives in
+`scripts/check-docs.sh` for the same reason: the flake app, CI, and humans
+all run that one script.
 
-The language floor is `go 1.27` — no patch floor, because a `go 1.27.2`
-directive forces every consumer onto 1.27.2+ (v0.4.x carried one by
-accident; the flake pins nixpkgs `go_1_27`, 1.27.3 at the time of
-writing). `encoding/json/v2` is GA there. Ambient go on this machine may
-differ — run `go version` (or trust the editor's gopls diagnostics)
-BEFORE writing code; bare `go` that refuses means use
+**The language floor is `go 1.27.2`.** v0.5.0 raised it deliberately:
+go-codec v0.3.3 declares `go 1.27.2` as its version contract, so the floor
+cannot be lowered without downgrading the dependency (v0.4.x carried a
+patch floor by accident; v0.5.0 made it policy). Consumers on an older
+patch get Go's automatic toolchain switch, or must upgrade under
+`GOTOOLCHAIN=local`. `encoding/json/v2` is GA there. The flake pins
+nixpkgs `go_1_27`, which was still 1.27.3 on 2026-11-27. Ambient go on
+this machine may differ — run `go version` (or trust the editor's gopls
+diagnostics) BEFORE writing code; bare `go` that refuses means use
 `nix shell nixpkgs#go_1_27` or `nix develop`.
 
 **Build with Go 1.27.4+, because 1.27.3 and earlier carry
@@ -150,14 +157,15 @@ toolchain; probe behavior, not the tag.
   builds for linux, darwin, windows, freebsd, openbsd, dragonfly, solaris,
   js/wasm and wasip1/wasm.
 - This repo is PUBLIC (flipped 2026-11-27): consumers resolve it through
-  the Go module proxy and pin it as a plain flake input
-  (`github:LarsArtmann/go-daemon/<rev-or-tag>`, see
-  project-discovery-daemon's flake.nix). No vendored-source helper is
-  needed for it any more.
+  the Go module proxy from `go.mod`. The private flake input,
+  source-preparation wrapper, and deploy key are gone from the primary
+  consumer; there is no flake-rev-vs-`go.mod` drift hazard any more.
+  See `docs/decisions/2026-11-27_visibility-flip.md`.
 - The SSE parser is framing-only on purpose (mechanism vs policy); payload
   decoding lives with consumers.
 - Version bumps should follow the primary consumer's needs — its nix build
-  pins this repo by rev and re-derives vendorHash on every bump.
+  resolves this module through the proxy from `go.mod` and re-derives its
+  vendorHash on every bump.
 - **Go's runtime/trace allows only ONE active flight recorder per process.**
   Tests that start a recorder are serialized behind `flightRecorderMu`
   (flightrecorder_test.go): parallel recorder tests otherwise fail with
@@ -194,7 +202,22 @@ toolchain; probe behavior, not the tag.
 - Timestamped status reports land in `docs/status/` (auto-committed). They
   are snapshots, not backlogs: the next docs pass must harvest each
   report's section-f items into TODO_LIST/ROADMAP (verify against code
-  first — many are already done by later sessions).
+  first — many are already done by later sessions). Reports older than
+  three weeks move to `docs/status/archived/` after the archive ritual:
+  every item struck, won't-do, or routed, with a `**Live remainder:**`
+  banner naming the owning sections. The 2026-11-27 pass archived every
+  report through 2026-10-08 — do not harvest archived files; their open
+  work lives in TODO_LIST/ROADMAP.
+- **The two docs gates see different things.** `nix run .#check-docs` runs
+  `scripts/check-docs.sh` (dprint, living-doc rows, strike presence,
+  FEATURES counts). The full battery is `docs-gates run .` — it adds
+  freshness (newest report §f harvested), annotate (every struck item
+  carries a resolvable verdict), routing, cadence, and the
+  DOMAIN_LANGUAGE stub/citation/stamp gates. Run BOTH after a docs pass;
+  CI runs the check-docs script.
+- **`docs/DOMAIN_LANGUAGE.md` is the ubiquitous language** (core terms,
+  bounded contexts, anti-language, deprecated terms). Read it before
+  naming new exported API; add a term there when you introduce one.
 - **Atomic edits under the auto-commit daemon.** The daemon snapshots the
   tree roughly every minute, so a multi-step edit sequence (write, then
   fix, then gate) can ship a broken intermediate to master — it did once
@@ -249,6 +272,15 @@ toolchain; probe behavior, not the tag.
   (`| ~~a~~ verdict | ~~b~~ |`) — the `annotate-rows.py` format — which
   survives dprint realignment. Always re-run `check-rows.py` after any
   dprint pass over annotated reports.
+- **The Go toolchain and golangci-lint move as a pair.** golangci-lint
+  v2.15.0 reads Go 1.27.4 export data; v2.13.2 dies with `export data
+  version 5 is greater than maximum supported version 4` (measured
+  2026-11-27, run 46021629245). Bump both in one commit and verify the
+  linter against the pinned toolchain before pushing.
 - **`nix fmt` only formats nix files** (it is `nixfmt-tree`). Markdown,
   json, and yaml formatting is dprint: `nix develop -c dprint fmt`
   (bare `dprint` outside the devShell cannot resolve the plugin URLs).
+- **Supervisor settings that pair with the lifecycle live in
+  `docs/supervision.md`** — `Type=notify`, `WatchdogSec`,
+  `TimeoutStopSec`, priority, memory limits (`MemoryMax`/`OOMPolicy`),
+  and hardening starters. Link it instead of re-deriving unit policy.

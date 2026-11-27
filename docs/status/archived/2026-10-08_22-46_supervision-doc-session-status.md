@@ -1,5 +1,7 @@
 # Session Status: supervision recommendations doc + README wiring
 
+> **Live remainder:** §a/checklist done; §f rows routed to TODO_LIST/ROADMAP; the supervision doc now covers MemoryMax/OOMPolicy and CONTRIBUTING links it.
+
 **Date:** 2026-10-08 22:46 (Thursday)
 **Scope:** this session only — answering "does go-daemon support priority/niceness?",
 then shipping `docs/supervision.md` + the README Non-goals link. No Go code changed.
@@ -86,15 +88,15 @@ Nothing destroyed — but two honest misses:
 
 ### Session checklist (struck = resolved)
 
-| # | Item                                                | Verdict                                   |
-| - | --------------------------------------------------- | ----------------------------------------- |
-| 1 | ~~Priority question answered with source evidence~~ | ~~Verified: no priority surface; policy~~ |
-| 2 | ~~docs/supervision.md written, source-anchored~~    | ~~Five sections, all claims checked~~     |
-| 3 | ~~README Non-goals link in user's requested shape~~ | ~~README.md Non-goals section~~           |
-| 4 | ~~dprint + check-rows + FEATURES counts green~~     | ~~Pass for all touched files~~            |
-| 5 | ~~check-readme green after README edit~~            | ~~Run belatedly; passes~~                 |
-| 6 | Descriptive self-commit                             | Missed; daemon flattened it (6e60e56)     |
-| 7 | CHANGELOG/FEATURES/AGENTS wiring                    | Not started (see section f)               |
+| #                                                  | Item                                                | Verdict                                                                     |
+| -------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| ~~1~~ done                                         | ~~Priority question answered with source evidence~~ | ~~Verified: no priority surface; policy~~                                   |
+| ~~2~~ done                                         | ~~docs/supervision.md written, source-anchored~~    | ~~Five sections, all claims checked~~                                       |
+| ~~3~~ done                                         | ~~README Non-goals link in user's requested shape~~ | ~~README.md Non-goals section~~                                             |
+| ~~4~~ done                                         | ~~dprint + check-rows + FEATURES counts green~~     | ~~Pass for all touched files~~                                              |
+| ~~5~~ done                                         | ~~check-readme green after README edit~~            | ~~Run belatedly; passes~~                                                   |
+| ~~6~~ **NOT-DO — the daemon owns commit history.** | ~~Descriptive self-commit~~                         | ~~Missed; daemon flattened it (`6e60e56`)~~                                 |
+| ~~7~~ done                                         | ~~CHANGELOG/FEATURES/AGENTS wiring~~                | ~~Done 2026-11-27: FEATURES docs-policy note + supervision memory section~~ |
 
 ## f) Next (brainstorm-grade, up to 50; ROUTE VIA docs-health HARVEST)
 

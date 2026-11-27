@@ -1,6 +1,6 @@
 # Pareto Plan — 2026-09-30 00:50 — Release Hardening & Contract Pins
 
-> **Closed 2026-09-30 (docs-health):** every task was executed — the closeout receipt lives in [docs/status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md](../../status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md) §a. T-rows carry per-task verdicts with hashes; Level-2 subtasks are struck bare (their outcomes are the parent-task verdicts). Archived per docs-health classification — T9 remains a standing event row in TODO_LIST.md.
+> **Closed 2026-09-30 (docs-health):** every task was executed — the closeout receipt lives in [docs/status/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md](../../status/archived/2026-09-30_11-29_release-v0.2.0-and-full-todo-closeout.md) §a. T-rows carry per-task verdicts with hashes; Level-2 subtasks carry `done (T<n>)` verdicts pointing at their parent task. Archived per docs-health classification — T9 remains a standing event row in TODO_LIST.md.
 
 **Scope:** every open TODO_LIST row (16) plus the routed-out fleet pointers from
 the 2026-09-30 status report §f. Sources: `TODO_LIST.md` (harvested
@@ -85,67 +85,67 @@ Sorted by execution order; subtasks within a task in dependency order.
 `✓-gate` = run `golangci-lint fmt` + `run` + `go test ./... -race -count=1`
 (and `nix build` when deps/summary change).
 
-| #      | Subtask                                                                                                     | Task    | Est     |
-| ------ | ----------------------------------------------------------------------------------------------------------- | ------- | ------- |
-| ~~1~~  | ~~Check go-codec v0.3.0 changelog/diff for breaking changes (its repo, read-only)~~                         | ~~T2~~  | ~~12m~~ |
-| ~~2~~  | ~~`go get github.com/larsartmann/go-codec@v0.3.0 && go mod tidy` (in `nix develop`)~~                       | ~~T2~~  | ~~6m~~  |
-| ~~3~~  | ~~Build + vet + race suite on bumped tree~~                                                                 | ~~T2~~  | ~~12m~~ |
-| ~~4~~  | ~~`buildflow -s nix-hash-fix --fix` — repair own vendorHash, never hand-paste~~                             | ~~T2~~  | ~~12m~~ |
-| ~~5~~  | ~~`nix build .#default && nix run .#test` on bumped tree~~                                                  | ~~T2~~  | ~~12m~~ |
-| ~~6~~  | ~~AGENTS.md dep line update + CHANGELOG `Unreleased → Changed` bump note + close R2 row~~                   | ~~T2~~  | ~~12m~~ |
-| ~~7~~  | ~~`application/*` wildcard echo test (pin no-preference behavior)~~                                         | ~~T4~~  | ~~12m~~ |
-| ~~8~~  | ~~Duplicate-q precedence test: `application/json;q=0.5, application/json;q=0.9` (pin max-wins)~~            | ~~T4~~  | ~~12m~~ |
-| ~~9~~  | ~~Empty `q=` and bare `;q` param tests (both fall back to 1)~~                                              | ~~T4~~  | ~~12m~~ |
-| ~~10~~ | ~~`Q=` uppercase param-name: verify RFC 9110 case-insensitivity, fix if wrong, pin with test~~              | ~~T4~~  | ~~12m~~ |
-| ~~11~~ | ~~Never-serve-refused property test over the q=0 × request-codec matrix~~                                   | ~~T4~~  | ~~12m~~ |
-| ~~12~~ | ~~Golden behavior-matrix table pt 1: mentions/wildcards/q-rankings~~                                        | ~~T4~~  | ~~12m~~ |
-| ~~13~~ | ~~Golden behavior-matrix table pt 2: refusals, both-refused, unparseable q, browser header~~                | ~~T4~~  | ~~12m~~ |
-| ~~14~~ | ~~✓-gate + close R5 row + CHANGELOG test note if a fix falls out~~                                          | ~~T4~~  | ~~12m~~ |
-| ~~15~~ | ~~`bareMediaType` table test: params, case, whitespace~~                                                    | ~~T6~~  | ~~12m~~ |
-| ~~16~~ | ~~`qualityParam` table test: spaces, `Q=`, clamping, unparseable~~                                          | ~~T6~~  | ~~12m~~ |
-| ~~17~~ | ~~`matchesEncoding` table test: suffixes, near-misses (`+cbor` vs `cbor-seq`)~~                             | ~~T6~~  | ~~12m~~ |
-| ~~18~~ | ~~`acceptQuality` mentioned/quality logic incl. duplicate max~~                                             | ~~T6~~  | ~~12m~~ |
-| ~~19~~ | ~~✓-gate + close R7 row~~                                                                                   | ~~T6~~  | ~~12m~~ |
-| ~~20~~ | ~~`FuzzResolveResponseCodec`: seeds (browser headers, `*/*`, junk q, 100-entry lists)~~                     | ~~T5~~  | ~~12m~~ |
-| ~~21~~ | ~~Fuzz invariants: no panic; result ∈ {JSON, CBOR, reqCodec}; never a q=0-refused encoding~~                | ~~T5~~  | ~~12m~~ |
-| ~~22~~ | ~~Local 5-min soak (`go test -fuzz -fuzztime=5m`)~~                                                         | ~~T5~~  | ~~12m~~ |
-| ~~23~~ | ~~Seed-corpus handling decision (commit corpus or seed-only) + ✓-gate + close R6 row~~                      | ~~T5~~  | ~~12m~~ |
-| ~~24~~ | ~~Ask/confirm release framing: v0.2.0 (behavior-contract) vs v0.1.2 (bugfix) — **user decision**~~          | ~~T1~~  | ~~2m~~  |
-| ~~25~~ | ~~Draft tag annotation narrative (negotiation contract + SSE spec fixes + go-codec bump + why)~~            | ~~T1~~  | ~~12m~~ |
-| ~~26~~ | ~~CHANGELOG: fold go-codec note into release section; add new version + compare links~~                     | ~~T1~~  | ~~12m~~ |
-| ~~27~~ | ~~Full pre-tag gate sweep (build/vet/race/lint/nix build/nix run .#test)~~                                  | ~~T1~~  | ~~12m~~ |
-| ~~28~~ | ~~`git tag -a vX.Y.Z` + push master + tag (explicit user go-ahead per rule)~~                               | ~~T1~~  | ~~5m~~  |
-| ~~29~~ | ~~pdd (cross-repo): go.mod floor-bump + nix rev-pin re-derivation + build/test there~~                      | ~~T1~~  | ~~12m~~ |
-| ~~30~~ | ~~Close R1 + R4 rows; verify module proxy resolves new tag; note pkg.go.dev lag~~                           | ~~T1~~  | ~~12m~~ |
-| ~~31~~ | ~~Design `Vary: Accept`: emit unconditionally in `WriteEncoded` vs only when Accept influenced encoding~~   | ~~T3~~  | ~~12m~~ |
-| ~~32~~ | ~~Implement emission + doc-comment contract~~                                                               | ~~T3~~  | ~~12m~~ |
-| ~~33~~ | ~~Tests: no-Accept (no Vary or correct Vary per design), Accept-driven, refused-encoding substitution~~     | ~~T3~~  | ~~12m~~ |
-| ~~34~~ | ~~Docs: README row, FEATURES PLANNED → FULLY_FUNCTIONAL flip, CHANGELOG entry, close R3 row~~               | ~~T3~~  | ~~12m~~ |
-| ~~35~~ | ~~✓-gate~~                                                                                                  | ~~T3~~  | ~~12m~~ |
-| ~~36~~ | ~~Emit keys via `--emit-keys` + `--dry-run` first spec against 09-01 report (never hand-type keys)~~        | ~~T7~~  | ~~12m~~ |
-| ~~37~~ | ~~Apply inline strikes to 09-01 report; run row-completeness check~~                                        | ~~T7~~  | ~~12m~~ |
-| ~~38~~ | ~~Same for 11-35 report; verify with check scripts + `grep -rLn '~~'` gate~~                                | ~~T7~~  | ~~12m~~ |
-| ~~39~~ | ~~ARCHIVE classification; `git mv` fully-resolved reports to `docs/status/archived/` if applicable~~        | ~~T7~~  | ~~12m~~ |
-| ~~40~~ | ~~Extract first ```go fence → temp `main.go` script (awk; the exact harness from 2026-09-30 session)~~      | ~~T8~~  | ~~12m~~ |
-| ~~41~~ | ~~Wrap as `mkGoApp "check-readme"` flake app compiling the snippet to `/dev/null`~~                         | ~~T8~~  | ~~12m~~ |
-| ~~42~~ | ~~Negative test: break snippet on purpose, app must fail; restore; `nix build`~~                            | ~~T8~~  | ~~12m~~ |
-| ~~43~~ | ~~AGENTS.md Essential Commands + close R9 row~~                                                             | ~~T8~~  | ~~12m~~ |
-| ~~44~~ | ~~Accept-Charset/Accept-Encoding out-of-scope boundary in negotiation.go doc comments + close R11~~         | ~~T10~~ | ~~12m~~ |
-| ~~45~~ | ~~`negotiation_example_test.go` godoc example (request codec → handler → WriteEncoded) + close R12~~        | ~~T10~~ | ~~12m~~ |
-| ~~46~~ | ~~doc.go negotiation sentence alignment with README contract summary + ✓-gate + dprint~~                    | ~~T10~~ | ~~12m~~ |
-| ~~47~~ | ~~`go test -coverprofile` + `go tool cover -func`; record per-area numbers~~                                | ~~T11~~ | ~~12m~~ |
-| ~~48~~ | ~~Compare vs CI 80% gate; decide floor-raise policy (no blind raise)~~                                      | ~~T11~~ | ~~12m~~ |
-| ~~49~~ | ~~Record numbers in FEATURES verification basis + close R13 row~~                                           | ~~T11~~ | ~~6m~~  |
-| ~~50~~ | ~~Diff ireturn allowlist vs actual usage (`rg` for the pdd types)~~                                         | ~~T12~~ | ~~12m~~ |
-| ~~51~~ | ~~Prune dead entries; lint must stay 0 issues~~                                                             | ~~T12~~ | ~~12m~~ |
-| ~~52~~ | ~~Update AGENTS.md mirror wording ("mirrored, locally pruned") + close R14 row~~                            | ~~T12~~ | ~~6m~~  |
-| ~~53~~ | ~~AGENTS.md gotcha: atomic edits under the auto-daemon (single self-consistent edits; gate between steps)~~ | ~~T13~~ | ~~12m~~ |
-| ~~54~~ | ~~AGENTS.md: add `nix flake check` to Essential Commands sweep~~                                            | ~~T13~~ | ~~12m~~ |
-| ~~55~~ | ~~dprint-then-edit re-read rule note + close R15 row~~                                                      | ~~T13~~ | ~~6m~~  |
-| ~~56~~ | ~~LSP-cache triage note: `lsp_restart` when phantom errors contradict CLI gates~~                           | ~~T14~~ | ~~12m~~ |
-| ~~57~~ | ~~Dependabot-vendorHash policy: pre-agree close-and-adopt vs maintainer-fix; document in AGENTS.md~~        | ~~T14~~ | ~~12m~~ |
-| ~~58~~ | ~~dprint plugin pin freshness check + close R16 row~~                                                       | ~~T14~~ | ~~6m~~  |
-| ~~59~~ | ~~(Event) sseparse next tag: bump dep, re-run conformance, fix divergences, nix-hash-fix, CHANGELOG — R10~~ | ~~T9~~  | ~~15m~~ |
+| #                     | Subtask                                                                                                     | Task    | Est     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------- | ------- | ------- |
+| ~~1~~ done (~~T2~~)   | ~~Check go-codec v0.3.0 changelog/diff for breaking changes (its repo, read-only)~~                         | ~~T2~~  | ~~12m~~ |
+| ~~2~~ done (~~T2~~)   | ~~`go get github.com/larsartmann/go-codec@v0.3.0 && go mod tidy` (in `nix develop`)~~                       | ~~T2~~  | ~~6m~~  |
+| ~~3~~ done (~~T2~~)   | ~~Build + vet + race suite on bumped tree~~                                                                 | ~~T2~~  | ~~12m~~ |
+| ~~4~~ done (~~T2~~)   | ~~`buildflow -s nix-hash-fix --fix` — repair own vendorHash, never hand-paste~~                             | ~~T2~~  | ~~12m~~ |
+| ~~5~~ done (~~T2~~)   | ~~`nix build .#default && nix run .#test` on bumped tree~~                                                  | ~~T2~~  | ~~12m~~ |
+| ~~6~~ done (~~T2~~)   | ~~AGENTS.md dep line update + CHANGELOG `Unreleased → Changed` bump note + close R2 row~~                   | ~~T2~~  | ~~12m~~ |
+| ~~7~~ done (~~T4~~)   | ~~`application/*` wildcard echo test (pin no-preference behavior)~~                                         | ~~T4~~  | ~~12m~~ |
+| ~~8~~ done (~~T4~~)   | ~~Duplicate-q precedence test: `application/json;q=0.5, application/json;q=0.9` (pin max-wins)~~            | ~~T4~~  | ~~12m~~ |
+| ~~9~~ done (~~T4~~)   | ~~Empty `q=` and bare `;q` param tests (both fall back to 1)~~                                              | ~~T4~~  | ~~12m~~ |
+| ~~10~~ done (~~T4~~)  | ~~`Q=` uppercase param-name: verify RFC 9110 case-insensitivity, fix if wrong, pin with test~~              | ~~T4~~  | ~~12m~~ |
+| ~~11~~ done (~~T4~~)  | ~~Never-serve-refused property test over the q=0 × request-codec matrix~~                                   | ~~T4~~  | ~~12m~~ |
+| ~~12~~ done (~~T4~~)  | ~~Golden behavior-matrix table pt 1: mentions/wildcards/q-rankings~~                                        | ~~T4~~  | ~~12m~~ |
+| ~~13~~ done (~~T4~~)  | ~~Golden behavior-matrix table pt 2: refusals, both-refused, unparseable q, browser header~~                | ~~T4~~  | ~~12m~~ |
+| ~~14~~ done (~~T4~~)  | ~~✓-gate + close R5 row + CHANGELOG test note if a fix falls out~~                                          | ~~T4~~  | ~~12m~~ |
+| ~~15~~ done (~~T6~~)  | ~~`bareMediaType` table test: params, case, whitespace~~                                                    | ~~T6~~  | ~~12m~~ |
+| ~~16~~ done (~~T6~~)  | ~~`qualityParam` table test: spaces, `Q=`, clamping, unparseable~~                                          | ~~T6~~  | ~~12m~~ |
+| ~~17~~ done (~~T6~~)  | ~~`matchesEncoding` table test: suffixes, near-misses (`+cbor` vs `cbor-seq`)~~                             | ~~T6~~  | ~~12m~~ |
+| ~~18~~ done (~~T6~~)  | ~~`acceptQuality` mentioned/quality logic incl. duplicate max~~                                             | ~~T6~~  | ~~12m~~ |
+| ~~19~~ done (~~T6~~)  | ~~✓-gate + close R7 row~~                                                                                   | ~~T6~~  | ~~12m~~ |
+| ~~20~~ done (~~T5~~)  | ~~`FuzzResolveResponseCodec`: seeds (browser headers, `*/*`, junk q, 100-entry lists)~~                     | ~~T5~~  | ~~12m~~ |
+| ~~21~~ done (~~T5~~)  | ~~Fuzz invariants: no panic; result ∈ {JSON, CBOR, reqCodec}; never a q=0-refused encoding~~                | ~~T5~~  | ~~12m~~ |
+| ~~22~~ done (~~T5~~)  | ~~Local 5-min soak (`go test -fuzz -fuzztime=5m`)~~                                                         | ~~T5~~  | ~~12m~~ |
+| ~~23~~ done (~~T5~~)  | ~~Seed-corpus handling decision (commit corpus or seed-only) + ✓-gate + close R6 row~~                      | ~~T5~~  | ~~12m~~ |
+| ~~24~~ done (~~T1~~)  | ~~Ask/confirm release framing: v0.2.0 (behavior-contract) vs v0.1.2 (bugfix) — **user decision**~~          | ~~T1~~  | ~~2m~~  |
+| ~~25~~ done (~~T1~~)  | ~~Draft tag annotation narrative (negotiation contract + SSE spec fixes + go-codec bump + why)~~            | ~~T1~~  | ~~12m~~ |
+| ~~26~~ done (~~T1~~)  | ~~CHANGELOG: fold go-codec note into release section; add new version + compare links~~                     | ~~T1~~  | ~~12m~~ |
+| ~~27~~ done (~~T1~~)  | ~~Full pre-tag gate sweep (build/vet/race/lint/nix build/nix run .#test)~~                                  | ~~T1~~  | ~~12m~~ |
+| ~~28~~ done (~~T1~~)  | ~~`git tag -a vX.Y.Z` + push master + tag (explicit user go-ahead per rule)~~                               | ~~T1~~  | ~~5m~~  |
+| ~~29~~ done (~~T1~~)  | ~~pdd (cross-repo): go.mod floor-bump + nix rev-pin re-derivation + build/test there~~                      | ~~T1~~  | ~~12m~~ |
+| ~~30~~ done (~~T1~~)  | ~~Close R1 + R4 rows; verify module proxy resolves new tag; note pkg.go.dev lag~~                           | ~~T1~~  | ~~12m~~ |
+| ~~31~~ done (~~T3~~)  | ~~Design `Vary: Accept`: emit unconditionally in `WriteEncoded` vs only when Accept influenced encoding~~   | ~~T3~~  | ~~12m~~ |
+| ~~32~~ done (~~T3~~)  | ~~Implement emission + doc-comment contract~~                                                               | ~~T3~~  | ~~12m~~ |
+| ~~33~~ done (~~T3~~)  | ~~Tests: no-Accept (no Vary or correct Vary per design), Accept-driven, refused-encoding substitution~~     | ~~T3~~  | ~~12m~~ |
+| ~~34~~ done (~~T3~~)  | ~~Docs: README row, FEATURES PLANNED → FULLY_FUNCTIONAL flip, CHANGELOG entry, close R3 row~~               | ~~T3~~  | ~~12m~~ |
+| ~~35~~ done (~~T3~~)  | ~~✓-gate~~                                                                                                  | ~~T3~~  | ~~12m~~ |
+| ~~36~~ done (~~T7~~)  | ~~Emit keys via `--emit-keys` + `--dry-run` first spec against 09-01 report (never hand-type keys)~~        | ~~T7~~  | ~~12m~~ |
+| ~~37~~ done (~~T7~~)  | ~~Apply inline strikes to 09-01 report; run row-completeness check~~                                        | ~~T7~~  | ~~12m~~ |
+| ~~38~~ done (~~T7~~)  | ~~Same for 11-35 report; verify with check scripts + `grep -rLn '~~'` gate~~                                | ~~T7~~  | ~~12m~~ |
+| ~~39~~ done (~~T7~~)  | ~~ARCHIVE classification; `git mv` fully-resolved reports to `docs/status/archived/` if applicable~~        | ~~T7~~  | ~~12m~~ |
+| ~~40~~ done (~~T8~~)  | ~~Extract first ```go fence → temp `main.go` script (awk; the exact harness from 2026-09-30 session)~~      | ~~T8~~  | ~~12m~~ |
+| ~~41~~ done (~~T8~~)  | ~~Wrap as `mkGoApp "check-readme"` flake app compiling the snippet to `/dev/null`~~                         | ~~T8~~  | ~~12m~~ |
+| ~~42~~ done (~~T8~~)  | ~~Negative test: break snippet on purpose, app must fail; restore; `nix build`~~                            | ~~T8~~  | ~~12m~~ |
+| ~~43~~ done (~~T8~~)  | ~~AGENTS.md Essential Commands + close R9 row~~                                                             | ~~T8~~  | ~~12m~~ |
+| ~~44~~ done (~~T10~~) | ~~Accept-Charset/Accept-Encoding out-of-scope boundary in negotiation.go doc comments + close R11~~         | ~~T10~~ | ~~12m~~ |
+| ~~45~~ done (~~T10~~) | ~~`negotiation_example_test.go` godoc example (request codec → handler → WriteEncoded) + close R12~~        | ~~T10~~ | ~~12m~~ |
+| ~~46~~ done (~~T10~~) | ~~doc.go negotiation sentence alignment with README contract summary + ✓-gate + dprint~~                    | ~~T10~~ | ~~12m~~ |
+| ~~47~~ done (~~T11~~) | ~~`go test -coverprofile` + `go tool cover -func`; record per-area numbers~~                                | ~~T11~~ | ~~12m~~ |
+| ~~48~~ done (~~T11~~) | ~~Compare vs CI 80% gate; decide floor-raise policy (no blind raise)~~                                      | ~~T11~~ | ~~12m~~ |
+| ~~49~~ done (~~T11~~) | ~~Record numbers in FEATURES verification basis + close R13 row~~                                           | ~~T11~~ | ~~6m~~  |
+| ~~50~~ done (~~T12~~) | ~~Diff ireturn allowlist vs actual usage (`rg` for the pdd types)~~                                         | ~~T12~~ | ~~12m~~ |
+| ~~51~~ done (~~T12~~) | ~~Prune dead entries; lint must stay 0 issues~~                                                             | ~~T12~~ | ~~12m~~ |
+| ~~52~~ done (~~T12~~) | ~~Update AGENTS.md mirror wording ("mirrored, locally pruned") + close R14 row~~                            | ~~T12~~ | ~~6m~~  |
+| ~~53~~ done (~~T13~~) | ~~AGENTS.md gotcha: atomic edits under the auto-daemon (single self-consistent edits; gate between steps)~~ | ~~T13~~ | ~~12m~~ |
+| ~~54~~ done (~~T13~~) | ~~AGENTS.md: add `nix flake check` to Essential Commands sweep~~                                            | ~~T13~~ | ~~12m~~ |
+| ~~55~~ done (~~T13~~) | ~~dprint-then-edit re-read rule note + close R15 row~~                                                      | ~~T13~~ | ~~6m~~  |
+| ~~56~~ done (~~T14~~) | ~~LSP-cache triage note: `lsp_restart` when phantom errors contradict CLI gates~~                           | ~~T14~~ | ~~12m~~ |
+| ~~57~~ done (~~T14~~) | ~~Dependabot-vendorHash policy: pre-agree close-and-adopt vs maintainer-fix; document in AGENTS.md~~        | ~~T14~~ | ~~12m~~ |
+| ~~58~~ done (~~T14~~) | ~~dprint plugin pin freshness check + close R16 row~~                                                       | ~~T14~~ | ~~6m~~  |
+| ~~59~~ done (~~T9~~)  | ~~(Event) sseparse next tag: bump dep, re-run conformance, fix divergences, nix-hash-fix, CHANGELOG — R10~~ | ~~T9~~  | ~~15m~~ |
 
 **Totals:** 59 subtasks; ~9.5 h estimated; every subtask ≤ 12 min; 1
 event-driven. Critical path (decision mechanics only): 24 → 25 → 26 → 27 → 28.

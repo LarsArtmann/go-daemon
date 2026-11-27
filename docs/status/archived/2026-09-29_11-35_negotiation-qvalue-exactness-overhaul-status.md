@@ -1,8 +1,9 @@
-# Status Report — 2026-09-29 11:35 — go-daemon Content-Negotiation Correctness Overhaul (q-values, exact media-type matching, refusal honoring) — Code Done, Verification UNVERIFIED
+# Status Report — 2026-09-29 11:35 — go-daemon Content-Negotiation Correctness Overhaul (q-values, exact media-type matching, refusal honoring) — Code Done, Verification ~~UNVERIFIED~~ verified 2026-09-30
 
-> **Annotated 2026-09-30:** struck items below are resolved (verdict inline, with evidence);
-> unstruck items remain open — most live in other repos' queues (go-sse, go-datastar,
-> buildflow, crush-config), a few are standing event rows in this repo's TODO_LIST.
+> **Live remainder:** Every numbered item is resolved (verdict inline); the §g questions were answered by the negotiation contract and the later golden-matrix/refusal tests. No open work remains.
+
+> **Annotated 2026-09-30 and 2026-11-27:** struck items carry a verdict inline with evidence;
+> the surviving §g questions are routed to ROADMAP (406 API shape) or answered by later decisions.
 
 **Session scope:** Q&A on go-codec negotiation design → cross-repo comparison (go-daemon) → judgment call ("worth extracting to go-codec?") → user-directed improvement of `go-daemon/negotiation.go` → implementation + test extension → **verification interrupted before completing**.
 
@@ -58,7 +59,7 @@
 
 ## b) PARTIALLY DONE
 
-1. **Verification of the rewrite** — code written and committed, but `nix develop -c go test ./... -race -count=1` (background shell 003) had **still not produced output at report time**. The suite may be green, red, or stuck on nix evaluation. This is the session's biggest open risk: **the committed state is unverified.**
+~~1. **Verification of the rewrite** — code written and committed, but `nix develop -c go test ./... -race -count=1` (background shell 003) had **still not produced output at report time**. The suite may be green, red, or stuck on nix evaluation. This is the session's biggest open risk: **the committed state is unverified.**~~ done — verified 2026-09-30: race suite green; v0.3.0 ship gates green
 2. **Quality gate** — buildflow/golangci-lint not run at all. Per repo AGENTS.md the sequence is `golangci-lint fmt` then `run`; per the buildflow skill the delegated form is `buildflow --build-mode dev`. Neither started.
 3. **CHANGELOG** — entry planned with drafted content (Changed: q-aware ranking, refusal honoring, cbor-seq behavior change, suffix support, exact matching); file not edited.
 4. **Documentation consistency** — README negotiation row and doc.go mention not audited against new semantics; likely fine, unverified.
@@ -67,15 +68,15 @@
 ## c) NOT STARTED
 
 1. `Vary: Accept` support (response caching correctness for dual-encoding consumers).
-2. 406-response variant of `ResolveResponseCodec` (current signature `codec.Codec` cannot express "nothing acceptable"; both-refused silently echoes request codec today — see question 2).
-3. Fuzz/property coverage for the Accept parser (`acceptQuality`/`qualityParam` are hand-rolled parsers; go-daemon has fuzz precedent in `transform_fuzz_test.go`'s sibling convention).
-4. Direct unit tests for `bareMediaType`/`qualityParam`/`matchesEncoding` (currently only tested transitively through the four exported functions).
-5. `application/*` wildcard explicit test (behavior is defined — treated as no-preference — but no test pins it).
-6. Ghost-API resolution: confirm whether `project-discovery-daemon` (primary consumer) actually calls `ResolveResponseCodec`/`ResolveRequestCodec`.
-7. go-cqrs-lite `transport/http` adoption decision (it still has no negotiation; if it gains one, that's the extraction trigger for go-codec).
-8. go-codec media-type mapping extraction (deliberately deferred until trigger fires — correctly not started).
-9. Negotiation benchmark (irrelevant at this size unless profiling says otherwise — intentionally not started).
-10. TODO_LIST.md harvest of this report's section f.
+2. 406-response variant of `ResolveResponseCodec` (current signature `codec.Codec` cannot express "nothing acceptable"; both-refused silently echoes request codec today — see question 2). **→ FEATURES ON_HOLD (406-capable variant)**
+   ~~3. Fuzz/property coverage for the Accept parser (`acceptQuality`/`qualityParam` are hand-rolled parsers; go-daemon has fuzz precedent in `transform_fuzz_test.go`'s sibling convention).~~ done — FuzzResolveResponseCodec added
+   ~~4. Direct unit tests for `bareMediaType`/`qualityParam`/`matchesEncoding` (currently only tested transitively through the four exported functions).~~ done — negotiation_helpers_test.go
+   ~~5. `application/*` wildcard explicit test (behavior is defined — treated as no-preference — but no test pins it).~~ done — TestResolveResponseCodec pins the wildcard behavior
+   ~~6. Ghost-API resolution: confirm whether `project-discovery-daemon` (primary consumer) actually calls `ResolveResponseCodec`/`ResolveRequestCodec`.~~ done — pdd calls both resolvers from content_negotiation.go
+3. go-cqrs-lite `transport/http` adoption decision (it still has no negotiation; if it gains one, that's the extraction trigger for go-codec).
+4. go-codec media-type mapping extraction (deliberately deferred until trigger fires — correctly not started).
+5. Negotiation benchmark (irrelevant at this size unless profiling says otherwise — intentionally not started).
+6. TODO_LIST.md harvest of this report's section f.
 
 ## d) TOTALLY FUCKED UP
 
