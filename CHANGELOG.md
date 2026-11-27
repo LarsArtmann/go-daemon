@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [0.5.0] - 2026-11-27
+
+### Added
+
 - `JSONv2Codec`: a `codec.Codec` + `codec.BufferEncoder` adapter over
-  `encoding/json/v2` with caller-chosen marshal/unmarshal options, so
-  consumers already committed to json/v2 semantics (omitzero tags,
-  deterministic map ordering, integer-nanos durations) can adopt content
-  negotiation without regressing to the v1-backed `codec.JSONCodec` default.
+  `encoding/json/v2` with caller-chosen marshal/unmarshal options, so a
+  consumer can pin json/v2 semantics (deterministic map ordering,
+  integer-nanos durations, case-insensitive field matching) or the v1 wire
+  shapes (`FormatNilSliceAsNull`, `FormatDurationAsNano`) regardless of
+  which go-codec JSON backend the build selected.
 - Injectable negotiation codecs: `WithJSONCodec`/`WithCBORCodec` options let
   `ResolveRequestCodec`, `ResolveResponseCodec`, and `CodecForContentType`
   resolve consumer-supplied codecs; built-in defaults and the negotiation
@@ -33,10 +44,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ProbeUntilAlive` once a daemon answers the health probe. Both poll
   every `DefaultWaitPollInterval` (50ms, `WithPollInterval` overrides)
   and return an error wrapping `ctx.Err()` when the context ends first.
+- `WriteJSONWithCodec` and `WriteErrorfWithCodec`: codec-aware counterparts
+  of `WriteJSON`/`WriteErrorf`, so a handler that negotiated a codec (a
+  `JSONv2Codec`, or CBOR) writes its payload and its error envelope through
+  the same codec instead of falling back to the default. `WriteJSON` and
+  `WriteErrorf` keep their signatures and behaviour.
 
 ### Changed
 
-- Nothing yet.
+- The language floor moves from `go 1.27.1` to `go 1.27.2`, following
+  go-codec v0.3.3's declared floor (a deliberate version contract in that
+  module, not a formatting slip), so it cannot be lowered without
+  downgrading the dependency. Consumers on an older Go patch get Go's
+  automatic toolchain switch (or must upgrade under `GOTOOLCHAIN=local`).
+  Dependency bumps since 0.4.0: go-codec v0.3.0 → v0.3.3, go-flightrecorder
+  v0.2.0 → v0.2.1, go-sse/sseparse v0.2.0 → v0.2.1,
+  prometheus/client_golang v1.24.1 → v1.25.0.
+- **The default JSON codec's wire flavour now follows the toolchain.**
+  go-codec v0.3.3 compiles its `encoding/json/v2` backend when the `jsonv2`
+  experiment is enabled, which Go 1.27 does by default: through
+  `codec.JSONCodec{}` (and therefore `WriteJSON`, `WriteErrorf`, and
+  `WriteEncoded` with the default codec, plus negotiation's JSON default) a
+  nil slice now encodes as `[]` not `null`, `time.Duration` fails to encode
+  rather than emitting integer nanos, and map key order is unordered;
+  `GOEXPERIMENT=none` selects the v1 backend again. Pass an explicit codec
+  when the wire shape matters: `WriteJSONWithCodec`,
+  `WriteErrorfWithCodec`, or negotiation's `WithJSONCodec`, with
+  `JSONv2Codec{MarshalOptions: []json.Options{json.FormatNilSliceAsNull(true),
+  json.FormatDurationAsNano(true)}}` for the v1 shapes.
 
 ### Fixed
 
@@ -275,7 +310,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configurable `MetricPrefix`, and a rate-limited `TraceHandler` streaming
   `go tool trace` files.
 
-[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/LarsArtmann/go-daemon/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/LarsArtmann/go-daemon/compare/v0.1.0...v0.1.1

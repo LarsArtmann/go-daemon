@@ -30,22 +30,29 @@ nix flake check --all-systems  # evaluates every listed system; builds only the 
 nix fmt
 ```
 
-The toolchain is `go 1.27.1`; `encoding/json/v2` is GA there (no
-GOEXPERIMENT needed). Ambient go on this machine may be older — run
-`go version` (or trust the editor's gopls diagnostics) BEFORE writing code;
-bare `go` that refuses means use `nix shell nixpkgs#go_1_27` or
-`nix develop`.
+The language floor is `go 1.27` — no patch floor, because a `go 1.27.2`
+directive forces every consumer onto 1.27.2+ (v0.4.x carried one by
+accident; the flake pins nixpkgs `go_1_27`, 1.27.3 at the time of
+writing). `encoding/json/v2` is GA there. Ambient go on this machine may
+differ — run `go version` (or trust the editor's gopls diagnostics)
+BEFORE writing code; bare `go` that refuses means use
+`nix shell nixpkgs#go_1_27` or `nix develop`.
 
-**go-codec v0.3.1 runs its v1 flavor on Go 1.27**: its json/v2 backend is
-gated behind the `goexperiment.jsonv2` build tag, and that tag is NOT
-satisfied on 1.27 (the experiment knob was removed at GA), verified
-2026-10-04 by probing for the v2-only `signingSafe()` method. So
-`codec.JSONCodec{}` here is `encoding/json` v1: unsorted map keys, no
-omitzero, nil slices as null. The json/v2 path in this repo is
-`JSONv2Codec` (jsonv2.go, stdlib `encoding/json/v2` with functional
-options), injectable into negotiation via `WithJSONCodec`/`WithCBORCodec`
-(NegotiationOption). Do not assume bumping go-codec flips the flavor —
-check its build tags first.
+**The default JSON codec's flavour follows the toolchain, not this repo.**
+go-codec builds its `encoding/json/v2` backend when the `jsonv2`
+experiment is enabled (`json_compat_v2.go`, tag `goexperiment.jsonv2`),
+and Go 1.27 has that experiment on by default: re-probed 2026-11-27 on
+go1.27.3 with go-codec v0.3.3 — `codec.JSONCodec{}` yields nil slices as
+`[]` (not null), an _error_ for `time.Duration`, and unordered map keys.
+`GOEXPERIMENT=none` selects `json_compat_v1.go` again (null slices,
+integer-nanos durations, sorted map keys), so a `time.Duration` carrier
+encodes on one build and fails on the other. Do not assume a flavour.
+The explicit paths are `JSONv2Codec` (jsonv2.go, caller-chosen options
+such as `FormatNilSliceAsNull(true)` / `FormatDurationAsNano(true)` to
+restore v1 wire shapes) and `WithJSONCodec`/`WithCBORCodec` for
+negotiation. The pre-v0.3.3 note here claiming `codec.JSONCodec{}` was
+v1 on Go 1.27 does not hold with this toolchain; when in doubt, probe the
+behavior, not the tag.
 
 ## Conventions
 

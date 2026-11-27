@@ -56,15 +56,46 @@ func WriteEncoded(w http.ResponseWriter, status int, contentCodec codec.Codec, v
 	_, _ = w.Write(buf.Bytes())
 }
 
-// WriteJSON writes a JSON response. Backward-compat wrapper around WriteEncoded.
+// WriteJSON writes a JSON response with the default v1-backed codec.
+// Backward-compat wrapper around WriteJSONWithCodec.
 func WriteJSON(w http.ResponseWriter, status int, v any) {
-	WriteEncoded(w, status, codec.JSONCodec{}, v)
+	WriteJSONWithCodec(w, status, codec.JSONCodec{}, v)
+}
+
+// WriteJSONWithCodec writes a JSON response encoded with jsonCodec, the
+// codec-aware counterpart of WriteJSON. Pass the codec the handler negotiated
+// for this response (e.g. a JSONv2Codec resolved through WithJSONCodec) so the
+// whole response stream keeps one JSON flavour instead of falling back to the
+// v1 defaults. jsonCodec must report codec.EncodingJSON; nil keeps the default
+// codec.
+func WriteJSONWithCodec(w http.ResponseWriter, status int, jsonCodec codec.Codec, v any) {
+	if jsonCodec == nil {
+		jsonCodec = codec.JSONCodec{}
+	}
+
+	WriteEncoded(w, status, jsonCodec, v)
 }
 
 // WriteErrorf writes a JSON error response with the given status and
-// formatted message: {"error": "<message>"}.
+// formatted message: {"error": "<message>"}. Backward-compat wrapper around
+// WriteErrorfWithCodec.
 func WriteErrorf(w http.ResponseWriter, status int, format string, args ...any) {
-	WriteJSON(w, status, map[string]string{
+	WriteErrorfWithCodec(w, status, codec.JSONCodec{}, format, args...)
+}
+
+// WriteErrorfWithCodec writes the {"error": "<message>"} envelope encoded with
+// contentCodec, the codec-aware counterpart of WriteErrorf. Pass the codec the
+// handler negotiated for this response (JSON, CBOR, or an injected
+// JSONv2Codec) so an error body never regresses to an encoding the rest of the
+// response stream does not use. nil keeps the default JSON codec.
+//
+//nolint:goprintffuncname // mirrors WriteErrorf; the suffix names the codec, not a format tier
+func WriteErrorfWithCodec(w http.ResponseWriter, status int, contentCodec codec.Codec, format string, args ...any) {
+	if contentCodec == nil {
+		contentCodec = codec.JSONCodec{}
+	}
+
+	WriteEncoded(w, status, contentCodec, map[string]string{
 		"error": fmt.Sprintf(format, args...),
 	})
 }

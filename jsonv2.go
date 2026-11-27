@@ -8,9 +8,12 @@ import (
 )
 
 // JSONv2Codec implements codec.Codec over encoding/json/v2 with caller-chosen
-// options, so consumers already committed to json/v2 semantics (omitzero
-// tags, deterministic map ordering, duration formats) can adopt content
-// negotiation without regressing to the v1-backed codec.JSONCodec default.
+// options, so a consumer can pin json/v2 semantics (omitzero tags,
+// deterministic map ordering, duration formats) or the v1 wire shapes
+// (FormatNilSliceAsNull, FormatDurationAsNano) explicitly, independent of
+// which backend go-codec's default JSONCodec was built with. That default
+// follows the toolchain's jsonv2 experiment; see the dependency notes in
+// AGENTS.md.
 //
 // The zero value marshals and unmarshals with pure json/v2 defaults, which
 // differ from encoding/json (v1) in observable ways:
