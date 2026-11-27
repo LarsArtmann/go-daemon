@@ -80,4 +80,10 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
       - name: Build and check flake
-        run: nix build .#default && nix flake check
+        # --all-systems evaluates the outputs of every system in flake.nix's
+        # `systems` list (x86_64-linux, aarch64-linux, aarch64-darwin). The
+        # plain check skips the non-native ones with exit 0 plus a warning, so
+        # it cannot catch a system nixpkgs stopped evaluating (adding
+        # x86_64-darwin today passes the plain check and fails this one).
+        # Builds still run for the runner's own system only.
+        run: nix build .#default && nix flake check --all-systems

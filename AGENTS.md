@@ -26,7 +26,7 @@ bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets 
 The check-readme logic lives in `scripts/check-readme.sh` — the flake app
 and ci.yml both invoke that script, so edit the script only (never inline
 the awk in a second place).
-nix flake check
+nix flake check --all-systems  # evaluates every listed system; builds only the native one
 nix fmt
 ```
 
@@ -111,6 +111,15 @@ check its build tags first.
 
 ## Gotchas
 
+- **Plain `nix flake check` skips every non-native system.** Nix 2.35
+  evaluates only the current system in that mode and reports the rest as
+  `warning: The check omitted these incompatible systems: aarch64-darwin,
+  aarch64-linux` — with exit 0. Measured 2026-11-27 at nixpkgs
+  `0bb8272318b4`: with `x86_64-darwin` added to `systems`, the plain check
+  still passed while `nix flake check --all-systems` failed with `Nixpkgs
+  26.11 has dropped support for x86_64-darwin`. `--all-systems` evaluates
+  all three listed systems (~5s) and still builds only the current
+  system's `checks.*`, so it is the check CI runs.
 - **No `//go:build` guards, by design — do not add any for the notify
   path.** `SdNotify` and `SdWatchdogEnabled` in go-systemd v22.7.0 are
   run-time switched (`NOTIFY_SOCKET` / `WATCHDOG_USEC` unset → not sent,
