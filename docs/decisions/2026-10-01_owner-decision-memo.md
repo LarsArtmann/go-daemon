@@ -1,8 +1,15 @@
 # Owner decision memo — the five flip gates
 
+> **ANSWERED 2026-11-27.** All five gates were resolved by the instruction
+> to flip: API stays v0.x, name stays `go-daemon`, snapshot docs are kept,
+> billing became moot, repository is public. The executed decisions,
+> changes, and verification live in
+> `docs/decisions/2026-11-27_visibility-flip.md`.
+
 **Date:** 2026-10-01
-**Status:** awaiting owner answers; every technical prerequisite is done
-**Companion:** `docs/runbooks/post-flip.md` (pre-written mechanical tail)
+**Status:** answered 2026-11-27 (superseded by the visibility-flip decision)
+**Companion:** `docs/runbooks/post-flip.md` (written before the flip, retired
+after execution)
 
 Everything below the fold is data gathered this session so each decision is
 a one-sitting answer. Nothing here is code work; the five gates are the
@@ -84,8 +91,9 @@ unless private-master CI is wanted in the interim.
 - `nix flake check --all-systems`: PASS (x86_64-darwin filtered, upstream
   dropped it).
 - README first-impression pass + Non-goals: DONE.
-- `scripts/pre-publish-audit.sh`: exists; exits 1 on GOPRIVATE refs until
-  the post-flip runbook executes (expected, documented).
+- `scripts/pre-publish-audit.sh`: exists; it exited 1 on the private-module
+  environment references until the post-flip cleanup ran (expected,
+  documented). Now exits 0.
 - Remaining flip-tail: `docs/runbooks/post-flip.md` (~30 min mechanical).
 
 **Recommendation:** flip is one word away. Do 3 (keep docs), skim 1-2,

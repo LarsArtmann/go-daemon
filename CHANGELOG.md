@@ -11,9 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+### Changed
+
+- **The repository is public.** Modules now resolve through the Go proxy,
+  pkg.go.dev indexes the package, and CI runs on the free tier (every
+  workflow run on the private repository had failed in about three seconds
+  on Actions billing). The private-dependency plumbing in this repo and in
+  its consumer is gone: no flake pin, no source-preparation wrapper, no
+  deploy key. `go.mod` keeps its 1.27.2 floor, but Go 1.27.0–1.27.3 carry
+  CVE-2026-97054 in `net/http`, so build with 1.27.4+ (now what CI pins).
+  See `docs/decisions/2026-11-27_visibility-flip.md`.
+
 ### Fixed
 
-- Nothing yet.
+- CI's flake gate no longer tries to build other platforms' checks: it
+  builds the native package and then evaluates every listed system with
+  `nix flake check --no-build --all-systems`.
 
 ## [0.5.0] - 2026-11-27
 
