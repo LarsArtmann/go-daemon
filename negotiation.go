@@ -215,8 +215,9 @@ func qualityParam(params string) float64 {
 }
 
 // ContentTypeFor returns the HTTP Content-Type header value for a codec.
+// A nil codec reports JSON, matching the default WriteEncoded applies to it.
 func ContentTypeFor(c codec.Codec) string {
-	if c.Encoding() == codec.EncodingCBOR {
+	if c != nil && c.Encoding() == codec.EncodingCBOR {
 		return contentTypeCBOR
 	}
 

@@ -234,3 +234,64 @@ func TestJSONv2Codec_NegotiatedWrite(t *testing.T) {
 		t.Fatalf("vary: got %q, want %q", vary, "Accept")
 	}
 }
+
+// TestJSONv2Codec_NilOptionElements pins that a nil element inside
+// MarshalOptions or UnmarshalOptions is ignored rather than panicking, so a
+// caller that builds its option slice conditionally needs no filtering.
+func TestJSONv2Codec_NilOptionElements(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		c    JSONv2Codec
+	}{
+		{
+			name: "nil marshal option",
+			c:    JSONv2Codec{MarshalOptions: []json.Options{nil}},
+		},
+		{
+			name: "nil marshal option next to a real one",
+			c:    JSONv2Codec{MarshalOptions: []json.Options{nil, json.FormatNilSliceAsNull(true)}},
+		},
+		{
+			name: "nil unmarshal option",
+			c:    JSONv2Codec{UnmarshalOptions: []json.Options{nil}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			in := struct {
+				Items []string `json:"items"`
+			}{}
+
+			data, err := tt.c.Encode(in)
+			if err != nil {
+				t.Fatalf("Encode: %v", err)
+			}
+
+			want := `{"items":[]}`
+			if len(tt.c.MarshalOptions) == 2 {
+				want = `{"items":null}`
+			}
+
+			if string(data) != want {
+				t.Fatalf("Encode = %s, want %s", data, want)
+			}
+
+			var out struct {
+				Items []string `json:"items"`
+			}
+
+			if err := tt.c.Decode([]byte(`{"items":["a"]}`), &out); err != nil {
+				t.Fatalf("Decode: %v", err)
+			}
+
+			if len(out.Items) != 1 || out.Items[0] != "a" {
+				t.Fatalf("Decode = %#v", out)
+			}
+		})
+	}
+}

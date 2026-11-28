@@ -6,7 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/larsartmann/go-codec"
 )
@@ -270,4 +272,83 @@ func TestWriteErrorfWithCodec(t *testing.T) {
 			t.Errorf("error = %q, want %q", got, "bad request")
 		}
 	})
+}
+
+// defaultWireShape is the struct TestDefaultJSONCodec_WireShapes sends
+// through the response path: one field per json/v2 default that differs
+// from encoding/json (v1): nil slices and maps encode as [] and {}, where
+// v1 writes null. The third difference, time.Duration, is an encode error
+// and has its own test below.
+type defaultWireShape struct {
+	Slice []string       `json:"slice"`
+	Map   map[string]int `json:"map"`
+}
+
+// TestDefaultJSONCodec_WireShapes pins the wire shapes of the default codec
+// as actually written by WriteEncoded (buffer path included). They are the
+// module's real behavior, not a per-build coin flip; a consumer that needs
+// the v1 shapes passes an explicit JSONv2Codec. If this test fails, the
+// default changed under every consumer: that is a wire break, not a test fix.
+func TestDefaultJSONCodec_WireShapes(t *testing.T) {
+	t.Parallel()
+
+	body := encodeThroughResponse(t, defaultWireShape{Map: map[string]int{}})
+
+	if body != `{"slice":[],"map":{}}` {
+		t.Fatalf("default codec wire shape = %s", body)
+	}
+}
+
+// TestDefaultJSONCodec_DurationIsAnEncodeError pins that a time.Duration
+// value cannot be encoded by the default codec: WriteEncoded turns it into a
+// 500 error envelope instead of a response body.
+func TestDefaultJSONCodec_DurationIsAnEncodeError(t *testing.T) {
+	t.Parallel()
+
+	rec := httptest.NewRecorder()
+
+	WriteJSON(rec, http.StatusOK, struct {
+		D time.Duration `json:"d"`
+	}{time.Second})
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want 500; body = %s", rec.Code, rec.Body)
+	}
+
+	if !strings.Contains(rec.Body.String(), "encode response:") {
+		t.Fatalf("body = %s, want the encode-error envelope", rec.Body)
+	}
+}
+
+// TestWriteEncoded_NilCodecFallsBackToJSON pins the nil-codec contract:
+// WriteEncoded treats nil like the wrappers do (default JSON codec) instead
+// of panicking on the nil interface.
+func TestWriteEncoded_NilCodecFallsBackToJSON(t *testing.T) {
+	t.Parallel()
+
+	rec := httptest.NewRecorder()
+
+	WriteEncoded(rec, http.StatusCreated, nil, map[string]string{"ok": "1"})
+
+	if rec.Code != http.StatusCreated || rec.Body.String() != `{"ok":"1"}` {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body)
+	}
+
+	if got := rec.Header().Get("Content-Type"); got != ContentTypeFor(nil) || got != "application/json" {
+		t.Fatalf("Content-Type = %q", got)
+	}
+}
+
+func encodeThroughResponse(t *testing.T, v any) string {
+	t.Helper()
+
+	rec := httptest.NewRecorder()
+
+	WriteJSON(rec, http.StatusOK, v)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body)
+	}
+
+	return rec.Body.String()
 }

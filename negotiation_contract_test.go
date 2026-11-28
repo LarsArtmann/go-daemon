@@ -494,7 +494,10 @@ func FuzzResolveResponseCodec(f *testing.F) {
 	f.Add(strings.Repeat("application/json;q=0.5, ", 100) + "application/cbor;q=0.8")
 
 	f.Fuzz(func(t *testing.T, accept string) {
-		for _, reqCodec := range []codec.Codec{codec.JSONCodec{}, codec.CBORCodec{}} {
+		// The JSONv2Codec entry covers the injected-codec path: a consumer
+		// that pins json/v2 shapes routes its request codec through the same
+		// negotiation, so the fuzz invariants must hold for it too.
+		for _, reqCodec := range []codec.Codec{codec.JSONCodec{}, codec.CBORCodec{}, JSONv2Codec{}} {
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/discover", nil)
 			req.Header.Set("Accept", accept)
 

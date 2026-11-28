@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/decisions/2026-11-27_jsonv2-default-and-wire-shapes.md`: the record
   for the default JSON codec's unconditional json/v2 wire shapes, the
   v1-shape escape hatches, and the consumer consequences.
+- Tests that pin the default codec's wire shapes as written by
+  `WriteEncoded` (`nil` slice `[]`, `nil` map `{}`; `time.Duration` is an
+  encode error answered with a 500 envelope), the nil-option tolerance of
+  `JSONv2Codec`, and godoc examples for `JSONv2Codec`,
+  `WriteJSONWithCodec` and `WriteErrorfWithCodec`. `FuzzResolveResponseCodec`
+  now also runs with an injected `JSONv2Codec` request codec.
 
 ### Changed
 
@@ -44,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OOMPolicy`) as a separate failure mode from CPU/I/O priority.
 
 ### Fixed
+
+- `WriteEncoded(..., nil, ...)` no longer panics: a nil codec selects the
+  default JSON codec, the rule `WriteJSONWithCodec` and `WriteErrorfWithCodec`
+  already applied. `ContentTypeFor(nil)` returns `application/json` instead
+  of panicking.
 
 - CI's flake gate no longer tries to build other platforms' checks: it
   builds the native package and then evaluates every listed system with

@@ -26,7 +26,13 @@ var bufPool = sync.Pool{ //nolint:gochecknoglobals // package-level sync.Pool is
 // so a cache must not reuse a stored response for requests expressing a
 // different Accept preference. The header is added rather than set, so
 // handlers can declare additional variance (e.g. "Vary: Authorization").
+// A nil contentCodec falls back to the default JSON codec, the same rule
+// WriteJSONWithCodec and WriteErrorfWithCodec apply.
 func WriteEncoded(w http.ResponseWriter, status int, contentCodec codec.Codec, v any) {
+	if contentCodec == nil {
+		contentCodec = codec.JSONCodec{}
+	}
+
 	buf := bufPool.Get().(*bytes.Buffer) //nolint:forcetypeassert // Pool always returns *bytes.Buffer
 
 	buf.Reset()
