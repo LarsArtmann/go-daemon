@@ -82,6 +82,14 @@ crush-config docs-health workflow note that annotate-tool output must
 survive `dprint fmt`; and an art-dupl accepted-clone baseline gate that also
 surfaces filtered-suppressed groups on review runs.
 
+Also from the 2026-11-28 session: nextd's tests resolving `$HOME` when no
+state directory is given (a `TestMain` default would make the whole suite
+hermetic); the pdd admin-package timing flakes (`TestSelfMetricsScrape`,
+`TestBridgeStopEndsInFlightHandlerFetches`, 1 in 20 runs); archive manifest
+provenance and the ledger convention in this repo's AGENTS; and a
+`release-check --require-clean` mode plus a binary overlay or cached build
+for the Go toolchain, both under theme 5.
+
 ### 4. Public presence
 
 The repository is public since 2026-11-27. The store front is the minimum
@@ -90,6 +98,10 @@ site built with the sibling-project website-launch pattern, a launch note
 in the consumer's README, and a recorded v0.x release-presentation policy
 (prerelease vs "Latest", signed tags). All owner-taste calls; none block
 adoption.
+
+The release presentation policy is undecided: whether a pre-release may be
+the GitHub Latest release, and how long v0.4.x receives fixes once the
+consumers are on a newer line.
 
 ### 5. Post-flip security posture
 
