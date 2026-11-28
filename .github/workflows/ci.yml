@@ -81,6 +81,12 @@ jobs:
     steps:
       - name: Check out go-daemon
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The docs battery resolves every tag and commit the archived
+          # verdicts cite. The default shallow clone (depth 1, no tags) makes
+          # each of them look broken ("claims tag `v0.2.0`, which does not
+          # exist"), so this job needs the full history.
+          fetch-depth: 0
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
