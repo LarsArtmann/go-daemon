@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -70,6 +71,7 @@ type Server struct {
 	shutdownGracePeriod time.Duration
 	healthPath          string
 	probeTimeout        time.Duration
+	watchdogs           sync.Once
 
 	// chmodSocket applies socketMode to the socket file: os.Chmod outside
 	// tests. Tests substitute a failing function to reach the error branch,
@@ -209,7 +211,8 @@ func (s *Server) SocketPath() string { return s.addr }
 //     unix-owned sockets — create the socket directory and chmod the socket.
 //  4. OnListen (if set): start background work (refresh loops, watchers).
 //  5. sd_notify READY=1 (no-op without NOTIFY_SOCKET); watchdog keepalive at
-//     WatchdogSec/2 when systemd requests one.
+//     WatchdogSec/2 when systemd requests one. With DeferReady the consumer
+//     sends this step itself by calling MarkReady once it is ready.
 //  6. Serve until the context is canceled or Serve fails.
 //  7. sd_notify STOPPING=1, graceful Shutdown within the grace period,
 //     remove the socket file (unix-owned sockets only).
@@ -230,9 +233,31 @@ type Lifecycle struct {
 	// READY. Start background loops here; ctx is Start's lifetime context.
 	OnListen func(ctx context.Context)
 
+	// DeferReady hands the READY step to the consumer: Start then skips
+	// sd_notify READY=1 and the watchdog keepalive, and the consumer calls
+	// Server.MarkReady once its own readiness condition holds (a completed
+	// warm-up, a confirmed health round trip). Until then a Type=notify
+	// service stays in "activating" and its TimeoutStartSec keeps running,
+	// so a consumer that never calls MarkReady is killed at that timeout.
+	DeferReady bool
+
 	// OnShutdown drains background work. Runs on every exit path, after the
 	// HTTP server has drained and the socket file was removed.
 	OnShutdown func()
+}
+
+// MarkReady performs the lifecycle's READY step: it sends sd_notify READY=1
+// (a no-op without NOTIFY_SOCKET) and starts the watchdog keepalive when
+// systemd requests one. Start calls it itself unless Lifecycle.DeferReady is
+// set, in which case the consumer calls it, exactly once, after Start is
+// running. It is safe for concurrent use; a second call only repeats the
+// READY notification.
+func (s *Server) MarkReady(ctx context.Context) {
+	NotifyReady(s.logger)
+
+	if interval, ok := WatchdogInterval(s.logger); ok {
+		s.watchdogs.Do(func() { go Watchdog(ctx, s.logger, interval) })
+	}
 }
 
 // Start runs the full daemon lifecycle (see Lifecycle for the ordering
@@ -287,12 +312,8 @@ func (s *Server) Start(ctx context.Context, lifecycle Lifecycle) error {
 		lifecycle.OnListen(ctx)
 	}
 
-	// Notify systemd that the daemon is ready. No-op when NOTIFY_SOCKET is unset.
-	NotifyReady(s.logger)
-
-	// Start watchdog keepalive if systemd configured WatchdogSec.
-	if interval, ok := WatchdogInterval(s.logger); ok {
-		go Watchdog(ctx, s.logger, interval)
+	if !lifecycle.DeferReady {
+		s.MarkReady(ctx)
 	}
 
 	errCh := make(chan error, 1)

@@ -35,7 +35,20 @@
           ...
         }:
         let
-          goPkg = pkgs.go_1_27;
+          # Go 1.27.4, not nixpkgs' go_1_27 (1.27.3 at the time of writing):
+          # 1.27.3 and earlier carry CVE-2026-97054 / GO-2026-6859 in
+          # net/http, which reaches nearly all of socket.go, so the devShell
+          # and the release gate must not build with it. The override swaps
+          # the source tarball; drop it once nixpkgs ships go_1_27 at 1.27.4
+          # or newer (compare `nix eval nixpkgs#go_1_27.version` with
+          # `go version` in the devShell).
+          goPkg = pkgs.go_1_27.overrideAttrs (_: {
+            version = "1.27.4";
+            src = pkgs.fetchurl {
+              url = "https://go.dev/dl/go1.27.4.src.tar.gz";
+              hash = "sha256-c8+4VxrsDAEXdofbhxY9Rqog6XeWcncokaoXZU2aYJk=";
+            };
+          });
 
           # All dependencies are public and resolve via the Go proxy, so no
           # mkPreparedSource is needed. GOTOOLCHAIN=local keeps go on the

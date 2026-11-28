@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -926,4 +927,103 @@ func socketTempDir(t *testing.T) string {
 	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
 	return dir
+}
+
+// TestSocketServer_DeferReady pins the deferrable-READY contract: with
+// DeferReady the lifecycle sends no READY by itself and starts no watchdog;
+// the consumer's MarkReady call sends READY and starts the watchdog.
+func TestSocketServer_DeferReady(t *testing.T) {
+	// Not parallel: t.Setenv.
+	notifySocket := listenForNotify(t)
+	t.Setenv("NOTIFY_SOCKET", notifySocket.LocalAddr().String())
+	t.Setenv("WATCHDOG_USEC", strconv.FormatInt((2*time.Second).Microseconds(), 10))
+
+	srv, cancel, errCh := runServerUntilListening(
+		t,
+		filepath.Join(socketTempDir(t), "deferred-ready.sock"),
+		Lifecycle{Handler: healthMux(), DeferReady: true},
+		WithHealthPath("/health"),
+	)
+
+	if got := receiveNotify(t, notifySocket, 300*time.Millisecond); got != "" {
+		t.Fatalf("DeferReady sent %q before MarkReady", got)
+	}
+
+	srv.MarkReady(t.Context())
+
+	if got := receiveNotify(t, notifySocket, 5*time.Second); got != "READY=1" {
+		t.Fatalf("MarkReady sent %q, want READY=1", got)
+	}
+
+	// The watchdog starts with READY, at half the configured interval: the
+	// first WATCHDOG=1 follows within the 2 s interval.
+	if got := receiveNotify(t, notifySocket, 5*time.Second); got != "WATCHDOG=1" {
+		t.Fatalf("after MarkReady got %q, want WATCHDOG=1", got)
+	}
+
+	stopSocketServer(t, cancel, errCh)
+}
+
+// TestSocketServer_ReadyByDefault pins the unchanged default: without
+// DeferReady the lifecycle itself sends READY once the socket listens.
+func TestSocketServer_ReadyByDefault(t *testing.T) {
+	// Not parallel: t.Setenv.
+	notifySocket := listenForNotify(t)
+	t.Setenv("NOTIFY_SOCKET", notifySocket.LocalAddr().String())
+
+	_, cancel, errCh := runServerUntilListening(
+		t,
+		filepath.Join(socketTempDir(t), "default-ready.sock"),
+		Lifecycle{Handler: healthMux()},
+		WithHealthPath("/health"),
+	)
+
+	if got := receiveNotify(t, notifySocket, 5*time.Second); got != "READY=1" {
+		t.Fatalf("default lifecycle sent %q, want READY=1", got)
+	}
+
+	stopSocketServer(t, cancel, errCh)
+}
+
+// listenForNotify opens a unixgram socket that stands in for systemd's
+// NOTIFY_SOCKET and returns it closed when the test ends.
+func listenForNotify(t *testing.T) *net.UnixConn {
+	t.Helper()
+
+	packetConn, err := (&net.ListenConfig{}).ListenPacket(
+		t.Context(),
+		"unixgram",
+		filepath.Join(socketTempDir(t), "n.sock"),
+	)
+	if err != nil {
+		t.Fatalf("create notify listener: %v", err)
+	}
+
+	t.Cleanup(func() { _ = packetConn.Close() })
+
+	conn, ok := packetConn.(*net.UnixConn)
+	if !ok {
+		t.Fatalf("notify listener is %T, want *net.UnixConn", packetConn)
+	}
+
+	return conn
+}
+
+// receiveNotify reads one notification message, or returns "" when none
+// arrives within timeout.
+func receiveNotify(t *testing.T, conn *net.UnixConn, timeout time.Duration) string {
+	t.Helper()
+
+	if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
+		t.Fatalf("set read deadline: %v", err)
+	}
+
+	buf := make([]byte, 1024)
+
+	n, err := conn.Read(buf)
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(buf[:n]))
 }

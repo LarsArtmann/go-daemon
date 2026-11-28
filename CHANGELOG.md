@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Deferrable READY: `Lifecycle.DeferReady` makes `Start` skip its
+  `sd_notify READY=1` and watchdog step, and `Server.MarkReady` performs
+  that step for the consumer once its own readiness condition holds (a
+  finished warm-up, a confirmed health round trip). Without the flag the
+  lifecycle behaves exactly as before; `MarkReady` starts the watchdog at
+  most once.
+- The flake's Go toolchain is 1.27.4 (an `overrideAttrs` on nixpkgs'
+  `go_1_27`, still 1.27.3), so the devShell and `release-check` no longer
+  build with the toolchain that carries CVE-2026-97054; `govulncheck` is
+  clean there.
+
 - `docs/DOMAIN_LANGUAGE.md`: the ubiquitous language for the library (core
   terms, bounded contexts, anti-language, deprecated terms), each term
   cited to the code that implements it and stamped against a code review.

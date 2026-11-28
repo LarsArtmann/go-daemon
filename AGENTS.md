@@ -93,7 +93,11 @@ toolchain; probe behavior, not the tag.
 - Lifecycle ordering is a CONTRACT (see `Lifecycle` doc comment in
   socket.go): clean → Startup → listen/chmod → OnListen → READY → watchdog →
   serve → STOPPING → drain → remove socket → OnShutdown → startup cleanup.
-  Do not reorder without updating the hook-ordering test.
+  Do not reorder without updating the hook-ordering test. With
+  `Lifecycle.DeferReady` the consumer performs the READY + watchdog step by
+  calling `Server.MarkReady`; Start then skips it. With
+  `Lifecycle.DeferReady` the consumer performs the READY + watchdog step by
+  calling `Server.MarkReady`; Start then skips it.
 - Metric names are parameterized (`FlightRecorderOptions.MetricPrefix`);
   `project-discovery-daemon` passes `project_discovery` to keep its metric
   names stable — do not rename the suffixes.

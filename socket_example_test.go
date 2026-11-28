@@ -90,3 +90,40 @@ func ExampleNewSocketServer() {
 	// hello from go-daemon
 	// <nil>
 }
+
+// ExampleServer_MarkReady shows the deferrable READY contract for a daemon
+// whose readiness is more than "the socket listens": with DeferReady the
+// lifecycle holds back sd_notify READY=1 and the watchdog, and the daemon
+// calls MarkReady once its own warm-up finished. Until then a Type=notify
+// service stays "activating".
+func ExampleServer_MarkReady() {
+	srv := NewSocketServer("daemon.sock")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		errCh <- srv.Start(ctx, Lifecycle{
+			Handler:    http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}),
+			DeferReady: true,
+			OnListen: func(lctx context.Context) {
+				go func() {
+					// ... warm the cache, verify the upstream, then:
+					srv.MarkReady(lctx)
+				}()
+			},
+		})
+	}()
+
+	fmt.Println("started; READY is the daemon's own call")
+	cancel()
+
+	if err := <-errCh; err != nil {
+		fmt.Println("start:", err)
+	}
+
+	// Output:
+	// started; READY is the daemon's own call
+}
