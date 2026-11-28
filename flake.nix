@@ -8,6 +8,7 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+
   };
 
   outputs =
@@ -97,6 +98,29 @@
             );
             meta.description = description;
           };
+          # The release gate: every check CI runs on a push, in one command
+          # with one verdict. It ships in the devShell and NOT as a flake
+          # app on purpose: `nix run` chdirs into the store copy of the
+          # flake, which has no git history for the docs battery and cannot
+          # report the checkout it judged. Logic lives in
+          # scripts/release-check.sh; run it with `nix develop -c release-check`.
+          gate = pkgs.writeShellApplication {
+            name = "release-check";
+            runtimeInputs = [
+              goPkg
+              pkgs.golangci-lint
+              pkgs.govulncheck
+              pkgs.actionlint
+              pkgs.dprint
+              pkgs.python3
+            ];
+            text = with goEnv; ''
+              export GOWORK="${GOWORK}"
+              export GOTOOLCHAIN="${GOTOOLCHAIN}"
+              ${lib.getExe pkgs.bash} ${./scripts/release-check.sh}
+            '';
+          };
+
         in
         {
           packages = {
@@ -160,6 +184,7 @@
                 pkgs.gopls
                 pkgs.actionlint
                 pkgs.dprint
+                gate
               ];
             }
             // goEnv

@@ -12,14 +12,15 @@ CI builds with 1.27.4 because earlier patches carry CVE-2026-97054) and
 every gate. From a checkout with nix installed:
 
 ```bash
-nix develop          # shell with go, golangci-lint, dprint, govulncheck, actionlint
+nix develop                          # shell with go, golangci-lint, dprint, govulncheck, actionlint
+nix develop -c release-check         # every CI gate in order, one verdict (run before a push or a tag)
 nix build .#default  # hermetic build (also catches a stale vendorHash)
 nix flake check --no-build --all-systems  # evaluate every listed system (CI runs this)
 nix run .#test       # go test ./... -race -count=1
 nix run .#lint       # golangci-lint run ./...
 nix run .#check-readme     # compile the README quickstart snippet
 nix run .#check-docs       # dprint, row completeness, strikes, FEATURES counts
-docs-gates run .            # full docs-health battery (freshness, annotate, glossary)
+nix run github:Artmann-Technologies/docs-gates/bfdefbaf73d668fd4b2aab787ddecee7dc046d56 -- run .  # full docs-health battery, the rev CI pins
 nix fmt              # format nix files
 nix develop -c dprint fmt  # format markdown/json/yaml
 ```
@@ -35,9 +36,26 @@ golangci-lint fmt && golangci-lint run ./...
 
 ## Before you open a PR
 
-- Every gate above must pass; CI runs the same checks (build, vet, race
-  suite with an 80% coverage floor, vulnerability scan, lint, README
-  compile check, nix build + `nix flake check --no-build --all-systems`).
+- Every gate above must pass; `nix develop -c release-check` runs exactly
+  the CI list, and CI runs the same checks (build, vet, race suite with an
+  80% coverage floor, vulnerability scan, lint, README compile check, nix
+  build + `nix flake check --no-build --all-systems`, both docs gates).
+
+## Releases
+
+A release is an annotated tag on a `master` commit whose CI run is green:
+
+```bash
+nix develop -c release-check     # the same gates CI runs, on this tree
+git tag -a v0.X.Y -m "v0.X.Y"
+git push origin v0.X.Y
+```
+
+Pushing a `v*` tag runs the full CI workflow on the tagged tree; the Go
+module proxy serves the version once that run is green. Never move or
+re-tag a published version: a released wire shape is a contract, so a fix
+goes into the next version.
+
 - Lifecycle ordering is a contract — see the `Lifecycle` doc comment in
   `socket.go`. Do not reorder stages; the hook-ordering test pins it.
 - Content-negotiation behavior, doc comments, and

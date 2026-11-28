@@ -148,7 +148,7 @@ func TestSocketServer_ServesAndShutsDownGracefully(t *testing.T) {
 	mux := healthMux()
 	mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("hi")) })
 
-	socketPath := filepath.Join(t.TempDir(), "serve.sock")
+	socketPath := filepath.Join(socketTempDir(t), "serve.sock")
 
 	_, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: mux})
 
@@ -177,7 +177,7 @@ func TestSocketServer_ServesAndShutsDownGracefully(t *testing.T) {
 func TestSocketServer_CreatesSocketDirWithMode(t *testing.T) {
 	t.Parallel()
 
-	root := t.TempDir()
+	root := socketTempDir(t)
 	socketPath := filepath.Join(root, "nested", "deeper", "daemon.sock")
 
 	_, cancel, errCh := runServerUntilListening(t, socketPath, Lifecycle{Handler: healthMux()})
@@ -201,7 +201,7 @@ func TestSocketServer_CreatesSocketDirWithMode(t *testing.T) {
 func TestSocketServer_CustomSocketMode(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "mode.sock")
+	socketPath := filepath.Join(socketTempDir(t), "mode.sock")
 
 	_, cancel, errCh := runServerUntilListening(
 		t,
@@ -225,7 +225,7 @@ func TestSocketServer_CustomSocketMode(t *testing.T) {
 func TestSocketServer_HookOrdering(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "hooks.sock")
+	socketPath := filepath.Join(socketTempDir(t), "hooks.sock")
 
 	var mu sync.Mutex
 
@@ -308,7 +308,7 @@ func TestSocketServer_StartupErrorContinues(t *testing.T) {
 
 	onListenRan := false
 
-	socketPath := filepath.Join(t.TempDir(), "startup-err.sock")
+	socketPath := filepath.Join(socketTempDir(t), "startup-err.sock")
 
 	srv := NewSocketServer(socketPath, WithHealthPath("/health"))
 
@@ -366,7 +366,7 @@ func getOverSocketQuiet(_ *testing.T, socketPath, path string, timeout time.Dura
 func TestSocketServer_StaleSocketRemoved(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "stale.sock")
+	socketPath := filepath.Join(socketTempDir(t), "stale.sock")
 
 	// A leftover plain file (e.g. after a crash) blocks listen if not removed.
 	if err := os.WriteFile(socketPath, []byte("stale"), 0o600); err != nil {
@@ -392,7 +392,7 @@ func TestSocketServer_LiveSocketKept(t *testing.T) {
 
 	mux := healthMux()
 
-	socketPath := filepath.Join(t.TempDir(), "live.sock")
+	socketPath := filepath.Join(socketTempDir(t), "live.sock")
 
 	_, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: mux})
 
@@ -415,7 +415,7 @@ func TestSocketServer_LiveSocketKept(t *testing.T) {
 func TestSocketServer_HandlerRequired(t *testing.T) {
 	t.Parallel()
 
-	srv := NewSocketServer(filepath.Join(t.TempDir(), "nil-handler.sock"))
+	srv := NewSocketServer(filepath.Join(socketTempDir(t), "nil-handler.sock"))
 
 	err := srv.Start(context.Background(), Lifecycle{})
 	if !errors.Is(err, ErrHandlerRequired) {
@@ -505,7 +505,7 @@ var errChmodDenied = errors.New("chmod denied")
 func TestSocketServer_ChmodErrorSurfaces(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "chmod-fail.sock")
+	socketPath := filepath.Join(socketTempDir(t), "chmod-fail.sock")
 
 	srv := NewSocketServer(socketPath)
 	srv.chmodSocket = func(string, fs.FileMode) error { return errChmodDenied }
@@ -550,7 +550,7 @@ func TestSocketServer_ServeErrorRunsShutdownHooks(t *testing.T) {
 	// WithListener hands Start a listener the test owns, so Serve itself can
 	// be made to fail after it began serving (TestSocketServer_LiveSocketKept
 	// only reaches the listen step): close the listener under the server.
-	socketPath := filepath.Join(t.TempDir(), "serve-error.sock")
+	socketPath := filepath.Join(socketTempDir(t), "serve-error.sock")
 
 	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -642,7 +642,7 @@ func TestSocketServer_ServeErrorRunsShutdownHooks(t *testing.T) {
 func TestSocketServer_DrainTimeoutStillCleansUp(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "drain-timeout.sock")
+	socketPath := filepath.Join(socketTempDir(t), "drain-timeout.sock")
 
 	handlerEntered := make(chan struct{})
 
@@ -732,7 +732,7 @@ func TestSocketServer_StaleSocketRemovalFailureSurfaces(t *testing.T) {
 	// A crashed predecessor's socket in a directory the daemon cannot write
 	// to: CleanStaleSocket finds it dead but cannot remove it, so listen
 	// must surface the leftover file instead of silently replacing it.
-	dir := t.TempDir()
+	dir := socketTempDir(t)
 	socketPath := filepath.Join(dir, "daemon.sock")
 
 	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
@@ -776,11 +776,11 @@ func TestSocketServer_StaleSocketRemovalFailureSurfaces(t *testing.T) {
 func TestIsSocketAlive(t *testing.T) {
 	t.Parallel()
 
-	if IsSocketAlive(context.Background(), filepath.Join(t.TempDir(), "missing.sock"), "/health") {
+	if IsSocketAlive(context.Background(), filepath.Join(socketTempDir(t), "missing.sock"), "/health") {
 		t.Fatal("nonexistent socket must not be alive")
 	}
 
-	socketPath := filepath.Join(t.TempDir(), "alive.sock")
+	socketPath := filepath.Join(socketTempDir(t), "alive.sock")
 
 	srv, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: healthMux()})
 
@@ -796,7 +796,7 @@ func TestTransportOverSocket(t *testing.T) {
 
 	mux := healthMux()
 
-	socketPath := filepath.Join(t.TempDir(), "transport.sock")
+	socketPath := filepath.Join(socketTempDir(t), "transport.sock")
 
 	_, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: mux})
 
@@ -908,4 +908,22 @@ func TestSocketServer_Options(t *testing.T) {
 			}
 		})
 	}
+}
+
+// socketTempDir is t.TempDir for tests that bind a unix socket inside the
+// directory. t.TempDir names the directory after the test, and a long test
+// name under an equally long TMPDIR (a nix devShell's /tmp/nix-shell.XXXXXX)
+// overflows the 107-byte sun_path limit: bind then fails with "invalid
+// argument" before the code under test runs. This helper keeps the path short.
+func socketTempDir(t *testing.T) string {
+	t.Helper()
+
+	dir, err := os.MkdirTemp("", "gd") //nolint:usetesting // the short, test-name-free directory is the point
+	if err != nil {
+		t.Fatalf("create socket temp dir: %v", err)
+	}
+
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+	return dir
 }

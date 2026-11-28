@@ -123,7 +123,7 @@ func requestError(ctx context.Context, client *http.Client, body io.Reader) erro
 func deadSocketFile(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "dead.sock")
+	socketPath := filepath.Join(socketTempDir(t), "dead.sock")
 
 	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -146,7 +146,7 @@ func deadSocketFile(t *testing.T) string {
 func abandonRequests(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "abandon.sock")
+	socketPath := filepath.Join(socketTempDir(t), "abandon.sock")
 
 	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -176,7 +176,7 @@ func abandonRequests(t *testing.T) string {
 func hangForever(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "hang.sock")
+	socketPath := filepath.Join(socketTempDir(t), "hang.sock")
 
 	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -223,7 +223,7 @@ func TestClassifyTransportError_ClientErrors(t *testing.T) {
 			do: func(t *testing.T) (context.Context, error) {
 				t.Helper()
 
-				missing := filepath.Join(t.TempDir(), "missing.sock")
+				missing := filepath.Join(socketTempDir(t), "missing.sock")
 
 				return t.Context(), requestError(t.Context(), NewHTTPClient(missing, time.Second), nil)
 			},

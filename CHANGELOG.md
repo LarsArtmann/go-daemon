@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `nix develop -c release-check` runs every CI gate in order with one
+  verdict (`scripts/release-check.sh`): actionlint, build, README quickstart,
+  vet, race tests with the 80% coverage floor, govulncheck, lint, nix build,
+  the all-systems flake check, and both docs gates. A stdlib-only
+  govulncheck finding is reported and attributed to the toolchain; any
+  finding in a dependency fails the gate.
+- CI now also runs on `v*` tags (a release is verified on the tagged tree)
+  and runs the full rev-pinned docs-health battery, not only `check-docs`.
+
 - **The repository is public.** Modules now resolve through the Go proxy,
   pkg.go.dev indexes the package, and CI runs on the free tier (every
   workflow run on the private repository had failed in about three seconds
@@ -55,6 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   default JSON codec, the rule `WriteJSONWithCodec` and `WriteErrorfWithCodec`
   already applied. `ContentTypeFor(nil)` returns `application/json` instead
   of panicking.
+- Socket tests no longer build their paths from `t.TempDir()`: under a nix
+  devShell's TMPDIR a long test name overflowed the unix socket path limit
+  and the tests failed before reaching the code under test.
 
 - CI's flake gate no longer tries to build other platforms' checks: it
   builds the native package and then evaluates every listed system with

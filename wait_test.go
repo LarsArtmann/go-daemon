@@ -45,7 +45,7 @@ func doneContext(t *testing.T) context.Context {
 func listeningSocket(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "live.sock")
+	socketPath := filepath.Join(socketTempDir(t), "live.sock")
 
 	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -62,7 +62,7 @@ func listeningSocket(t *testing.T) string {
 func leftoverSocketFile(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "leftover.sock")
+	socketPath := filepath.Join(socketTempDir(t), "leftover.sock")
 
 	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", socketPath)
 	if err != nil {
@@ -83,7 +83,7 @@ func leftoverSocketFile(t *testing.T) string {
 func plainFilePath(t *testing.T) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "plain.sock")
+	socketPath := filepath.Join(socketTempDir(t), "plain.sock")
 
 	if err := os.WriteFile(socketPath, []byte("not a socket"), 0o600); err != nil {
 		t.Fatalf("write plain file: %v", err)
@@ -96,7 +96,7 @@ func plainFilePath(t *testing.T) string {
 func missingSocketPath(t *testing.T) string {
 	t.Helper()
 
-	return filepath.Join(t.TempDir(), "missing.sock")
+	return filepath.Join(socketTempDir(t), "missing.sock")
 }
 
 // serveInBackground runs a SocketServer with handler on a fresh socket,
@@ -104,7 +104,7 @@ func missingSocketPath(t *testing.T) string {
 func serveInBackground(t *testing.T, handler http.Handler) string {
 	t.Helper()
 
-	socketPath := filepath.Join(t.TempDir(), "daemon.sock")
+	socketPath := filepath.Join(socketTempDir(t), "daemon.sock")
 
 	_, cancel, errCh := runSocketServer(t, socketPath, Lifecycle{Handler: handler})
 

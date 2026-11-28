@@ -2,8 +2,11 @@ name: CI
 
 on:
   workflow_dispatch:
+  # Tags run the same jobs: a release (vX.Y.Z) is a master commit whose
+  # tree is verified once more on the tag itself, by the identical gate set.
   push:
     branches: [master]
+    tags: ["v*"]
   pull_request:
     branches: [master]
 
@@ -95,9 +98,20 @@ jobs:
         # still really built.
         run: nix build .#default && nix flake check --no-build --all-systems
 
-      - name: Documentation health
+      - name: Trust the checkout as a git directory
+        # The docs battery reads git history; a runner-owned checkout under a
+        # different uid is "dubious ownership" to git unless allow-listed.
+        run: git config --global --add safe.directory "$PWD"
+
+      - name: Documentation health (format, rows, strikes, counts)
         # The docs corpus went red for two months because no job ran this
         # (docs/status/2026-11-27_16-16 §f29). check-docs covers dprint, row
-        # completeness, strike presence, and the FEATURES counts; the fuller
-        # freshness/annotate battery runs in the session ritual.
+        # completeness, strike presence, and the FEATURES counts.
         run: nix run .#check-docs
+
+      - name: Documentation health (freshness, annotate, routing, cadence)
+        # The full ten-gate docs-health battery, rev-pinned to the same run
+        # scripts/release-check.sh performs locally, so an unharvested report
+        # item or a broken annotation fails here instead of two months later.
+        # Not a flake input on purpose: its inputs would triple flake.lock.
+        run: nix run github:Artmann-Technologies/docs-gates/bfdefbaf73d668fd4b2aab787ddecee7dc046d56 --no-write-lock-file -- run .

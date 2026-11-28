@@ -37,7 +37,7 @@ func runNotifyTest(
 		var err error
 
 		pc, err = (&net.ListenConfig{}).ListenPacket(
-			t.Context(), "unixgram", filepath.Join(t.TempDir(), "notify.sock"),
+			t.Context(), "unixgram", filepath.Join(socketTempDir(t), "notify.sock"),
 		)
 		if err != nil {
 			t.Fatalf("create unixgram listener: %v", err)
@@ -96,7 +96,7 @@ func TestNotifyReady(t *testing.T) {
 		},
 		{
 			name:        "unreachable NOTIFY_SOCKET logs and continues",
-			notifyEnv:   filepath.Join(t.TempDir(), "missing.sock"),
+			notifyEnv:   filepath.Join(socketTempDir(t), "missing.sock"),
 			wantMessage: "",
 		},
 	}
@@ -132,7 +132,7 @@ func TestNotifyStopping(t *testing.T) {
 		},
 		{
 			name:        "unreachable NOTIFY_SOCKET logs and continues",
-			notifyEnv:   filepath.Join(t.TempDir(), "missing.sock"),
+			notifyEnv:   filepath.Join(socketTempDir(t), "missing.sock"),
 			wantMessage: "",
 		},
 	}
@@ -150,7 +150,7 @@ func TestNotifyStopping(t *testing.T) {
 
 func TestNotifyFailureCounter(t *testing.T) {
 	// Cannot use t.Parallel: t.Setenv is not allowed in parallel tests.
-	t.Setenv("NOTIFY_SOCKET", filepath.Join(t.TempDir(), "missing.sock"))
+	t.Setenv("NOTIFY_SOCKET", filepath.Join(socketTempDir(t), "missing.sock"))
 
 	before := ReadNotifyCounters().NotifyFailures
 

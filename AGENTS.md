@@ -14,6 +14,7 @@ codecs, framing — no domain logic. The vocabulary lives in
 ## Essential Commands
 
 ```bash
+nix develop -c release-check   # THE gate: every CI check in order, one verdict (scripts/release-check.sh); run before every push or tag
 go build ./...
 go test ./... -race -count=1
 go vet ./...
@@ -22,7 +23,8 @@ nix build .#default         # hermetic build (all deps public — no mkPreparedS
 nix run .#test
 nix run .#check-readme      # compiles the README quickstart snippet (run from repo root)
 nix run .#check-docs        # repo docs gate: dprint check + row completeness + strike presence + FEATURES counts (scripts/check-docs.sh)
-nix run github:Artmann-Technologies/docs-gates -- run .  # full docs-health battery: freshness, annotate, routing, cadence, glossary (an installed `docs-gates` works too; see Gotchas)
+nix run github:Artmann-Technologies/docs-gates/bfdefbaf73d668fd4b2aab787ddecee7dc046d56 -- run .  # full docs-health battery, rev-pinned like CI (freshness, annotate, routing, cadence, glossary; see Gotchas)
+nix develop -c govulncheck ./...   # with the devShell's Go 1.27.3 it reports the stdlib CVE-2026-97054 finding
 bash scripts/pre-publish-audit.sh  # trust scan for repo flips: history secrets + private paths + licenses (exits 0 since the flip)
 nix flake check --no-build --all-systems  # evaluates every listed system (see Gotchas)
 nix fmt                      # nix files only; markdown/json/yaml: nix develop -c dprint fmt
@@ -32,7 +34,12 @@ The check-readme logic lives in `scripts/check-readme.sh` — the flake app
 and ci.yml both invoke that script, so edit the script only (never inline
 the awk in a second place). The docs gate logic lives in
 `scripts/check-docs.sh` for the same reason: the flake app, CI, and humans
-all run that one script.
+all run that one script. The release gate is the same idea one level up:
+`scripts/release-check.sh` is the ordered list of every CI step (actionlint,
+build, README, vet, race tests + coverage floor, govulncheck, lint, nix
+build, all-systems flake check, both docs gates), it reports every gate
+before exiting non-zero, and CI runs that list step by step. A new CI step
+is added to the script in the same commit.
 
 **The language floor is `go 1.27.2`.** v0.5.0 raised it deliberately:
 go-codec v0.3.3 declares `go 1.27.2` as its version contract, so the floor
@@ -213,8 +220,22 @@ toolchain; probe behavior, not the tag.
   FEATURES counts). The full battery is `docs-gates run .` — it adds
   freshness (newest report §f harvested), annotate (every struck item
   carries a resolvable verdict), routing, cadence, and the
-  DOMAIN_LANGUAGE stub/citation/stamp gates. Run BOTH after a docs pass;
-  CI runs the check-docs script.
+  DOMAIN_LANGUAGE stub/citation/stamp gates. `audit-all` replays the
+  ARCHIVED reports too: an archived item without a struck verdict or a
+  marker word is UNHARVESTED and fails the gate, so archive means "every
+  item annotated", not only a live-remainder banner. Run BOTH after a docs
+  pass; CI runs both (the battery rev-pinned, see `release-check.sh`).
+- **`nix run` chdirs into the store copy of the flake.** A gate that must
+  judge the real checkout (git history for the docs battery, the working
+  tree under test) cannot be a flake app; ship it in the devShell and run
+  it with `nix develop -c <name>` (that is why `release-check` is not
+  `nix run .#gate`).
+- **Unix socket tests must not build paths from `t.TempDir()`.** The
+  directory is named after the test; under a nix devShell's
+  `/tmp/nix-shell.XXXXXX` TMPDIR a long test name overflows the 107-byte
+  `sun_path` limit and `bind` fails with "invalid argument" before the code
+  under test runs (seen 2026-11-28 in the release gate; ambient `go test`
+  never showed it). Use `socketTempDir(t)` (socket_test.go).
 - **`docs/DOMAIN_LANGUAGE.md` is the ubiquitous language** (core terms,
   bounded contexts, anti-language, deprecated terms). Read it before
   naming new exported API; add a term there when you introduce one.

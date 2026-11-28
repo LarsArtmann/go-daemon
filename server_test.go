@@ -300,7 +300,7 @@ func TestServer_TCP_RestartAfterShutdown(t *testing.T) {
 func TestServer_WithListener_ServesWithoutSocketManagement(t *testing.T) {
 	t.Parallel()
 
-	socketPath := filepath.Join(t.TempDir(), "caller-owned.sock")
+	socketPath := filepath.Join(socketTempDir(t), "caller-owned.sock")
 
 	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", socketPath)
 	if err != nil {
