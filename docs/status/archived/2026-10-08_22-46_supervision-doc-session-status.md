@@ -104,8 +104,8 @@ Nothing destroyed — but two honest misses:
    `docs/status/` reports (docs-health ANNOTATE) or amend the gate to a
    cutoff date. `check-docs` exit 1 since 2026-10-05.
 2. HIGH — CHANGELOG "Unreleased" entry for docs/supervision.md.
-3. HIGH — HARVEST this report's open items into TODO_LIST/ROADMAP (this file
-   is a snapshot, not a backlog).
+3. ~~HIGH — HARVEST this report's open items into TODO_LIST/ROADMAP (this file~~
+   ~~is a snapshot, not a backlog).~~ done (TODO_LIST.md and ROADMAP.md rebuilt 2026-11-27; the LISTEN_FDS idea sits in ROADMAP theme 2) (docs-health pass 2026-11-28)
 4. MED — AGENTS.md bullet: supervisor recommendations live in
    docs/supervision.md; link it instead of re-deriving.
 5. MED — Decide FEATURES.md policy for docs pages (row vs out of inventory).
@@ -115,11 +115,11 @@ Nothing destroyed — but two honest misses:
    covered by nice; one sentence today, deserves a subsection).
 8. MED — Add systemd socket activation (LISTEN_FDS) to ROADMAP as a raw
    idea; note in supervision.md that it is unsupported today.
-9. LOW — CONTRIBUTING.md cross-link to supervision doc.
+9. ~~OW — CONTRIBUTING.md cross-link to supervision doc.~~ done (CONTRIBUTING.md links `docs/supervision.md`) (docs-health pass 2026-11-28)
 10. LOW — Link-rot gate for relative md links (README → docs/supervision.md).
 11. LOW — docs/ index or README docs list (decisions, runbooks,
     supervision).
-12. LOW — Consider `Type=notify-reload`/RELOAD support as a ROADMAP idea.
+12. ~~LOW — Consider `Type=notify-reload`/RELOAD support as a ROADMAP idea.~~ routed to ROADMAP.md (theme 2, raw idea: Type=notify-reload and RELOAD support) (docs-health pass 2026-11-28)
 13. MED — Verify (via TODO_LIST, not assumed): watchdog flake fix row from
     the 2026-10-04 report (poll-based assertion) — still open?
 14. MED — Verify: nil-logger contract test (f1, 2026-10-05 report) — done?
@@ -135,8 +135,8 @@ Nothing destroyed — but two honest misses:
     `buildflow -s nix-hash-fix --fix` (vendorHash).
 20. LOW — Consider a "docs snippets are advisory" note in CONTRIBUTING if no
     snippet gate is built.
-21. LOW — Add `systemd.exec(5)`/`sd_notify(3)` man-page references to
-    SECURITY or docs footer for discoverability.
+21. ~~LOW — Add `systemd.exec(5)`/`sd_notify(3)` man-page references to~~
+    ~~SECURITY or docs footer for discoverability.~~ routed to TODO_LIST.md (Cite sd_notify(3) in `docs/supervision.md` next to its existing systemd.exec(5) reference) (docs-health pass 2026-11-28)
 22. LOW — ROADMAP: tmpfiles helper or NixOS module template generator?
     (probably YAGNI — decide at harvest).
 23. LOW — Roadmap idea from session: expose socket path in $NOTIFY messages

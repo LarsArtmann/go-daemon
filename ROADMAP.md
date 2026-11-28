@@ -69,6 +69,19 @@ tag-CI); and an art-dupl accepted-clone baseline gate (assert exactly the
 negotiation `default:` pair, fail on new clones) so clone detection becomes
 regression-catching instead of advisory.
 
+Pointers harvested 2026-11-28 from the archived reports: go-sse's status
+archive hygiene (auditing the pre-09-29 fully resolved reports into its
+archive), a `GOTOOLCHAIN=auto` pinning policy doc, the remaining
+coverage-floor, tag-CI and fuzz-soak items, the flake-update weekly
+workflow's golangci cross-check against the directive-floor policy, and a
+sweep for stale git worktree entries; go-datastar's smoke app caller in CI
+once it gains runnable examples and a check that `datastartest` still pins
+ssetest v0.4.0; pdd's post-push status entry for the v0.5.0 bump per its own
+reporting convention and its copy of the same-shape test pattern; the
+crush-config docs-health workflow note that annotate-tool output must
+survive `dprint fmt`; and an art-dupl accepted-clone baseline gate that also
+surfaces filtered-suppressed groups on review runs.
+
 ### 4. Public presence
 
 The repository is public since 2026-11-27. The store front is the minimum

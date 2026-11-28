@@ -123,17 +123,17 @@ Nothing shipped broken. The honest failure-mode entry:
 
 **Fix now (code correctness)**
 
-1. Register flight-recorder metrics only after `flightrecorder.New` succeeds
-   (or `prometheus.Register` + unregister-on-failure) — flightrecorder.go:216
-   vs :265. [TODO_LIST]
+1. ~~Register flight-recorder metrics only after `flightrecorder.New` succeeds~~
+   ~~(or `prometheus.Register` + unregister-on-failure) — flightrecorder.go:216~~
+   ~~vs :265. [TODO_LIST]~~ routed to TODO_LIST.md (Register flight-recorder metrics only after flightrecorder.New succeeds; `flightrecorder.go` still calls reg.MustRegister first) (docs-health pass 2026-11-28)
 2. Add regression test: failed `NewFlightRecorder` leaves the registry clean;
    retry with the same registry does not panic. [TODO_LIST]
-3. Gate the in-flight sse_test.go refactor (owner-dependent): `go test ./...
-   -race` + golangci-lint once committed. [TODO_LIST, coordinate first]
+3. ~~Gate the in-flight sse_test.go refactor (owner-dependent): `go test ./...~~
+   ~~-race` + golangci-lint once committed. [TODO_LIST, coordinate first]~~ done (CI run 46029274863 green 2026-11-27 with go test -race and golangci-lint) (docs-health pass 2026-11-28)
 4. Confirm oversize-line error contract has test coverage:
    `errors.Is(err, bufio.ErrTooLong)` for sse.go:171. [TODO_LIST]
-5. Audit consumer call sites of `SnapshotToFile` for empty-path-on-error
-   handling (observed signature this session; usage not audited). [TODO_LIST]
+5. ~~Audit consumer call sites of `SnapshotToFile` for empty-path-on-error~~
+   ~~handling (observed signature this session; usage not audited). [TODO_LIST]~~ routed to ROADMAP.md (theme 3, cross-repo pointer: consumer call sites of SnapshotToFile) (docs-health pass 2026-11-28)
 
 **Wire up (tooling)**
 6. Add `scripts/erraudit-audit.sh` pinning the exact audit invocation (each
@@ -144,21 +144,21 @@ go-error-modernization recipe — pending question 1. [TODO_LIST]
 8. Record the 2026-10-01 erraudit baseline (26 findings → 0 actionable;
 hygiene 0/0/0, depth 3) in FEATURES.md quality notes for future diffing.
 [TODO_LIST]
-9. Pin the erraudit binary version in tooling (source of the binary is
-unverified this session). [TODO_LIST]
-10. Add message-wording stability to the release checklist (consumer
-substring-matches Validate() errors). [TODO_LIST]
+9. ~~Pin the erraudit binary version in tooling (source of the binary is~~
+~~unverified this session). [TODO_LIST]~~ routed to TODO_LIST.md (Pin the erraudit binary version in tooling and document the audit-vs-lint mode protocol; covers item 14) (docs-health pass 2026-11-28)
+10. ~~Add message-wording stability to the release checklist (consumer~~
+~~substring-matches Validate() errors). [TODO_LIST]~~ routed to TODO_LIST.md (Add message-wording stability to the release checklist: consumers substring-match Validate() errors, so error strings are API) (docs-health pass 2026-11-28)
 11. Investigate erraudit project-config support (per-cluster ignore rules) so
 audit mode needs fewer blanket flags; capability unverified. [ROADMAP]
-12. Add erraudit to the BuildFlow toolchain org-wide — pending question 1.
+12. ~~Add erraudit to the BuildFlow toolchain org-wide — pending question 1.~~ routed to ROADMAP.md (theme 3, fleet pointer: erraudit in the BuildFlow toolchain) (docs-health pass 2026-11-28)
 [ROADMAP]
 
 **Document**
 13. HARVEST this section into TODO_LIST.md / ROADMAP.md (docs-health HARVEST
 mode; most ROADMAP-marked items go there, not to TODO_LIST).
 [TODO_LIST, do first]
-14. Document the audit-vs-lint mode protocol (who runs which, when, and who
-may dismiss). [TODO_LIST]
+14. ~~Document the audit-vs-lint mode protocol (who runs which, when, and who~~
+~~may dismiss). [TODO_LIST]~~ routed to TODO_LIST.md (same row as item 9: document the audit-vs-lint mode protocol) (docs-health pass 2026-11-28)
 15. Point README/FEATURES at the error-handling contract if user-facing docs
 mention errors (unverified whether they do). [TODO_LIST]
 16. Re-run the erraudit audit after the next Go toolchain bump and compare
@@ -166,8 +166,8 @@ against the 2026-10-01 baseline (date recorded in AGENTS.md).
 [TODO_LIST, recurring]
 
 **Decide (needs owner input — see section g)**
-17. Org-wide samber/oops stance: permanent stdlib-errors for mechanism
-libraries, or transitional before oops adoption? [ROADMAP, Q2]
+17. ~~Org-wide samber/oops stance: permanent stdlib-errors for mechanism~~
+~~libraries, or transitional before oops adoption? [ROADMAP, Q2]~~ routed to ROADMAP.md (theme 3, owner decision: org-wide samber/oops stance) (docs-health pass 2026-11-28)
 18. CI gating policy for erraudit here (enforced vs advisory vs manual).
 [ROADMAP, Q1]
 19. go-error-family direct adoption for go-daemon (mechanism library may
@@ -179,23 +179,25 @@ the tool's own exit condition). [ROADMAP]
 changes (currently a documented dismissal). [ROADMAP]
 21. WriteEncoded control flow (write.go:41-56): early-return on encode error
 instead of buf.Write guarded by `err == nil`. [ROADMAP]
-22. isSocketAlive diagnosability (socket.go:383-399): bool-only; debug-log the
-failure reason. [ROADMAP]
-23. socket.go Start() `//nolint:cyclop` — fine today; extract per-stage
-functions if lifecycle grows. [ROADMAP]
+22. ~~isSocketAlive diagnosability (socket.go:383-399): bool-only; debug-log the~~
+~~failure reason. [ROADMAP]~~ routed to ROADMAP.md (theme 2, raw idea: debug-log the isSocketAlive failure reason) (docs-health pass 2026-11-28)
+23. ~~socket.go Start() `//nolint:cyclop` — fine today; extract per-stage
+functions if lifecycle grows.~~ done: the lifecycle grew (deferrable READY) and
+its READY + watchdog stage is now `Server.MarkReady` (`socket.go:255`)
+(docs-health pass 2026-11-28)
 24. Consider extracting the metric-set (snapshotsTotal + snapshotDuration)
 into its own type to make the #1 fix structural. [ROADMAP]
-25. Upstream erraudit: context_loss false-positive on Prometheus collectors
-(minimal repro: flightrecorder.go:265-267) — verify-before-filing first.
+25. ~~Upstream erraudit: context_loss false-positive on Prometheus collectors~~
+~~(minimal repro: flightrecorder.go:265-267) — verify-before-filing first.~~ routed to ROADMAP.md (theme 3, cross-repo pointer: upstream erraudit report) (docs-health pass 2026-11-28)
 [ROADMAP]
-26. Upstream erraudit: generic_return noise on pure-wrap methods — same gate.
+26. ~~Upstream erraudit: generic_return noise on pure-wrap methods — same gate.~~ routed to ROADMAP.md (theme 3, cross-repo pointer: upstream erraudit report, same gate as item 25) (docs-health pass 2026-11-28)
 [ROADMAP]
 27. Ensure test for `NewFlightRecorder` failure path exists alongside #2.
 [TODO_LIST, with #2]
 28. Sanity-check placement of the new AGENTS.md bullets in the next
 docs-health pass (Conventions vs Gotchas). [TODO_LIST]
-29. Re-run `nix run .#check-docs` over the merged state of this report +
-concurrent sse_test.go work once committed. [TODO_LIST]
+29. ~~Re-run `nix run .#check-docs` over the merged state of this report +~~
+~~concurrent sse_test.go work once committed. [TODO_LIST]~~ done (check-docs runs in the CI nix job, `.github/workflows/ci.yml`) (docs-health pass 2026-11-28)
 30. Confirm the foreign AGENTS.md bullet (ParseSSEData dispatch-shape) and
 this session's bullet don't overlap/contradict in the next docs pass.
 [TODO_LIST]

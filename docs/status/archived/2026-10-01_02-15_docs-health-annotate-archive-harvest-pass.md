@@ -263,8 +263,8 @@ status-report skill: a large N is a brainstorm, not a commitment list._
 38. Verify the auto-daemon swept the archived-banner link fix cleanly and the
     archived file's links resolve in the committed tree (in-flight at report
     time).
-39. Add "annotate-tool output must survive `dprint fmt`" to the docs-health
-    skill's workflow note (probe-first rule), fed by this session's §d1.
+39. ~~Add "annotate-tool output must survive `dprint fmt`" to the docs-health~~
+    ~~skill's workflow note (probe-first rule), fed by this session's §d1.~~ routed to ROADMAP.md theme 3 (crush-config: docs-health skill workflow note, annotate-tool output must survive dprint fmt) (docs-health pass 2026-11-28)
 40. Consider a tiny golden test for dprint-vs-markdown-strike behavior
     (scratch table in `docs/` or a fixture) so formatter upgrades that change
     the mangling behavior get caught by CI, not by the next annotate pass.
@@ -276,9 +276,9 @@ status-report skill: a large N is a brainstorm, not a commitment list._
 43. Sweep the remaining heuristic history: the six-message gap narrative from
     the 00-43 report plus this pass's four — candidate: a single
     `docs/history/` narrative file if the owner cares (otherwise drop).
-44. Re-run `check-rows.py` after EVERY future dprint pass over annotated
-    reports — make it muscle memory via check-docs (item 30) rather than
-    discipline.
+44. ~~Re-run `check-rows.py` after EVERY future dprint pass over annotated~~
+    ~~reports — make it muscle memory via check-docs (item 30) rather than~~
+    ~~discipline.~~ done (`scripts/check-docs.sh` runs dprint check and then check-rows in one command, and CI runs it in the nix job) (docs-health pass 2026-11-28)
 45. Watch for the first grouped dependabot PR (00-43 §f30, still bare) — its
     behavior feeds the close-and-adopt policy's first real test.
 46. If the fleet adopts the per-cell strike convention, backfill the 11-35

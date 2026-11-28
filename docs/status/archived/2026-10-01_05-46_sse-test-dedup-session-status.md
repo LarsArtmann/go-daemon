@@ -182,8 +182,8 @@ today.
    overstated claim. Impact high, effort low.
 2. Codify an accepted-clone baseline (rationale per accepted group, in the
    spirit of the erraudit known-dismissed list). Med/low.
-3. Re-baseline art-dupl at default `-t 5` and file the report under
-   docs/status for trend tracking. Low/low.
+3. ~~Re-baseline art-dupl at default `-t 5` and file the report under~~
+   ~~docs/status for trend tracking. Low/low.~~ routed to ROADMAP.md (theme 3, art-dupl accepted-clone baseline gate) (docs-health pass 2026-11-28)
 4. Sweep project-discovery-daemon for the same same-shape-test pattern (its
    content_negotiation/sse tests likely share the lineage). Med/med.
 5. Sweep remaining go-daemon test files at `-t 3` for near-miss same-shape
@@ -191,13 +191,13 @@ today.
 6. Add art-dupl to a gate script or buildflow step so same-shape test
    regrowth is caught at PR time, diffing against the baseline (item 2).
    Med/med.
-7. Document the intentional overlap between `TestParseSSEData_CorpusConformance`
-   (sseparse oracle) and the dispatch table (hand-picked spec cases) —
-   one-line cross-reference, pre-empting a future "duplicate tests?" flag.
-   Low/low.
-8. Canonicalize the art-dupl flag combo (drop `--type-aware` when
-   `--suggest-generics` is set) in any wrapper/alias so the tool's warning
-   disappears. Low/low.
+7. ~~Document the intentional overlap between `TestParseSSEData_CorpusConformance`~~
+   ~~(sseparse oracle) and the dispatch table (hand-picked spec cases) —~~
+   ~~one-line cross-reference, pre-empting a future "duplicate tests?" flag.~~
+   ~~Low/low.~~ routed to TODO_LIST.md (Add a one-line cross-reference in `sse_conformance_test.go` to the hand-picked dispatch table in `sse_test.go`) (docs-health pass 2026-11-28)
+8. ~~Canonicalize the art-dupl flag combo (drop `--type-aware` when~~
+   ~~`--suggest-generics` is set) in any wrapper/alias so the tool's warning~~
+   ~~disappears. Low/low.~~ moot: this repo has no art-dupl wrapper or alias (only the dupl linter is configured) (docs-health pass 2026-11-28)
 
 **Gate hygiene (today's misses → permanent fixes)**
 
@@ -205,12 +205,12 @@ today.
    procedure here. High/low.
 10. Edit the AGENTS.md auto-commit gotcha to "build AND lint" per (e)2.
     Med/low.
-11. Confirm whether `.golangci.yml` here enables govet; if not, keep `go vet`
-    in the chain (it ran green today, standalone). Low/low.
+11. ~~Confirm whether `.golangci.yml` here enables govet; if not, keep `go vet`~~
+    ~~in the chain (it ran green today, standalone). Low/low.~~ resolved: govet stays in the golangci-lint v2 default set (no default override in `.golangci.yml`) and go vet runs in `.github/workflows/ci.yml` (docs-health pass 2026-11-28)
 12. Verify the daemon committed today's post-lint-fix state (sse_test.go fix
     - AGENTS.md conventions + this report) with sane diffs. Low/low.
-13. Resolve the descriptive-commit policy (question g1) and record the
-    answer in AGENTS.md. Med/low.
+13. ~~Resolve the descriptive-commit policy (question g1) and record the~~
+    ~~answer in AGENTS.md. Med/low.~~ done (AGENTS.md gotcha: commit descriptively yourself when a change matters) (docs-health pass 2026-11-28)
 
 **Docs & memory**
 
@@ -218,8 +218,8 @@ today.
     docs/status reports' section-f items into TODO_LIST.md/ROADMAP.md —
     verify against code first (AGENTS.md warns many are already done).
     High/med.
-15. Run `nix run .#check-docs` after today's markdown edits (AGENTS.md
-    conventions + this report). Low/low.
+15. ~~Run `nix run .#check-docs` after today's markdown edits (AGENTS.md~~
+    ~~conventions + this report). Low/low.~~ done (check-docs runs in the CI nix job, `.github/workflows/ci.yml`) (docs-health pass 2026-11-28)
 16. Record the accepted-clone decision (negotiation.go `default:` pair) in
     TODO_LIST/DECISIONS so it survives AGENTS.md pruning. Low/low.
 17. Confirm FEATURES.md doesn't enumerate removed test names (repo grep is
@@ -237,9 +237,9 @@ today.
     per the seed-only corpus policy. Med/low.
     ~~21. Table-drive any additional same-shape groups the `-t 3` sweep (item 5)~~ done — no additional same-shape groups at -t 1 (re-run 2026-11-27)
     finds. Med/med.
-21. If any external CI/script `-run` filter targeted the old test names,
-    update it — repo-internal grep is clean, external references unknown.
-    Low/low.
+21. ~~If any external CI/script `-run` filter targeted the old test names,~~
+    ~~update it — repo-internal grep is clean, external references unknown.~~
+    ~~Low/low.~~ moot: no -run filter exists in `.github/workflows/ci.yml`, the scripts directory or flake.nix (docs-health pass 2026-11-28)
 22. Restore the lost spec-WHY (dispatch fires only on blank line) either in
     the row name or `ParseSSEData`'s doc comment — owner's call on comment
     policy. Low/low.
@@ -250,8 +250,8 @@ today.
     GOPRIVATE refs are removed — finish the runbook steps.
 25. Next Dependabot PR: merge + immediate `buildflow -s nix-hash-fix --fix`
     per the close-and-adopt policy; never wait on the bot for nix.
-26. dprint pin hygiene: if `dprint config update` is ever run, restore the
-    `plugins.dprint.dev` URL scheme and confirm zero churn via `nix fmt`.
+26. ~~dprint pin hygiene: if `dprint config update` is ever run, restore the~~
+    ~~`plugins.dprint.dev` URL scheme and confirm zero churn via `nix fmt`.~~ verified: dprint.json still pins the plugins.dprint.dev URLs (checked 2026-11-28) (docs-health pass 2026-11-28)
 27. Keep sseparse test-only (no non-test imports) — it was adopted that way
     deliberately to avoid GOPRIVATE/vendor cost.
 28. `nix build` remains the only gate that catches vendorHash drift — none
@@ -263,8 +263,8 @@ today.
 
 **Tooling ideas**
 
-31. If art-dupl is ours: add a flag to surface filtered-suppressed groups
-    for review runs (today's blind spot is a tool UX gap too). Low/med.
+31. ~~If art-dupl is ours: add a flag to surface filtered-suppressed groups~~
+    ~~for review runs (today's blind spot is a tool UX gap too). Low/med.~~ routed to ROADMAP.md theme 3 (art-dupl accepted-clone baseline gate: surface filtered-suppressed groups for review runs) (docs-health pass 2026-11-28)
 32. Small `scripts/` wrapper (or buildflow step) that runs art-dupl against
     the accepted baseline and fails only on NEW harmful clones. Med/med.
 33. Store future scan reports as `--html` under docs/status for trend
@@ -272,23 +272,23 @@ today.
 
 **Consumer/ecosystem**
 
-34. Next pdd bump of go-daemon: today's change is test-only — no API change,
-    vendorHash unaffected; just confirm CI green. Low/low.
-35. Check whether pdd carries the old copy-pasted test shape (same as item 4,
-    consumer side). Med/med.
+34. ~~Next pdd bump of go-daemon: today's change is test-only — no API change,~~
+    ~~vendorHash unaffected; just confirm CI green. Low/low.~~ done (pdd commit 5cbc99c bumped go-daemon to v0.5.0 with its suite green) (docs-health pass 2026-11-28)
+35. ~~Check whether pdd carries the old copy-pasted test shape (same as item 4,~~
+    ~~consumer side). Med/med.~~ routed to ROADMAP.md theme 3 (pdd: check for the copy-pasted same-shape test pattern, consumer side) (docs-health pass 2026-11-28)
 36. go-codec pin policy: untouched today; any bump follows the primary
     consumer's versions first. Low/low.
 
 **Nice-to-have / brainstorm**
 
-37. Tag dispatch-table rows with the spec section they pin (WHATWG
-    eventstream processing) — in names or docs, owner's preference. Low/low.
-38. `ExampleParseSSEData` for pkg.go.dev, seeded from the table rows.
-    Low/med.
+37. ~~Tag dispatch-table rows with the spec section they pin (WHATWG~~
+    ~~eventstream processing) — in names or docs, owner's preference. Low/low.~~ routed to TODO_LIST.md (Tag the `sse_test.go` dispatch-table rows with the WHATWG section they pin) (docs-health pass 2026-11-28)
+38. ~~`ExampleParseSSEData` for pkg.go.dev, seeded from the table rows.~~
+    ~~Low/med.~~ done (`sse_example_test.go` carries ExampleParseSSEData) (docs-health pass 2026-11-28)
 39. Extract a `collectEvents` test helper only if a 4th inline closure usage
     appears (rule of three — currently inline is clearer). Low/low.
-40. Re-run art-dupl after the daemon commits today's remaining edits to
-    confirm the final tree is clone-clean (expected yes). Low/low.
+40. ~~Re-run art-dupl after the daemon commits today's remaining edits to~~
+    ~~confirm the final tree is clone-clean (expected yes). Low/low.~~ superseded by the ROADMAP.md art-dupl accepted-clone baseline gate (theme 3) (docs-health pass 2026-11-28)
 
 ## g) Questions I Cannot Figure Out Myself
 

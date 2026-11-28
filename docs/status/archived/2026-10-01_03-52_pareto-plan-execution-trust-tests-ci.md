@@ -159,22 +159,22 @@ _Owner gates first (1–6), then verification debt (7–13), then hardening
 4. pkg.go.dev render check (post-flip; closes the 🔵 row).
 5. pdd: drop GOPRIVATE + `git+ssh` pin → plain input + vendorHash re-derive (post-flip, in pdd).
 6. Prove the check-readme negative test with a genuinely broken fixture (assert pre-state first).
-7. First real CI run: validate check-readme + nix job on an actual runner (installer pin v23, cold-start timing).
+7. ~~First real CI run: validate check-readme + nix job on an actual runner (installer pin v23, cold-start timing).~~ done (CI run 46029274863 green on master 2026-11-27: check-readme and nix jobs) (docs-health pass 2026-11-28)
 8. Diagnose the ghost-edit failure mode (edit tool vs daemon race) instead of only working around it.
-9. Add shellcheck + `bash -n` gates for `scripts/*.sh`.
-10. Wire check-docs into CI (currently local-only).
-11. Wire pre-publish-audit.sh as a `workflow_dispatch` job.
-12. Add gitleaks as a scheduled CI job (post-billing).
+9. ~~Add shellcheck + `bash -n` gates for `scripts/*.sh`.~~ routed to TODO_LIST.md (Add shellcheck and bash -n gates for the scripts directory, as a flake app and a CI step) (docs-health pass 2026-11-28)
+10. ~~Wire check-docs into CI (currently local-only).~~ done (`.github/workflows/ci.yml` nix job runs check-docs) (docs-health pass 2026-11-28)
+11. ~~Wire pre-publish-audit.sh as a `workflow_dispatch` job.~~ routed to TODO_LIST.md (Run scripts/pre-publish-audit.sh as a workflow_dispatch CI job) (docs-health pass 2026-11-28)
+12. ~~Add gitleaks as a scheduled CI job (post-billing).~~ routed to TODO_LIST.md (Add gitleaks as a scheduled CI job; CI billing is back since 2026-11-27) (docs-health pass 2026-11-28)
 13. Cover `Start()`'s chmod-failure branch (read-only-parent trick) or document why never.
 14. Decide on an injectable listener factory to cover the serve-error branch (API change — needs the owner's API-policy answer).
-15. Add nix store caching to the CI nix job (magic-nix-cache or cachix) before minutes matter.
-16. Make the FEATURES-count gate pin the row total, not just per-label counts.
+15. ~~Add nix store caching to the CI nix job (magic-nix-cache or cachix) before minutes matter.~~ routed to TODO_LIST.md (Add nix store caching, magic-nix-cache or cachix, to the CI nix job) (docs-health pass 2026-11-28)
+16. ~~Make the FEATURES-count gate pin the row total, not just per-label counts.~~ routed to TODO_LIST.md (Make the FEATURES count gate in `scripts/check-docs.sh` pin the row total, not only per-label counts) (docs-health pass 2026-11-28)
 17. Give check-docs strike-presence a freshness rule for brand-new reports.
     ~~19. Add `.readmecheck/` to .gitignore (crash-leave protection — the trap does not run on SIGKILL).~~ done — already present in .gitignore (verified 2026-11-27)
 18. Re-run `scripts/check-rows.py` over the two known by-design mixed historical tables if the owner ratifies splitting open rows into separate tables (supersedes the old §g2 question).
 19. Ratify my unilateral check-docs scoping decision (living docs only for row completeness) — it resolved the old open question by implementation.
 20. Verify the 00-43 report's still-unstruck residuals (§f14 daemon-sweep gate, §f30 grouped dependabot PR) against current reality and strike or harvest them.
-21. Grouped dependabot config (minor/patch groups) — the old §f30 item, still open upstream.
+21. ~~Grouped dependabot config (minor/patch groups) — the old §f30 item, still open upstream.~~ done (`.github/dependabot.yml` groups minor-and-patch and actions) (docs-health pass 2026-11-28)
 22. Sync policy note for the vendored `scripts/check-rows.py` vs the skill asset (they can drift; pick a home of truth).
 23. Upstream the check-docs shell pattern into the docs-health skill assets (routed to crush-config repo).
 24. Record this session's cross-project lessons (dprint-in-gates, ghost edits, negative-test pre-state) in crush-config `references/lessons.md`.
@@ -183,16 +183,16 @@ _Owner gates first (1–6), then verification debt (7–13), then hardening
 27. Consider a package-level godoc Example (overview example) alongside the two function examples.
 28. CONTRIBUTING: add check-docs + pre-publish-audit to the contributor command list.
 29. README: decide on badges (CI status is meaningless until CI runs; after flip they become useful).
-30. ROADMAP: harvest new raw ideas from this session (nix cache strategy, CI expansion, script-gate suite).
+30. ~~ROADMAP: harvest new raw ideas from this session (nix cache strategy, CI expansion, script-gate suite).~~ routed to TODO_LIST.md (this section's items 9, 15 and 46 carry the three ideas) (docs-health pass 2026-11-28)
 31. FEATURES.md: decide whether repo tooling (check-docs, pre-publish-audit) deserves a row — arguably meta, not product.
 32. SECURITY.md: revisit the supported-versions table at every release cut.
 33. Memo: add the private-minutes cost data point if the owner wants a billing number to decide with.
 34. Re-pin go-daemon rev in pdd AFTER the flip so pdd's floor bump includes the trust-scan docs (decide whether docs-only rev bumps are worth it).
-35. Decide whether a docs-only v0.2.1 re-tag ever makes sense (probably not — CHANGELOG carries it).
-36. Watch for a next sseparse tag (T21 standing row; dependabot will open the PR).
+35. ~~Decide whether a docs-only v0.2.1 re-tag ever makes sense (probably not — CHANGELOG carries it).~~ decided: no docs-only re-tag, no v0.2.1 tag exists and v0.3.0 followed v0.2.0 (docs-health pass 2026-11-28)
+36. ~~Watch for a next sseparse tag (T21 standing row; dependabot will open the PR).~~ routed to ROADMAP.md (open question: SSE corpus regeneration cadence on the next sseparse tag) (docs-health pass 2026-11-28)
 37. Tag-protect master post-flip (require CI green before push to master) — flip-tail candidate, needs billing/CI running.
     ~~40. Clean up `/tmp/gd-scan/` scratch (harmless, but hygiene).~~ done — scratch lived outside the repo; no tracked artifact
-38. Consider signing tags/commits policy (owner decision; the repo currently has no signing requirement).
+38. ~~Consider signing tags/commits policy (owner decision; the repo currently has no signing requirement).~~ routed to ROADMAP.md (theme 4, owner decision on signed tags) (docs-health pass 2026-11-28)
 39. Add a `docs/reviews/` pass later: this session's gates assume TODO_LIST/FEATURES formats — document those invariants for contributors.
 40. Run a full `nix flake check --all-systems` in CI as a matrix leg (evaluates darwin on a linux runner — cheap eval-only check).
 41. Bench the SSE parser (ROADMAP theme 2) — untouched, still valuable.
@@ -200,7 +200,7 @@ _Owner gates first (1–6), then verification debt (7–13), then hardening
 43. Cross-repo pointers theme 3 (README links out to consumers) — post-flip natural fit.
 44. Attempt to cover `WriteEncoded`'s Content-Type path for CBOR explicitly (only JSON stub asserted this session).
 45. Add a test asserting the `Vary` header is _added_ (not set) across multiple WriteEncoded calls (the CHANGELOG claim is untested).
-46. Fuzz or property-test `check-rows.py` against adversarial tables (it guards docs; it deserves its own negative corpus).
+46. ~~Fuzz or property-test `check-rows.py` against adversarial tables (it guards docs; it deserves its own negative corpus).~~ routed to TODO_LIST.md (Add a negative corpus or property test for `scripts/check-rows.py`) (docs-health pass 2026-11-28)
 47. After the flip: re-run `scripts/pre-publish-audit.sh` and strike the private-path known-red note from AGENTS.
 
 ## g) THREE QUESTIONS ONLY YOU CAN ANSWER

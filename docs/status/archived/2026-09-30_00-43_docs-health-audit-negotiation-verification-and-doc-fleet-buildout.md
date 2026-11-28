@@ -195,24 +195,24 @@ routing rigor before anyone treats them as commitments._
 **Cross-repo / fleet (31–50 — pointers, mostly other repos' queues):**
 
 31. pdd: verify content_negotiation.go tests still pass against go-daemon v0.1.1 + rev-pin (compile-safe by construction; tests are the remaining check).
-32. pdd: after the tag decision, re-pin its flake to the new go-daemon rev + re-derive vendorHash.
+32. ~~pdd: after the tag decision, re-pin its flake to the new go-daemon rev + re-derive vendorHash.~~ done (pdd commit 5cbc99c bumped go-daemon to v0.5.0 with the vendorHash repaired; go-daemon is public, so no flake rev pin is needed any more) (docs-health pass 2026-11-28)
 33. go-codec: confirm v0.3.0's changelog for breaking changes before item 2's bump.
 34. go-codec: the dangling `testdata_test.go` gopls `unusedfunc` diagnostic (11:35 §f45) — still their queue.
 35. go-cqrs-lite: transport negotiation adoption decision (drives the go-codec extraction trigger; ROADMAP theme 3).
 36. Fleet: one-page consumer-chain picture with current pins (pdd → go-daemon → go-codec/go-flightrecorder/go-sse → go-datastar).
 37. Fleet: "own + consumer vendorHash" lesson into crush-config references/lessons.md (09-01 §e2, still uncommitted there).
-38. Fleet: auto-commit-daemon descriptive-message habit — share this session's caf1f0c/378607f incident as the docs-layer case study.
+38. ~~Fleet: auto-commit-daemon descriptive-message habit — share this session's caf1f0c/378607f incident as the docs-layer case study.~~ routed to ROADMAP.md (theme 3, fleet pointer) (docs-health pass 2026-11-28)
 39. go-sse: sseparse corpus regeneration cadence (generator exists, no trigger) — pairs with ROADMAP open question 3.
-40. go-sse: remaining 07-03 §f items routed there (coverage floors, tag-CI verification, fuzz soak) — untouched here, by design.
+40. ~~go-sse: remaining 07-03 §f items routed there (coverage floors, tag-CI verification, fuzz soak) — untouched here, by design.~~ routed to ROADMAP.md theme 3 (go-sse: coverage floors, tag-CI verification, fuzz soak) (docs-health pass 2026-11-28)
 41. go-datastar: v0.6.2 re-cut decision (frozen red tag-CI) — untouched, their queue.
 42. buildflow: nix-hash-fix UX (intermediate builds reported as "failed" — 09-01 §f45) — untouched, its queue.
 43. crush-config: consider a status-report asset note that Markdown override is a recurring user pattern (two repos in a row now flagged it).
 44. Fleet: document the "GOTOOLCHAIN=local + ambient 1.26 gopls" triage (go-daemon AGENTS.md now has the pre-check line; siblings could copy it).
-45. pdd: publish the negotiation-pattern docs back-port (ROADMAP theme 3) when its docs pass next runs.
-46. Fleet: agree the dependabot-on-vendorHash close-and-adopt policy once, per repo (this repo's item 30 generalizes).
+45. ~~pdd: publish the negotiation-pattern docs back-port (ROADMAP theme 3) when its docs pass next runs.~~ routed to ROADMAP.md (theme 3 already carries the pdd docs back-port pointer) (docs-health pass 2026-11-28)
+46. ~~Fleet: agree the dependabot-on-vendorHash close-and-adopt policy once, per repo (this repo's item 30 generalizes).~~ routed to ROADMAP.md (theme 3, fleet pointer; this repo's close-and-adopt policy is already in AGENTS.md) (docs-health pass 2026-11-28)
 47. go-sse: consider corpus-oracle cross-links (their sseparse README ↔ go-daemon conformance test) — marketing-grade evidence both ways.
 48. buildflow: "verify README examples compile" as an optional buildflow step (this session hand-rolled it; it generalizes).
-49. Fleet: session-handoff MEASURED-vs-CLAIMED template (07-03 §f23) — this report's gates-at-close header is that pattern; make it standard.
+49. ~~Fleet: session-handoff MEASURED-vs-CLAIMED template (07-03 §f23) — this report's gates-at-close header is that pattern; make it standard.~~ routed to ROADMAP.md (theme 3, fleet pointer) (docs-health pass 2026-11-28)
 50. Celebrate: the doc fleet is complete (six living docs, all fresh, all claims verified), master is gate-green end-to-end, and the negotiation overhaul finally has its verification receipt.
 
 ## g) Questions I CANNOT figure out myself

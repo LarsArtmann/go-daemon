@@ -141,17 +141,17 @@ Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken
 
 1. Push the trailing `master` commits (docs truth, lock, coverage, this report) after re-running the fast gate.
 2. Re-run `nix build .#default` and `nix flake check --all-systems` on the exact final `master` (new nixpkgs lock) and record the result here or in the TODO row.
-3. Decide g2 (force-with-lease the rebased branch tips so #5–#8 show MERGED, or keep CLOSED-with-pointer).
+3. ~~Decide g2 (force-with-lease the rebased branch tips so #5–#8 show MERGED, or keep CLOSED-with-pointer).~~ routed to ROADMAP.md (theme 4, owner call: PR 5-8 are still CLOSED on GitHub and their branches still exist on origin) (docs-health pass 2026-11-28)
 4. Decide g3 (keep go-codec v0.3.3 + `go 1.27.2`, or downgrade to v0.3.1 for a `go 1.27` floor).
 5. Bump `nextd` to go-daemon v0.5.0 and `go 1.27.2`; re-derive any vendor/nix hash; run its suite.
 6. Audit `project-discovery-daemon` DTOs for `time.Duration` and nil-slice fields before its v0.5.0 bump.
-7. Bump `project-discovery-daemon` to v0.5.0, re-derive `vendorHash`, run its tests (it asserts on `Validate()` message substrings).
+7. ~~Bump `project-discovery-daemon` to v0.5.0, re-derive `vendorHash`, run its tests (it asserts on `Validate()` message substrings).~~ done (pdd commit 5cbc99c: go.mod, go.sum and the flake vendorHash repaired with buildflow, suite green) (docs-health pass 2026-11-28)
 8. Collapse pdd's JSON v1/v2 split now that the library's default is v2: replace its private `classifyTransportError` with `ClassifyTransportError`, and its hand-rolled wait loops with `WaitForSocket`/`ProbeUntilAlive`.
 9. Switch pdd's error writes to `WriteErrorfWithCodec` so its error bodies match its negotiated codec.
 10. Restore GitHub Actions billing (owner) so CI can run for `v0.5.0` and future tags.
 11. Re-run the `v0.5.0` tag workflow once billing is back; if it fails, fix forward in v0.5.1 (never move the tag).
-12. Run `govulncheck ./...` locally and record the result.
-13. Run `actionlint -no-color` locally and record the result.
+12. ~~Run `govulncheck ./...` locally and record the result.~~ done (run 2026-11-28: one stdlib finding GO-2026-6859 on Go 1.27.3; none on Go 1.27.4, which flake.nix now builds) (docs-health pass 2026-11-28)
+13. ~~Run `actionlint -no-color` locally and record the result.~~ done (actionlint -no-color run 2026-11-28, clean) (docs-health pass 2026-11-28)
 14. Run the CI coverage gate exactly (awk comparison against 80.0) and record the value.
 15. Add `govulncheck` and `actionlint` as flake apps so CI and humans run the same commands.
 16. Write `scripts/release-check.sh` chaining every gate with one exit code.
@@ -163,7 +163,7 @@ Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken
 22. Add the same round trip to the README quickstart (it currently only shows default-codec writes).
 23. Add a no-op-injection test proving `WriteErrorfWithCodec` never regresses to v1 when a JSONv2Codec is passed.
 24. Consider `TransportErrorKind` gaining `PermissionDenied` (EACCES) for socket-mode mistakes. **→ ROADMAP theme 2 (TransportErrorKind PermissionDenied)**
-25. Consider `ProbeUntilAlive` taking a per-probe timeout option instead of the fixed `DefaultProbeTimeout`.
+25. ~~Consider `ProbeUntilAlive` taking a per-probe timeout option instead of the fixed `DefaultProbeTimeout`.~~ routed to ROADMAP.md (theme 2, raw idea: a per-probe timeout option for ProbeUntilAlive; wait.go still uses DefaultProbeTimeout) (docs-health pass 2026-11-28)
 26. Consider `WaitForSocket` taking a network argument (TCP parity with `NewServer`).
 27. Add `-shuffle=on` to CI tests to catch order dependencies (two timing fixes in PR 5 hint at them).
 28. Add a nightly `-count=15` run for the timing-sensitive socket/notify tests. **→ TODO_LIST documentation and gates (nightly timing run)**
@@ -172,8 +172,8 @@ Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken
     ~~31. Add `check-docs` to `nix flake check` or CI so it cannot rot again.~~ done — check-docs now runs in the CI nix job
     ~~32. Harvest this report's §f items into `TODO_LIST.md`/`ROADMAP.md` and strike/annotate this report.~~ done — this report's §f triaged into TODO_LIST/ROADMAP
 30. Clean up the stale worktrees under `/home/lars/projects/go-daemon-rows/` and reconcile local vs origin branches.
-31. Delete or refresh the origin branch tips for #5–#8 after g2 is decided.
-32. Decide whether the four closed PRs should instead be re-opened and merged through GitHub for auditability.
+31. ~~Delete or refresh the origin branch tips for #5–#8 after g2 is decided.~~ superseded by question g2 (section g item 2, owner call on the PR 5-8 state) (docs-health pass 2026-11-28)
+32. ~~Decide whether the four closed PRs should instead be re-opened and merged through GitHub for auditability.~~ duplicate of question g2 (section g item 2, owner call) (docs-health pass 2026-11-28)
 33. Add a `.github/workflows/release.yml` (tag-triggered) so release gates are machine-enforced. **→ TODO_LIST release follow-ups (tag-triggered release workflow)**
 34. Add a pre-push hook (build+vet+test) to defend against the auto-commit daemon shipping broken intermediate states.
     ~~38. Inspect the untracked/odd root artifacts (`coverage`, `reports/`, `result/`) and either track, ignore or remove them.~~ done — verified — coverage/reports/result and the Python caches are ignored
@@ -187,7 +187,7 @@ Nothing catastrophic: no data loss, no re-tagged or moved release tag, no broken
 40. Add a consumer smoke test script — `scripts/consumer-smoke.sh` — that runs `go get` against the newest tag in a scratch module.
 41. Decide whether `WriteJSONWithCodec`/`WriteErrorfWithCodec` should be flagged in FEATURES with their own row rather than sharing one.
     ~~48. Re-measure coverage after the consumer-driven changes and keep `FEATURES.md:13` honest.~~ done — 96.7% re-measured 2026-11-27
-42. Clean the temp artifacts from this session (`/tmp/jsonprobe`, `/tmp/release-verify-050`, `/tmp/cover.out`, `/tmp/go-daemon-v0.5.0-notes.md`).
+42. ~~Clean the temp artifacts from this session (`/tmp/jsonprobe`, `/tmp/release-verify-050`, `/tmp/cover.out`, `/tmp/go-daemon-v0.5.0-notes.md`).~~ moot: none of the four host paths exists any more (checked 2026-11-28) (docs-health pass 2026-11-28)
 43. After the `nextd` bump lands, strike the TODO row with the evidence (and update the release follow-ups table).
 
 ## g) Questions I Cannot Answer Myself

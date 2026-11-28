@@ -245,22 +245,22 @@ force-push, no commit. The honest failures:
 ## f) Up to 50 things to get done next
 
 1. Make the descriptive commit for this docs pass (or approve daemon history).
-2. Add `docs-gates run .` to CI alongside `check-docs`.
+2. ~~Add `docs-gates run .` to CI alongside `check-docs`.~~ done (`.github/workflows/ci.yml` nix job, step Documentation health (freshness, annotate, routing, cadence), rev-pinned) (docs-health pass 2026-11-28)
 3. Provision `docs-gates` as a flake input or app.
-4. Add `govulncheck` and `actionlint` flake apps for local/CI parity.
-5. Run `govulncheck ./...` and record the 1.27.3 CVE status.
+4. ~~Add `govulncheck` and `actionlint` flake apps for local/CI parity.~~ decided: no flake apps; both tools run inside `nix develop -c release-check` (`scripts/release-check.sh`), because `nix run` chdirs into the store copy (docs-health pass 2026-11-28)
+5. ~~Run `govulncheck ./...` and record the 1.27.3 CVE status.~~ done (run 2026-11-28: GO-2026-6859 reported on Go 1.27.3; No vulnerabilities found on Go 1.27.4, which flake.nix now builds) (docs-health pass 2026-11-28)
 6. Run `nix flake check --no-build --all-systems` on the final tree.
-7. Re-run `nix build` on a clean commit and record the store path.
+7. ~~Re-run `nix build` on a clean commit and record the store path.~~ decided: the CI nix job builds master on every push (run 46101923938 green 2026-11-28), so no hand-recorded store path is kept (docs-health pass 2026-11-28)
 8. Write `scripts/release-check.sh` as the single local gate target.
-9. Add `.github/workflows/release.yml` (tag-triggered gates).
+9. ~~Add `.github/workflows/release.yml` (tag-triggered gates).~~ decided: `.github/workflows/ci.yml` also triggers on v* tags, so the tagged tree runs the identical gate set; no separate workflow file (docs-health pass 2026-11-28)
 10. Add the default-codec wire-shape test (`TestDefaultJSONCodec_WireShapes`).
 11. Harden `WriteEncoded`/`ContentTypeFor` against a nil codec and test it.
-12. Extend `FuzzResolveResponseCodec` with the injected-codec dimension.
+12. ~~Extend `FuzzResolveResponseCodec` with the injected-codec dimension.~~ done (FuzzResolveResponseCodec in `negotiation_contract_test.go` also iterates a JSONv2Codec request codec; 60 s soak green) (docs-health pass 2026-11-28)
 13. Add godoc examples for `JSONv2Codec` and the codec-aware writers.
 14. Test `JSONv2Codec` with nil option elements.
 15. Add the nightly `-count=15` timing run.
 16. Add `-shuffle=on` to CI tests.
-17. Bump `nextd` to v0.5.0 and `go 1.27.2`.
+17. ~~Bump `nextd` to v0.5.0 and `go 1.27.2`.~~ done (nextd commit fe57b39: go-daemon v0.5.0, go 1.27.2) (docs-health pass 2026-11-28)
 18. Audit pdd DTOs for `time.Duration`/nil slices, then bump it to v0.5.0.
 19. Move the flake's Go to 1.27.4 when nixpkgs ships it.
 20. Enable CodeQL default setup.
@@ -275,7 +275,7 @@ force-push, no commit. The honest failures:
 29. Fetch and confirm the CI/pkg.go.dev badge URLs render.
 30. Clean the stale worktrees under the sibling rows directory.
 31. Decide whether v0.5.0's release notes should mention public availability.
-32. Re-check Dependabot opens PRs on the now-public repo.
+32. ~~Re-check Dependabot opens PRs on the now-public repo.~~ routed to TODO_LIST.md (Re-check that Dependabot opens PRs on the now-public repo; no Dependabot PR since the 2026-11-27 flip) (docs-health pass 2026-11-28)
 33. Add `scripts/consumer-smoke.sh` (scratch `go get` of the newest tag).
 34. Add a "public since 2026-11-27" line to the README install section.
 35. Have pdd adopt `Vary: Accept` for its dual-encoding responses.
@@ -288,12 +288,12 @@ force-push, no commit. The honest failures:
 42. Sweep the repo for bare type assertions and record verdicts.
 43. Assert pool reuse across both codec paths in `TestWriteEncoded_JSONAndCBOR`.
 44. Benchmark the pooled-buffer write path.
-45. Benchmark `JSONv2Codec.EncodeToBuffer` against the v1 path.
+45. ~~Benchmark `JSONv2Codec.EncodeToBuffer` against the v1 path.~~ routed to ROADMAP.md (theme 2, raw idea: benchmark JSONv2Codec.EncodeToBuffer against the v1 path; no Benchmark function exists yet) (docs-health pass 2026-11-28)
 46. Benchmark the SSE line reader (32 KiB chunk per parser).
 47. Add an sd_notify message-sequence golden test.
 48. Evaluate systemd socket activation (`LISTEN_FDS`) as a roadmap item.
-49. Schedule the nixpkgs-Go and billing re-checks with dates in TODO_LIST.
-50. Append this session to the archive manifest's provenance when archived.
+49. ~~Schedule the nixpkgs-Go and billing re-checks with dates in TODO_LIST.~~ routed to ROADMAP.md (theme 5: nixpkgs-Go floor and Actions billing re-checks; TODO_LIST.md already carries the flake 1.27.4 row) (docs-health pass 2026-11-28)
+50. ~~Append this session to the archive manifest's provenance when archived.~~ decided: lands in the same edit that archives this report (archive ritual step), nothing to do while the report is live (docs-health pass 2026-11-28)
 
 ---
 
